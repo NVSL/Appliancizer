@@ -1,0 +1,12 @@
+{
+  "name": "nav-global",
+  "_cacheHeaders": {
+    "ETag": "\"ca00d5a81ea5b506512d8a77ea0d811184655777\"",
+    "Content-Type": "application/x-gzip",
+    "Content-Disposition": "attachment; filename=nav-global-0.1.4.tar.gz"
+  },
+  "_release": "e-tag:ca00d5a81",
+  "_source": "https://github.com/mozilla/nav-global/archive/v0.1.4.tar.gz",
+  "_target": "*",
+  "_originalSource": "https://github.com/mozilla/nav-global/archive/v0.1.4.tar.gz"
+}

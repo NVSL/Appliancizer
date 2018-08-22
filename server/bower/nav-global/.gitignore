@@ -1,0 +1,11 @@
+TODO.txt
+node_modules/
+bower_components/
+.env
+.DS_Store
+webmaker.sqlite
+*~
+public/events/uploads/
+locale/
+!locale/en_US/*
+!locale/localeinfo.json

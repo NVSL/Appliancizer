@@ -1,0 +1,19 @@
+{
+  "name": "persona-btn",
+  "version": "0.0.11",
+  "description": "CSS for persona button",
+  "main": "persona-btn.css",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/k88hudson/persona-btn.git"
+  },
+  "keywords": [
+    "persona",
+    "buttons"
+  ],
+  "author": "Kate Hudson @k88hudson",
+  "license": "Apache-2.0"
+}

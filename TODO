@@ -1,0 +1,16 @@
+# START APPLIANZER
+1. Run Server:
+cd Server/
+http-server
+2. Run electron APP
+electron . 2> /dev/null
+
+
+# ABOUT Webxray
+buildPropertyWidget is where it's start adding extra html
+
+
+# TODO TOMORROW
+1. easy-remix-dialog.js seems to have entered in a while loop somewhere after removing Localize.js
+2. Check if it's okay that app.css is not loading when changing a HTML. 
+3. Remove unused files. 
