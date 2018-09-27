@@ -1,147 +1,803 @@
 <!DOCTYPE html>
 <html>    
 <head>
-  <title>Youtube Physical Player</title>
+  <title>Frame</title>
 
 
-  <link rel="stylesheet" href="app.css">
-  <!-- <link rel="import" href="amalgam/amalgam.html"> -->
-  <!-- <link rel="stylesheet" class="webxray" href="./webxray.css"> -->
-
+  <link rel="stylesheet" href="main.css">
+  <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+  <script src="./jquery-3.3.1.min.js"></script>
+  <script>if (window.module) module = window.module;</script>
+  <link rel="stylesheet" type="text/css"
+    href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
 
 </head>
 <body>
+<!-- Navigation Bar -->
+<aside>
+  <div class="flexRow">
+    <ul id="Menu">
+      <li id="content1"></li>
+      <li id="content2"></li>
+      <li id="content3"></li>
+      <li id="content4"></li>
+      <li id="content5"></li>
+    </ul>
+    <div class="flexColumn">
+      <div id ="contentPhysicalWebComponents">
+        <div class="barTitle" id="tit1">Add Physical Web Components</div>
+        <div class="barContent" id="componentName">(None)</div>
+        <div class="barContent" id="idNameComp">id: (None)</div>
+        <ul id="componentList">
+        </ul>
+      </div>
+      <div id ="contentPhysicalScreen">
+        <div class="barTitle" id="tit2">Add a Physical Screen</div>
+        <div class="barContent" id="screenComponentName">(None)</div>
+        <div class="barContent" id="idNameScreen">id: (None)</div>
+        <ul id="screenList">
+        </ul>
+      </div>
+       <div id ="contentPhysicalScreenView">
+        <div class="barTitle" id="tit3">Physical Screen View</div>
+        <div class="barContent" id="loadingScreen">Loading Screen..</div>
+      </div>
+      <div id ="contentPCBView">
+        <div class="barTitle" id="tit4">PCB View</div>
+        <div class="barContent" id="idNamePCB">id: (None)</div>
+        <div class="barContent">PCB Height</div>
+        <input type="number" id="pcbHeight" name="height"
+           placeholder="150" step="1" /><span class="barContent">mm</span>
+        <div class="barContent">PCB Width</div>
+        <input type="number" id="pcbWidth" name="height"
+          placeholder="150" step="1" /><span class="barContent">mm</span>
+        <hr style="height:1px;border:none;background-color:green">
+        <br>
+        <button type="button" id="checkBtn">Check PCB</button>
+      </div>
+      <div id ="contentDownload">
+        <div class="barTitle" id="tit5">Download</div>
+        <br>
+        <button type="button" id="downloadBtn">Download</button>
+      </div>
+    </div>
+</div>
+</aside>
+<!-- ## Page Content -->
 
-    <!-- <div id="video-placeholder"></div> -->
-    <button onclick="playPause()" id="playPause">Play/Pause</button>
-    <button onclick="prev()" id="prev">Prev</button>
-    <button onclick="next()" id="next">Next</button>
-    <input type="range" min="0" max="100" step="1" value="10" id="slider">
-    <input type="range" min="0" max="10" step="1" value="0" id="progressBar">
+<!-- Download Info -->
+<div id="downloadinfo">
+  <p><strong>Physical Web Components Added:</strong></p>
+  <br>
+  <table id="tablePWC" class="infoTable">
+  </table>
+  <br>
+  <p><strong>Physical Screen Added:</strong></p>
+  <br>
+  <table id="tablePS" class="infoTable">
+  </table>
+  <br>
+  <p><strong>PCB Info:</strong></p>
+  <br>
+  <table id="tablePCB" class="infoTable">
+    <tr>
+      <th>PCB Dimension</th>
+      <th>Size</th>
+    </tr>
+    <tr>
+      <td><strong>PCB Heigth</strong></td>
+      <td id="tablePCBHeight">(error no info)</td>
+    </tr>
+    <tr>
+      <td><strong>PCB Width</strong></td>
+      <td id="tablePCBWidth">(error no info)</td>
+    </tr>
+  </table>
+  <br>
+  <br>
+  <br>
+</div>
 
-    <!-- webxray -->
-<!--     <div id="webxray-is-active" style="display: none;"></div>
-    <div class="webxray-base webxray-style-info" style="display: none;"></div>
-    <div class="webxray-base webxray-toolbar">
-      <div class="webxray-toolbar-button glyph-P webxray-base">
-      <div class="webxray-toolbar-button-glyph webxray-base">P</div>
-      <div class="webxray-toolbar-button-text webxray-base">publish</div></div>
-      <div class="webxray-toolbar-button glyph-esc webxray-base">
-      <div class="webxray-toolbar-button-glyph webxray-toolbar-button-glyph-tiny webxray-base">esc</div>
-      <div class="webxray-toolbar-button-text webxray-base">quit</div></div>
-      <div class="webxray-toolbar-button glyph-← webxray-base"><div class="webxray-toolbar-button-glyph webxray-base">←</div><div class="webxray-toolbar-button-text webxray-base">undo</div></div>
-      <div class="webxray-toolbar-button glyph-→ webxray-base"><div class="webxray-toolbar-button-glyph webxray-base">→</div><div class="webxray-toolbar-button-text webxray-base">redo</div></div>
-      <div class="webxray-toolbar-button glyph-H webxray-base"><div class="webxray-toolbar-button-glyph webxray-base">H</div><div class="webxray-toolbar-button-text webxray-base">help</div></div></div>
-   
-    <div class="webxray-base webxray-hud-box">
-      <div class="webxray-base webxray-hud"><span>Web X-Ray Goggles activated! Press ESC to deactivate.</span></div><div class="webxray-base webxray-help">?</div>
-    </div> -->
+<!-- No Screen Selected Info -->
+<div id="noscreeninfo">
+  No Physical Screen Selected
+</div>
 
-    <!-- <script src="./webxray.js"></script> -->
+<!-- No Screen Selected Info -->
+<div id="nopcbinfo">
+  No Physical Components Selected
+</div>
 
-    <script>
-      (function() {
-        console.log("Running X-Ray");
-        var script=document.createElement('script');
-        script.src='http://localhost:8080'+'/webxray.js';
-        script.className='webxray';
-        script.setAttribute('data-lang','en-US');
-        script.setAttribute('data-baseuri','http://localhost:8080');
-        document.body.appendChild(script);
-      }())
-    </script>
+<!-- Download Modal -->
+<div id="downloadModal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-content">
+
+    <div class="field">
+      <div class="notification" style="background-color: #b83dba">
+        <div class="subtitle has-text-white">Downlaod</div>
+        <p class="has-text-white">Warning: TODO</p>
+        <div class="level">
+          <div class="level-left"></div>
+          <div class="level-right">
+            <button id="buttonDownloadModal" class="button" style="color: #b83dba">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Check Modal -->
+<div id="checkPCBModal" class="modal">
+  <div class="modal-background"></div>
+  <div class="modal-content">
+
+    <div class="field">
+      <div class="notification" style="background-color: #0ed145">
+        <div class="subtitle has-text-white">Check PCB</div>
+        <p class="has-text-white">Warning: TODO</p>
+        <div class="level">
+          <div class="level-left"></div>
+          <div class="level-right">
+            <button id="buttonCheckPCBModal" class="button is-success is-inverted">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
     
-    <!-- <script src="https://www.youtube.com/iframe_api"></script> -->
-    <!-- <script>
+  </div>
+</div>
 
-      var player = null;
-      var playerState = null;
 
-      function onYouTubeIframeAPIReady() {
-        player = new YT.Player('video-placeholder', {
-          width: 600,
-          height: 475,
-          videoId: 'dQiNVk_u0po',
-          playerVars: {
-            rel: 0,
-            color: 'white',
-            playlist: 'DCLrDnZO_0E, IvUU8joBb1Q,S-m-CHigCY4,HpaHvUOk3F0'
-          },
-          events: {
-            onReady: youtubeInit,
-            onStateChange: onPlayerStateChange
+<!-- User WebPage -->
+<iframe id="webframecontiner" src="app.html" frameborder="0" scrolling="no"></iframe>
+
+<script>
+$(function() {
+
+  function isJson(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+  }
+
+  var components = {
+    "submit": {
+      "physical-button": {
+        "image":"button.png",
+        "height": "10mm",
+        "width": "10mm"
+      }
+    },
+    "range" : {
+      "physical-static-range": {
+        "image":"pot.png",
+        "height": "20mm",
+        "width": "20mm"
+      },
+      "physical-dynamic-range" : {
+        "image":"slider.jpg",
+        "height": "9mm",
+        "width": "152mm"
+      }
+    },
+    "screens" : {
+      "utronics3-5inch": {
+        "image":"utronics_3.5inch.png",
+        "height": "80mm",
+        "width": "80mm"
+      },
+      "geeekpi5inch": {
+        "image":"geeekpi_5inch.png",
+        "height": "90mm",
+        "width": "90mm"
+      }
+    }
+  }
+
+  // Here user selected components will be saved in a Json format
+  // Example:
+  // "playPause": {
+  //    "type": "submit",
+  //    "pwc": "phyical-button",
+  //  }
+  var userComponents = {};
+
+  var currentDataType_g = null;
+  var currentDataId_g = null;
+  var currentDataClass_g = null;
+  var currentElementClick_g = null;
+  var pcbHeight_g = null;
+  var pcbWidth_g = null;
+
+  // ## Initialize
+
+  // Injecting code to iFrame
+  // var iFrame = document.getElementById('webframecontiner').contentWindow;
+  // iFrame.eval('document.addEventListener("DOMContentLoaded", function(event) { console.log(document.getElementById("playPause")) });');
+
+  // Set PCB new Height Value
+  $("#pcbHeight").on("keydown",function search(e) {
+      if(e.keyCode == 13) { // Enter Key
+
+        // Set new height
+        var iframe = document.getElementById('webframecontiner');
+        iframe.contentWindow.postMessage(JSON.stringify({
+          type: "pcb_new_height",
+          value: $(this).val()
+        }), "*");
+
+        // Set global height
+        pcbHeight_g = $(this).val();
+
+      }
+  });
+
+  // Set PCB new Width Value
+  $("#pcbWidth").on("keydown",function search(e) {
+      if(e.keyCode == 13) { // Enter Key
+
+        // Set new width
+        var iframe = document.getElementById('webframecontiner');
+        iframe.contentWindow.postMessage(JSON.stringify({
+          type: "pcb_new_width",
+          value: $(this).val()
+        }), "*");
+
+        // Set global width
+        pcbWidth_g = $(this).val();
+
+      }
+  });
+
+  // Open Download Modal
+  $("#downloadBtn").on("click", function () {
+    $("#downloadModal").addClass("is-active");
+  });
+
+  // Check PCB / Modal
+  $("#checkBtn").on("click", function () {
+    $("#checkPCBModal").addClass("is-active");
+  });
+
+  // Close Download Modal
+  $("#buttonDownloadModal").on("click", function () {
+    $("#downloadModal").removeClass("is-active");
+  });
+
+  // Close PCB Modal
+  $("#buttonCheckPCBModal").on("click", function () {
+    $("#checkPCBModal").removeClass("is-active");
+  });
+
+  // Get Messages from iFrame
+  window.addEventListener('message', function onMessage(event) {
+
+    if (isJson(event.data)) {
+      var data = JSON.parse(event.data);
+      console.log(data);
+
+      if (data.func == "element_click") {
+        currentElementClick_g = data;
+        updateComponentList(data);
+      } else if (data.func == "pcb_resize") {
+        $('#pcbHeight').val(data.pcbtopheight);
+        pcbHeight_g = data.pcbtopheight;
+        $('#pcbWidth').val(data.pcbtopwidth);
+        pcbWidth_g = data.pcbtopwidth;
+      } else if (data.func == "pcb_dragged_component_id") {
+        $('#idNamePCB').text("id: "+data.id);
+      }
+
+    } else {
+      console.log(event.data);
+    }
+    
+  });
+
+  function updateComponentList(data) {
+
+    if (data == null) {
+      $('#componentList').empty();
+      $('#screenList').empty();
+      return;
+    }
+
+    // Get in which tab we. 
+    // Content 1 (contentPhysicalWebComponents) true : Content 2 (contentPhysicalScreen) false
+    var content1or2 = ($("#contentPhysicalWebComponents").css("display") =="block") ? true : false;
+    
+    // Empty Lists
+    if (content1or2 == true) {
+      // Empty component list
+      var cList = $('#componentList')
+      cList.empty();
+    } else {
+      // Empty screens list
+      var sList = $('#screenList')
+      sList.empty();
+    }
+    
+
+      // If click on a body or html elements
+      if ( data.tagName == null) {
+        $('#componentName').text("(None)");
+        $('#screenComponentName').text("(None)");
+        return;
+      }
+
+      // Save current selected tag info globally
+      currentDataType_g = (content1or2==true)? data.type : "screens";
+      currentDataId_g = data.id;
+      currentDataClass_g = data.className;
+
+      // ADD component Name at the top of the list
+      if (data.type != undefined) {
+        $('#componentName').text( data.tagName+" ("+data.type+")" );
+        $('#screenComponentName').text( data.tagName+" ("+data.type+")" );
+        $('#idNameComp').text("id: "+data.id);
+        $('#idNameScreen').text("id: "+data.id);
+      } else {
+        $('#componentName').text( data.tagName );
+        $('#screenComponentName').text( data.tagName );
+        $('#idNameComp').text("id: "+data.id);
+        $('#idNameScreen').text("id: "+data.id);
+      }
+      
+
+      // ADD Components in HTML
+      var componentFound = false;
+      for (var part in components) {
+        for (var webcomp in components[part]) {
+          var partImage = components[part][webcomp]["image"];
+          var selected = (currentDataId_g in userComponents)? true : false;
+          var type = (selected == true)? userComponents[currentDataId_g]["type"] : null;
+          var pwc = (selected == true)? userComponents[currentDataId_g]["pwc"] : null;
+
+          // Add List of components
+          if (content1or2 == true) {
+            // In Components View 
+
+            // Display Components
+            if (part === data.type) {
+              var li = $('<li/>')
+              .attr("id", webcomp)
+              .attr("data-html",data.outerHTML)
+              .appendTo(cList);
+              var img = $('<img/>')
+              .attr("src",partImage)
+              .appendTo(li);
+              var p = $('<p/>')
+              .text(webcomp)
+              .appendTo(li);
+
+              // Set selected item if selected in json is true.
+              if (pwc != null && pwc == webcomp) {
+                $("#"+webcomp).addClass("checked");
+              }
+
+              componentFound = true;
+            }
+
+          } else {
+            // In Screen View 
+
+            var screenAreadySelected = false;
+            for (id in userComponents) {
+              if (userComponents[id]["type"] == "screens" && id != currentDataId_g) {
+                $('<p/>')
+                .text('"Unselect id:'+id+' to select a Physical Screen Component for this tag"' )
+                .css({"font-style": "italic", "margin": "5px"})
+                .appendTo(sList);
+                screenAreadySelected = true;
+                break;
+              }
+            }
+
+            if (screenAreadySelected == true) return;
+
+            // Display Screens
+            if (part === "screens") {
+
+              // If part already selected as component alert the user
+              if (type != null && type != "screens") {
+                $('<p/>')
+                .text('"A physical web component has already \
+                 been selected for this tag"')
+                .css({"font-style": "italic", "margin": "5px"})
+                .appendTo(sList);
+                break;
+              } else {
+                var li = $('<li/>')
+                .attr("id", webcomp)
+                .attr("data-html",data.outerHTML)
+                .appendTo(sList);
+                var img = $('<img/>')
+                .attr("src",partImage)
+                .appendTo(li);
+                var p = $('<p/>')
+                .text(webcomp)
+                .appendTo(li);
+
+                // Set selected item if selected in json is true.
+                if (pwc != null && pwc == webcomp) {
+                  $("#"+webcomp).addClass("checked");
+                }
+              }
+ 
+            }
           }
-        });
-      }
-
-      function youtubeInit () {       
-        console.log("Youtube Init");
-        var progressBar = document.getElementById("progressBar");
-        progressBar.max = player.getDuration();
-        playerState = YT.PlayerState.PAUSED;
-        player.unMute(); // unMute by Defalut
-
-        setInterval(function () {
-          updateProgressBar();
-        }, 1000);
-      }
-
-      function updateProgressBar() {
-        var progressBar = document.getElementById("progressBar");
-        progressBar.setAttribute("value", `${player.getCurrentTime()}`);
-        // Check this chrome error, this way it doesn't trigger attribute-change
-        // progressBar.value = player.getCurrentTime(); 
-      }
-
-      function formatTime(time){
-        time = Math.round(time);
-        var minutes = Math.floor(time / 60),
-        seconds = time - minutes * 60;
-        seconds = seconds < 10 ? '0' + seconds : seconds;
-        return minutes + ":" + seconds;
-      }
-
-      function onPlayerStateChange (event) {
-        playerState = event.data;
-        // TODO: Add fullscreen when playing
-        if (playerState == YT.PlayerState.PLAYING) {
-          progressBar.max = player.getDuration();
+          
         }
       }
 
-      function playPause () {
-        if (playerState == YT.PlayerState.PAUSED) {
-          player.playVideo();
+      // If no components found alert the user.
+      if (componentFound == false) {
+        $('<p/>')
+        .text('"No available physical components found for this tag"')
+        .css({"font-style": "italic", "margin": "5px"})
+        .appendTo(cList);
+      }
+
+  }
+
+  // ComponentList: Add a "checked" symbol when clicking on a list item
+  var list = document.querySelector('#componentList');
+  list.addEventListener('click', function(ev) {
+    if (ev.target.tagName === 'LI') {
+      updateJson(ev.target);
+    } else if(ev.target.parentNode.tagName === 'LI') {
+      updateJson(ev.target.parentNode);
+    }
+  }, false);
+
+  // ScreenList: Add a "checked" symbol when clicking on a list item 
+  var list = document.querySelector('#screenList');
+  list.addEventListener('click', function(ev) {
+    if (ev.target.tagName === 'LI') {
+      updateJson(ev.target);
+    } else if(ev.target.parentNode.tagName === 'LI') {
+      updateJson(ev.target.parentNode);
+    }
+  }, false);
+
+
+  function updateJson (target) {
+    console.log(target.id);
+
+    for (var type in components) {
+      if (type == currentDataType_g) {
+        for (var webcomp in components[type]) {
+
+          console.log(webcomp, target.id);
+          if (webcomp == target.id) {
+
+            if (currentDataId_g in userComponents) {
+
+              if (userComponents[currentDataId_g]["pwc"] != webcomp) {
+                // New Physical Web Component Selected
+                delete userComponents[currentDataId_g];
+                userComponents[currentDataId_g] = {
+                  "type": type,
+                  "pwc": webcomp,
+                  "html": $("#"+target.id).attr("data-html"),
+                  "image": components[type][webcomp]["image"],
+                  "height": components[type][webcomp]["height"],
+                  "width": components[type][webcomp]["width"]
+                };
+                $("#"+webcomp).addClass("checked");
+              } else {
+                // Unselect 
+                delete userComponents[currentDataId_g];
+                $("#"+webcomp).removeClass("checked");
+              }
+              
+            } else {
+              // Select
+              userComponents[currentDataId_g] = {
+                "type": type,
+                "pwc": webcomp,
+                "html": $("#"+target.id).attr("data-html"),
+                "image": components[type][webcomp]["image"],
+                "height": components[type][webcomp]["height"],
+                "width": components[type][webcomp]["width"]
+              };
+              $("#"+webcomp).addClass("checked");
+            }
+            
+            console.log(userComponents);
+
+          } else {
+            // Set any other screen or component selection to false
+            $("#"+webcomp).removeClass("checked");
+          }
+
+        }
+      }
+    }
+  }
+
+  // Change content views
+  var menu = document.querySelector('#Menu');
+  menu.addEventListener('click', function(ev) {
+
+    var iframe = document.getElementById('webframecontiner');
+
+    if (ev.target.id === 'content1') {
+      // Show right bar content
+      $("#contentPhysicalScreen").hide();
+      $("#contentPhysicalScreenView").hide();
+      $("#contentPCBView").hide();
+      $("#contentDownload").hide();
+      $("#contentPhysicalWebComponents").show();
+      // Update components Lists
+      if (currentElementClick_g != null) updateComponentList(currentElementClick_g);
+
+      // Revert css changes in iframe
+      iframe.contentWindow.postMessage(JSON.stringify({type: "unset"}), "*");
+
+      // Change icon image to selected icon image
+      $('#content1').css('background-image', 'url("./icons/ChipIcon_Selected.png")');
+      $('#content2').css('background-image', 'url("./icons/AddScreenIcon.png")');
+      $('#content3').css('background-image', 'url("./icons/ViewScreenIcon.png")');
+      $('#content4').css('background-image', 'url("./icons/CircuitIcon.png")');
+      $('#content5').css('background-image', 'url("./icons/DownloadIcon.png")');
+
+      // Show Webframe Continer / hide Download info
+      $("#downloadinfo").hide();
+      $("#noscreeninfo").hide();
+      $("#nopcbinfo").hide();
+      $("#webframecontiner").show();
+
+    } else if(ev.target.id  === 'content2') {
+      // Show right bar content
+      $("#contentPhysicalWebComponents").hide();
+      $("#contentPhysicalScreenView").hide();
+      $("#contentPCBView").hide();
+      $("#contentDownload").hide();
+      $("#contentPhysicalScreen").show();
+      // Update screen components List
+      if (currentElementClick_g != null) updateComponentList(currentElementClick_g);
+
+      // Revert css changes in iframe
+      iframe.contentWindow.postMessage(JSON.stringify({type: "unset"}), "*");
+
+      // Change icon image to selected icon image
+      $('#content1').css('background-image', 'url("./icons/ChipIcon.png")');
+      $('#content2').css('background-image', 'url("./icons/AddScreenIcon_Selected.png")');
+      $('#content3').css('background-image', 'url("./icons/ViewScreenIcon.png")');
+      $('#content4').css('background-image', 'url("./icons/CircuitIcon.png")');
+      $('#content5').css('background-image', 'url("./icons/DownloadIcon.png")');
+
+      // Show Webframe Continer / hide Download info
+      $("#downloadinfo").hide();
+      $("#noscreeninfo").hide();
+      $("#nopcbinfo").hide();
+      $("#webframecontiner").show();
+
+    } else if(ev.target.id  === 'content3') {
+
+      // Set Loading 
+      $("#loadingScreen").text("Setting Screen...");
+
+      // Show right bar content
+      $("#contentPhysicalWebComponents").hide();
+      $("#contentPhysicalScreen").hide();
+      $("#contentPCBView").hide();
+      $("#contentDownload").hide();
+      $("#contentPhysicalScreenView").show();
+
+      // Change icon image to selected icon image
+      $('#content1').css('background-image', 'url("./icons/ChipIcon.png")');
+      $('#content2').css('background-image', 'url("./icons/AddScreenIcon.png")');
+      $('#content3').css('background-image', 'url("./icons/ViewScreenIcon_Selected.png")');
+      $('#content4').css('background-image', 'url("./icons/CircuitIcon.png")');
+      $('#content5').css('background-image', 'url("./icons/DownloadIcon.png")');
+
+      // Show Webframe Continer / hide Download info
+      $("#downloadinfo").hide();
+      $("#nopcbinfo").hide();
+      $("#webframecontiner").show();
+
+      // Check if there is a componenten selected as screen.
+      var screenId = null;
+      var screenHeight =  null;
+      var screenWidth =  null;
+      for (id in userComponents) {
+        if (userComponents[id]["type"] == "screens") {
+          screenId = id;
+          screenHeight = userComponents[id]["height"];
+          screenWidth = userComponents[id]["width"];
+          console.log("LAL", screenHeight, screenWidth);
+        }
+      }
+
+      // If no screen component found show no Screen.
+      if (screenId ==  null) {
+        $("#noscreeninfo").show();
+        return;
+      } else {
+        $("#noscreeninfo").hide();
+      }
+
+      // Revert css changes in iframe
+      iframe.contentWindow.postMessage(JSON.stringify({type: "unset"}), "*");
+
+      setTimeout(function(){  
+        // Display only screen id/class in iframe
+        iframe.contentWindow.postMessage(JSON.stringify({
+          type: "screen_set",
+          id: screenId,
+          height: screenHeight,
+          width: screenWidth
+        }), "*");
+
+        // Finish Loading 
+        $("#loadingScreen").text("Screen Ready");
+      }, 1000);
+
+      // Set current click component to null
+      currentElementClick_g = null;
+      updateComponentList(null);
+
+    } else if(ev.target.id  === 'content4') {
+      // Show right bar content
+      $("#contentPhysicalWebComponents").hide();
+      $("#contentPhysicalScreen").hide();
+      $("#contentPhysicalScreenView").hide();
+      $("#contentDownload").hide();
+      $("#contentPCBView").show();
+
+      // Change icon image to selected icon image
+      $('#content1').css('background-image', 'url("./icons/ChipIcon.png")');
+      $('#content2').css('background-image', 'url("./icons/AddScreenIcon.png")');
+      $('#content3').css('background-image', 'url("./icons/ViewScreenIcon.png")');
+      $('#content4').css('background-image', 'url("./icons/CircuitIcon_Selected.png")');
+      $('#content5').css('background-image', 'url("./icons/DownloadIcon.png")');
+
+      // Show Webframe Continer / hide Download info
+      $("#downloadinfo").hide();
+      $("#noscreeninfo").hide();
+      $("#webframecontiner").show();
+
+
+
+      // If no components  found show no Components.
+      if (jQuery.isEmptyObject(userComponents)) {
+        $("#nopcbinfo").show();
+        return;
+      } else {
+        $("#nopcbinfo").hide();
+      }
+
+      // Revert css changes in iframe
+      iframe.contentWindow.postMessage(JSON.stringify({type: "unset"}), "*");
+
+      // Display PCB
+      iframe.contentWindow.postMessage(JSON.stringify({
+        type: "pcb_set",
+        components: userComponents
+      }), "*");
+
+      // Set current click component to null
+      currentElementClick_g = null;
+      updateComponentList(null);
+
+    } else if(ev.target.id  === 'content5') {
+      // Show right bar content
+      $("#contentPhysicalWebComponents").hide();
+      $("#contentPhysicalScreen").hide();
+      $("#contentPhysicalScreenView").hide();
+      $("#contentPCBView").hide();
+      $("#contentDownload").show();
+
+      // Revert css changes in iframe (For if user goes back)
+      iframe.contentWindow.postMessage(JSON.stringify({type: "unset"}), "*");
+
+      // Change icon image to selected icon image
+      $('#content1').css('background-image', 'url("./icons/ChipIcon.png")');
+      $('#content2').css('background-image', 'url("./icons/AddScreenIcon.png")');
+      $('#content3').css('background-image', 'url("./icons/ViewScreenIcon.png")');
+      $('#content4').css('background-image', 'url("./icons/CircuitIcon.png")');
+      $('#content5').css('background-image', 'url("./icons/DownloadIcon_Selected.png")');
+
+      // Add download info (TODO)
+      addDownloadInfo();
+
+      // Show Download Info / hide Webframe Container
+      $("#webframecontiner").hide();
+      $("#noscreeninfo").hide();
+      $("#nopcbinfo").hide();
+      $("#downloadinfo").show();
+      
+    }
+
+    function addDownloadInfo() {
+
+      // Empty Tables
+      $('#tablePWC').empty();
+      $('#tablePS').empty();
+
+      // Add Headers
+      $('#tablePWC').append( '<tr>' +
+        '<th>ID</th>' +
+        '<th>HTML</th>' +
+        '<th>Physical Web Component Name</th>' +
+        '<th>Physical Web Component Image</th>' +
+      '</tr>' );
+      $('#tablePS').append( '<tr>' +
+        '<th>ID</th>' +
+        '<th>HTML</th>' +
+        '<th>Physical Web Component Name</th>' +
+        '<th>Physical Web Component Image</th>' +
+      '</tr>' );
+
+      // Fill Tables
+      var ps_found = false;
+      var pwc_found = false;
+      for (id in userComponents) {
+        if (userComponents[id]["type"] == "screens") {
+          // Its a Screen Component
+          $('#tablePS').append( '<tr>' + 
+            '<td>' + id + '</td>' + 
+            '<td>' +userComponents[id]["html"]+ '</td>' + 
+            '<td>' +userComponents[id]["pwc"] + '</td>' + 
+            '<td> <img src="'+userComponents[id]["image"]+'" width="200px" height="200px"></td>' +
+          '</tr>' );
+          ps_found = true;
         } else {
-          player.pauseVideo();
+          // Its a PWC
+          $('#tablePWC').append( '<tr>' + 
+            '<td>' + id + '</td>' + 
+            '<td>' +userComponents[id]["html"]+ '</td>' + 
+            '<td>' +userComponents[id]["pwc"] + '</td>' + 
+            '<td> <img src="'+userComponents[id]["image"]+'" width="50px" height="50px"></td>' +
+          '</tr>' );
+          pwc_found = true;
         }
       }
 
-      function prev () {
-        player.previousVideo();
+      // If no Physical Screen added, then remove table and add None
+      if (ps_found == false) {
+        $('#tablePS').empty();
+        $('#tablePS').append( '<p>None</p>');
       }
 
-      function next () {
-        player.nextVideo();
+      // If no Components 
+      if (pwc_found == false) {
+        $('#tablePWC').empty();
+        $('#tablePWC').append( '<p>None</p>');
       }
 
-      var slider = document.getElementById("slider");
-      slider.oninput = function() {
-        if (typeof player.setVolume === 'function' && player != null) {
-          player.setVolume(this.value);
-        }
+      // Fill PCB Size
+      if (pcbHeight_g != null) {
+        $('#tablePCBHeight').text(pcbHeight_g+" mm");
+      }
+      if (pcbWidth_g != null) {
+        $('#tablePCBWidth').text(pcbWidth_g+" mm");
       }
 
-      var progressBar = document.getElementById("progressBar");
-      progressBar.oninput = function() {
-        if (typeof player.seekTo === 'function' && player != null) {
-          player.seekTo(this.value);
-        }
-      }
+    }
+    
 
+  }, false);
 
-    </script> -->
+});
+
+</script>
 
 </body>
 </html>
 
+
+<!-- 
+TODOs: 
+- break Web Components and Screen Views into two functions 
+- Add The id of the component after the tag Name and type
+
+-->

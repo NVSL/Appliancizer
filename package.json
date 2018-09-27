@@ -1,11 +1,22 @@
 {
-  "name": "app-one",
-  "version": "0.1.0",
+  "name": "electron-quick-start",
+  "version": "1.0.0",
+  "description": "A minimal Electron application",
   "main": "main.js",
-  "dependencies": {
-    "css": "^2.2.3",
-    "fs": "0.0.1-security",
-    "jquery": "^3.3.1",
-    "linuxduino": "^0.1.8"
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/electron/electron-quick-start",
+  "keywords": [
+    "Electron",
+    "quick",
+    "start",
+    "tutorial",
+    "demo"
+  ],
+  "author": "GitHub",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "electron": "^2.0.0"
   }
 }

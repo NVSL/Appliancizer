@@ -1,0 +1,430 @@
+@import src(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700);
+
+html{height:100%;}
+
+*
+{
+margin:0px;
+padding:0px;
+outline:none;
+transition:0.2s;
+}
+
+
+body{
+background: #fff;
+padding:10px;
+font-family:'Source Sans Pro', sans-serif;
+font-size: 12pt;
+line-height: 150%;
+color:#000;
+padding:0px;
+margin:0px;
+height: 100%;
+}
+
+aside
+{
+height:100%;
+width:200px;
+background:#212121;
+position: fixed;
+z-index: 1;
+}
+
+/*## Row/Column inside Aside*/
+
+.flexRow {
+  display: flex;
+  height: 100%;
+}
+
+.flexColumn {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+/*## Menu: TODO add Icons*/
+
+#Menu
+{
+  padding:0px;
+  margin:0px;
+  border-bottom:1px solid #1c1f21;
+  background-color: black;
+  width: 50px;
+}
+
+#Menu li
+{
+	list-style-type:none;
+	color: white;
+	padding:10px;
+	border-bottom:1px solid #272a2c;
+	overflow: auto;
+	cursor:pointer;
+}
+
+#Menu li:first-child{border-top:none;}
+
+/*## Menu Icons */
+#content1 {
+	margin-top: 5px;
+	background-image: url("./icons/ChipIcon_Selected.png");
+	background-repeat: no-repeat;
+	height: 45px;
+	background-size: 37px auto;
+}
+
+#content1:hover {
+	background-size: 40px auto;
+	background-image: url("./icons/ChipIcon_Selected.png") !important;
+}
+
+#content2 {
+	margin-top: 5px;
+	background-image: url("./icons/AddScreenIcon.png");
+	background-repeat: no-repeat;
+	height: 45px;
+	background-size: 37px auto;
+}
+
+#content2:hover {
+	background-size: 40px auto;
+	background-image: url("./icons/AddScreenIcon_Selected.png") !important;
+}
+
+
+#content3 {
+	margin-top: 5px;
+	background-image: url("./icons/ViewScreenIcon.png");
+	background-repeat: no-repeat;
+	height: 45px;
+	background-size: 37px auto;
+}
+
+#content3:hover {
+	background-size: 40px auto;
+	background-image: url("./icons/ViewScreenIcon_Selected.png") !important;
+}
+
+#content4 {
+	margin-top: 5px;
+	background-image: url("./icons/CircuitIcon.png");
+	background-repeat: no-repeat;
+	height: 45px;
+	background-size: 37px auto;
+}
+
+#content4:hover {
+	background-size: 40px auto;
+	background-image: url("./icons/CircuitIcon_Selected.png") !important;
+}
+
+#content5 {
+	margin-top: 5px;
+	background-image: url("./icons/DownloadIcon.png");
+	background-repeat: no-repeat;
+	height: 45px;
+	background-size: 37px auto;
+}
+
+#content5:hover {
+	background-size: 40px auto;
+	background-image: url("./icons/DownloadIcon_Selected.png") !important;
+}
+
+/*## Global Content Classes*/
+
+.barTitle {
+	color: white;
+	padding:10px;
+	overflow: auto;
+}
+
+.barContent {
+	color: white;
+	padding:10px;
+}
+
+/*## Content 1: Physical Web Components */
+
+#tit1 {
+	border-bottom:2px solid #ff7f27; /*Oragne Border*/
+}
+
+#contentPhysicalWebComponents {
+	display: block;
+	height: 100%;
+}
+
+#componentList {
+	background-color: white;
+	height: 70%;
+	border:2px solid #1c2e44;
+	overflow: auto;
+}
+
+#componentList li{
+  cursor: pointer;
+  position: relative;
+  padding: 5px 5px 5px 10px;
+  list-style-type: none;
+  background: #eee;
+  font-size: 18px;
+  
+  /* make the list items unselectable */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+#componentList li img{
+	width: 50px;
+	height: 50px;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+/* Set all odd list items to a different color (zebra-stripes) */
+#componentList li:nth-child(odd) {
+  background: #f9f9f9;
+}
+
+/* When clicked on, add a background color */
+#componentList li.checked {
+  background: #888;
+  color: #fff;
+}
+
+/* Add a "checked" mark when clicked on */
+#componentList li.checked::before {
+  content: '';
+  position: absolute;
+  border-color: green;
+  border-style: solid;
+  border-width: 0 2px 2px 0;
+  top: 15px;
+  left: 16px;
+  transform: rotate(35deg);
+  height: 20px;
+  width: 10px;
+}
+
+/* Darker background-color on hover */
+#componentList li:hover {
+  background: #ddd;
+}
+
+/*## Content 2: Physical Screen */
+
+#tit2 {
+	border-bottom:2px solid #00a8f3; /*Blue Border*/
+}
+
+#contentPhysicalScreen {
+	display: none;
+	height: 100%;
+}
+
+#screenList {
+	background-color: white;
+	height: 70%;
+	border:2px solid #1c2e44;
+	overflow: auto;
+}
+
+#screenList li{
+  cursor: pointer;
+  position: relative;
+  padding: 5px 5px 5px 10px;
+  list-style-type: none;
+  background: #eee;
+  font-size: 18px;
+  
+  /* make the list items unselectable */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+#screenList li img{
+	width: 50px;
+	height: 50px;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+/* Set all odd list items to a different color (zebra-stripes) */
+#screenList li:nth-child(odd) {
+  background: #f9f9f9;
+}
+
+/* When clicked on, add a background color */
+#screenList li.checked {
+  background: #888;
+  color: #fff;
+}
+
+/* Add a "checked" mark when clicked on */
+#screenList li.checked::before {
+  content: '';
+  position: absolute;
+  border-color: green;
+  border-style: solid;
+  border-width: 0 2px 2px 0;
+  top: 15px;
+  left: 16px;
+  transform: rotate(35deg);
+  height: 20px;
+  width: 10px;
+}
+
+/*## Content 3: Physical Screen View */
+
+#tit3 {
+	border-bottom:2px solid #ec1c24; /*Red Border*/
+}
+
+#contentPhysicalScreenView {
+	display: none;
+	height: 100%;
+}
+
+/* No Scren Info*/
+#noscreeninfo {
+	display: none;
+	margin: 0 auto;
+	height: 100%;
+	width: 100%;
+	margin-left: 225px;
+}
+
+/*## Content 4: PCB View */
+
+#tit4 {
+	border-bottom:2px solid #0ed145; /*Green Border*/
+}
+
+#contentPCBView {
+	display: none;
+	height: 100%;
+}
+
+#pcbHeight {
+	padding:10px;
+	margin: 10px;
+	width: 80px;
+}
+
+#pcbWidth {
+	padding:10px;
+	margin: 10px;
+	width: 80px;
+}
+
+#checkBtn {
+  padding: 10px;
+  width: 120px;
+  background: #d9d9d9;
+  color: #0ed145;
+  float: left;
+  text-align: center;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+  border-radius: 0;
+  margin-left: 10px;
+}
+
+#checkBtn:hover {
+  background-color: #bbb;
+}
+
+#nopcbinfo {
+	display: none;
+	margin: 0 auto;
+	height: 100%;
+	width: 100%;
+	margin-left: 225px;
+}
+
+/*## Content 5: Download */
+
+#tit5 {
+	border-bottom:2px solid #b83dba; /*Purple Border*/
+}
+
+#contentDownload {
+	display: none;
+	height: 100%;
+}
+
+/* Style the "Done" button */
+#downloadBtn {
+  padding: 10px;
+  width: 100px;
+  background: #d9d9d9;
+  color: #b83dba;
+  float: left;
+  text-align: center;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+  border-radius: 0;
+  margin-left: 20px;
+}
+
+#downloadBtn:hover {
+  background-color: #bbb;
+}
+
+/*## Download Info*/
+#downloadinfo {
+	display: none;
+	margin: 0 auto;
+	height: 100%;
+	width: 100%;
+	margin-left: 225px;
+}
+
+/* Download Content */
+.infoTable {
+	table-layout:fixed;
+  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: calc(100% - 250px);
+}
+
+.infoTable td, th {
+    border: 1px solid black;
+    text-align: left;
+    padding: 8px;
+    word-wrap: break-word;
+}
+
+.infoTable th {
+  text-align: left;
+  background-color: #b83dba;
+  color: white;
+}
+
+.infoTable tr:nth-child(even) {
+    background-color: #dddddd;
+}
+
+/*## Iframe Content*/
+
+#webframecontiner {
+	display: block;
+	margin: 0 auto;
+	height: 100%;
+	width: 100%;
+	margin-left: 200px;
+}

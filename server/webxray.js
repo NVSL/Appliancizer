@@ -44,129 +44,6 @@ window.__LOCALIZED_IGNORE_REQUIREJS = true;
     domReady();
   }
 
-  // Get the current lang from the document's HTML element, which the
-  // server set when the page was first rendered. This saves us having
-  // to pass extra locale info around on the URL.
-  function getCurrentLang() {
-    var html = document.querySelector( "html" );
-    return html && html.lang ? html.lang : "en-US";
-  }
-
-  return {
-    /**
-     * gets the localized string for a given key
-     */
-    get: function(key) {
-      if ( !_strings ) {
-        console.error( "[webmaker-i18n] Error: string catalog not found." );
-        return "";
-      }
-      return ( _strings[ key ] || "" );
-    },
-
-    /**
-     * Convert the given language name into Moment.js supported Language name
-     *
-     *   lang: 'en-US' return: 'en'
-     *   lang: 'en-CA' return: 'en-ca'
-     *   lang: 'th-TH' return: 'th'
-     **/
-    langToMomentJSLang: function(lang) {
-      /* The list of moment.js supported languages
-       * Extracted from http://momentjs.com/downloads/moment-with-langs.js
-       */
-      var momentLangMap = ['en', 'ar-ma', 'ar', 'bg', 'br', 'bs', 'ca',
-                          'cs', 'cv', 'cy', 'da', 'de', 'el',
-                          'en-au', 'en-ca', 'en-gb', 'eo', 'es',
-                          'et', 'eu', 'fa', 'fi', 'fo', 'fr-ca',
-                          'fr', 'gl', 'he', 'hi', 'hr', 'hu', 'id',
-                          'is', 'it', 'ja', 'ka', 'ko', "lt", 'lv',
-                          'ml', 'mr', 'ms-my', 'nb', 'ne', 'nl', 'nn',
-                          'pl', 'pt-br', 'pt', 'ro', 'ru', 'sk', 'sl',
-                          'sq', 'sv', 'th', 'tl-ph', 'tr', 'tzm-la',
-                          'tzm', 'uk', 'uz', 'vn', 'zh-cn', 'zh-tw'];
-
-      lang = lang.toLowerCase();
-      var newLang = lang.substr(0,2);
-      if (momentLangMap.indexOf(lang) !== -1) {
-        return lang;
-      } else if (momentLangMap.indexOf(newLang) !== -1) {
-        return newLang;
-      }
-      return 'en';
-    },
-
-    /**
-     * gets the current lang used for the given page, or en-US by default.
-     */
-    getCurrentLang: getCurrentLang,
-
-    /**
-     * initializes the strings locally (i.e., downloads if not already downloaded) and
-     * queues a callback to be fired when the DOM + strings are ready. It is safe to
-     * call ready() multiple times. For cache busting, pass noCache=true on the options arg.
-     */
-    ready: function(options, callback) {
-      var _callback;
-
-      // Allow calling ready with or without options.
-      if (typeof options === 'function') {
-        _callback = options;
-        options = {};
-      } else {
-        _callback = callback || function(){};
-      }
-
-      var noCache = !!options.noCache,
-          url = options.url || '/strings';
-
-      // If given an absolute url (starting in http), we don't process it.
-      // Otherwise we fix it up to include the current lang from <html lang="...">
-      if (url.indexOf( 'http' ) !== 0) {
-        url = url.replace(/^\/?/, '/').replace(/\/?$/, '/');
-        url = url + getCurrentLang();
-      }
-
-      // Add cache busting if requested.
-      url = url + (noCache ? '?bust=' + Date.now() : '');
-
-      if (!_requestedStrings) {
-        _requestedStrings = true;
-        _readyCallbacks.push(_callback);
-
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.onreadystatechange = function(){
-          if (this.readyState !== 4) {
-            return;
-          }
-
-          if (xhr.status !== 200) {
-            console.error("Localized Error: HTTP error " + xhr.status);
-            return;
-          }
-
-          try {
-            ready(JSON.parse(this.responseText));
-          } catch (err) {
-            console.error("Localized Error: " + err);
-          }
-        };
-        xhr.send(null);
-      }
-
-      if (this.isReady()) {
-        fireReadyCallbacks();
-      }
-    },
-
-    /**
-     * returns true if the localized strings have been loaded and can be used.
-     */
-    isReady: function() {
-      return !!_strings;
-    }
-  };
 }));
 (function( originalWindow, undefined ) {
 
@@ -10045,62 +9922,10 @@ var Webxray = (function() {
     },
     baseURI: "",
     cssURL: "webxray.css",
-    preferencesURL: "preferences.html",
     easyRemixDialogURL: "http://localhost:8080/easy-remix-dialog/index.html",
     uprootDialogURL: "http://localhost:8080/uproot-dialog.html",
-    helpDialogURL: "http://localhost:8080/help.html",
-    hackpubInjectionURL: "published-hack/injector.js",
-    pluginURLs: [],
-    hackpubURL: "http://localhost:12416/",
-    idwmoURL: "http://localhost:1234",
-    publishwmoURL: "http://localhost:2015"
+    pluginURLs: []
   };
-})(jQuery);
-(function(jQuery) {
-  "use strict";
-
-  var $ = jQuery,
-  locale = Localized.get;
-
-  function createLocalizedHelp(keys, platform) {
-    platform = platform || navigator.platform;
-
-    var localizedKeys = [];
-    keys.forEach(function(info) {
-      var localizedInfo = {key: null, desc: null};
-      localizedInfo.key = jQuery.nameForKey(info.key, platform);
-      localizedInfo.desc = locale(info.cmd);
-      localizedKeys.push(localizedInfo);
-    });
-    return localizedKeys;
-  }
-
-  jQuery.extend({
-    nameForKey: function(key, platform) {
-      platform = platform || navigator.platform;
-
-      var normalKey = "key-names:" + key;
-      var osKey = normalKey + "-" + platform;
-      return locale(osKey) ||
-             locale(normalKey) ||
-             key;
-    },
-    createKeyboardHelpReference: function(keyboardHelp, platform) {
-      var keys = createLocalizedHelp(keyboardHelp, platform);
-      var table = $('<div class="webxray-help-box"></div>');
-      keys.forEach(function(info) {
-        var row = $('<div class="webxray-help-row"></div>');
-        var keyCell = $('<div class="webxray-help-key"></div>');
-        var keyValue = $('<div class="webxray-help-desc"></div>');
-
-        keyCell.append($('<div class="webxray-kbd"></div>').text(info.key));
-        keyValue.text(info.desc);
-        row.append(keyCell).append(keyValue);
-        table.append(row);
-      });
-      return table;
-    }
-  });
 })(jQuery);
 (function(jQuery) {
   "use strict";
@@ -10376,31 +10201,6 @@ var Webxray = (function() {
     return tag += '>';
   }
 
-  jQuery.extend({
-    openUprootDialog: function(input) {
-      window.postMessage("goggles-publish-initiated", "*");
-      $(document).uprootIgnoringWebxray(function(html) {
-        var injectURL = jQuery.webxraySettings.url("hackpubInjectionURL");
-        var hackpubInfo = {
-          injectURL: injectURL,
-          originalURL: window.location.href,
-          submissionDate: (new Date()).toString()
-        };
-
-        jQuery.simpleModalDialog({
-          input: input,
-          url: jQuery.webxraySettings.url("uprootDialogURL"),
-          classes: "webxray-publish-dialog",
-          payload: JSON.stringify({
-            html: html,
-            hackpubURL: jQuery.webxraySettings.url("hackpubURL"),
-            originalURL: hackpubInfo.originalURL
-          })
-        });
-      });
-    }
-  });
-
   jQuery.fn.extend({
     uprootIgnoringWebxray: function(cb) {
       $(document).uproot({
@@ -10462,7 +10262,8 @@ var Webxray = (function() {
     "#FFC328",
     "#B2E725",
     "#660066",
-    "#FF9900"
+    "#FF9900",
+    "#ff0000",
   ];
 
   var NUM_TAG_COLORS = TAG_COLORS.length;
@@ -10476,7 +10277,8 @@ var Webxray = (function() {
     body: 5,
     h1: 6,
     html: 7,
-    footer: 8
+    footer: 8,
+    iframe: 9
   };
 
   var DEFAULT_OVERLAY_OPACITY = 0.7;
@@ -10581,12 +10383,14 @@ var Webxray = (function() {
     var ancestorOverlay = null;
     var overlay = null;
     var element = null;
+    var disableOverlay = false;
 
     function labelOverlay(overlay, target, finalSize) {
       var parts = ["top", "bottom"];
 
-      if ($(target).isVoidElement())
+      if ($(target).isVoidElement()) {
         parts = ["top"];
+      }
 
       finalSize = finalSize || overlay;
       parts.forEach(function(className) {
@@ -10671,10 +10475,19 @@ var Webxray = (function() {
         this.emit('change', this);
       },
       set: function set(newElement) {
+        if (disableOverlay) return;
         this.unfocus();
         element = this.element = newElement;
         overlay = $(element).overlayWithTagColor();
         labelOverlay(overlay, element);
+        this.emit('change', this);
+      },
+      overlayhide: function set() {
+        disableOverlay = true;
+        this.emit('change', this);
+      },
+      overlayshow: function set() {
+        disableOverlay = false;
         this.emit('change', this);
       },
       destroy: function destroy() {
@@ -10690,104 +10503,132 @@ var Webxray = (function() {
   "use strict";
 
   var $ = jQuery;
-  var MAX_URL_LENGTH = 35;
 
-  jQuery.hudOverlay = function hudOverlay(options) {
-    if (options === undefined)
+  jQuery.clickfocusedOverlay = function clickfocusedOverlay(options) {
+    if (!options)
       options = {};
 
-    var hudContainer = $('<div class="webxray-base webxray-hud-box"></div>');
-    var hud = $('<div class="webxray-base webxray-hud"></div>');
-    var l10n = Localized.get;
+    var useAnimation = options.useAnimation;
+    var ancestorIndex = 0;
+    var ancestorOverlay = null;
+    var overlay = null;
+    var element = null;
+    var disableOverlay = false;
 
-    hudContainer.append(hud);
+    function labelOverlay(overlay, target, finalSize) {
+      var parts = ["top", "bottom"];
 
-    function showDefaultContent() {
-      hud.html(options.defaultContent || l10n("default-html"));
+      if ($(target).isVoidElement())
+        parts = ["top"];
+
+      finalSize = finalSize || overlay;
+      parts.forEach(function(className) {
+        var part = $('<div class="webxray-base webxray-overlay-label">' +
+                     '</div>');
+        var tag = target.nodeName.toLowerCase();
+        part.addClass("webxray-overlay-label-" + className);
+        part.text("<" + (className == "bottom" ? "/" : "") +
+                  tag + ">");
+        overlay.append(part);
+        if (part.width() > $(finalSize).width() ||
+            part.height() > $(finalSize).height())
+          part.hide();
+      });
     }
 
-    showDefaultContent();
-
-    return {
-      overlayContainer: hudContainer[0],
-      overlay: hud[0],
-      destroy: function destroy() {
-        this.overlay = null;
-        hudContainer.remove();
-        hudContainer = null;
-        hud = null;
-      },
-      onFocusChange: function handleEvent(focused) {
-        function code(string) {
-          return $("<code></code>").text(string);
-        }
-
-        function elementInfo(element) {
-          var info = {
-            tagName: "<" + element.nodeName.toLowerCase() + ">",
-            id: element.id,
-            className: element.className,
-            url: element.href || element.src || element.action ||
-                 element.currentSrc
-          };
-
-          if (info.url && info.url.length)
-            info.url = $.shortenText(info.url, MAX_URL_LENGTH);
-          else
-            info.url = null;
-
-          return info;
-        }
-
-        function elementDesc(element) {
-          var span = $("<span></span>");
-          var info = elementInfo(element);
-          var shortDescKey = "short-element-descriptions:" +
-                             element.nodeName.toLowerCase();
-
-          if (l10n(shortDescKey)) {
-            span.emit(code(info.tagName),
-                      " (" + l10n(shortDescKey) + ") ",
-                      l10n("element"));
-          }
-          else {
-            span.emit(code(info.tagName), " ", l10n("element"));
-          }
-          if (info.id) {
-            span.emit(" ", l10n("with"), " ", l10n("id"), " ",
-                      code(info.id));
-          }
-          if (info.className) {
-            span.emit(" " + (info.id ? l10n("and") : l10n("with")),
-                      " ", l10n("class"), " ",
-                      code(info.className));
-          }
-          if (info.url) {
-            span.emit((info.id || info.className) ? "," : "",
-                      " ", l10n("pointing-at"), " ",
-                      $('<span class="webxray-url"></span>').text(info.url));
-          }
-          return span;
-        }
-
-        if (focused.element) {
-          console.log("element");
-          var span = $("<span></span>");
-          span.emit(l10n("focused-intro"), " ",
-                    elementDesc(focused.element), ".");
-          if (focused.ancestor) {
-            console.log("Ancestor");
-            span.emit(" ", l10n("ancestor-intro"), " ",
-                      elementDesc(focused.ancestor), ".");
-          }
-          hud.empty().append(span);
-        } else {
-          console.log("Nothing");
-          showDefaultContent();
-        }
+    function setAncestorOverlay(ancestor, useAnimation) {
+      if (ancestorOverlay) {
+        ancestorOverlay.remove();
+        ancestorOverlay = null;
       }
-    };
-  };
+      if (ancestor) {
+        if (useAnimation) {
+          var fromElement = instance.getPrimaryElement();
+          ancestorOverlay = $(fromElement).overlay();
+          ancestorOverlay.resizeTo(ancestor);
+        } else
+          ancestorOverlay = ancestor.overlay();
+        ancestorOverlay.addClass("webxray-ancestor");
+        labelOverlay(ancestorOverlay, ancestor[0], ancestor[0]);
+        instance.ancestor = ancestor[0];
+      } else {
+        if (useAnimation && instance.ancestor) {
+          ancestorOverlay = $(instance.ancestor).overlay();
+          ancestorOverlay.addClass("webxray-ancestor");
+          labelOverlay(ancestorOverlay, instance.element, instance.element);
+          ancestorOverlay.resizeToAndFadeOut(instance.element);
+        }
+        instance.ancestor = null;
+      }
+    }
+
+    var instance = jQuery.eventEmitter({
+      element: null,
+      ancestor: null,
+      getPrimaryElement: function getPrimaryElement() {
+        return this.ancestor || this.element;
+      },
+      upfocus: function upfocus() {
+        if (!element)
+          return;
+        var ancestor = $(element).ancestor(ancestorIndex + 1);
+
+        if (ancestor.length && ancestor[0] != document) {
+          ancestorIndex++;
+          setAncestorOverlay(ancestor, useAnimation);
+        }
+        this.emit('change', this);
+      },
+      downfocus: function downfocus() {
+        if (!element)
+          return;
+        if (ancestorOverlay) {
+          ancestorOverlay.remove();
+          ancestorOverlay = null;
+        }
+        if (ancestorIndex > 0 && --ancestorIndex > 0) {
+          var ancestor = $(element).ancestor(ancestorIndex);
+          setAncestorOverlay(ancestor, useAnimation);
+        } else
+          setAncestorOverlay(null, useAnimation);
+        this.emit('change', this);
+      },
+      clickset: function set(newElement) {
+        if (disableOverlay) return;
+        element = this.element = newElement;
+        overlay = $(element).overlayWithTagColor();
+        labelOverlay(overlay, element);
+        this.emit('change', this);
+      },
+      clickunset: function unfocus() {
+        if (disableOverlay) return;
+        if (!element)
+          return;
+        overlay.remove();
+        overlay = null;
+        element = this.element = null;
+        setAncestorOverlay(null);
+        ancestorIndex = 0;
+        this.emit('change', this);
+      },
+      overlayhide: function set() {
+        disableOverlay = true;
+        if (overlay!=null) overlay.hide();
+        this.emit('change', this);
+      },
+      overlayshow: function set() {
+        disableOverlay = false;
+        if (overlay!=null) overlay.show();
+        this.emit('change', this);
+      },
+      destroy: function destroy() {
+        this.unfocus();
+        this.removeAllListeners('change');
+      }
+    });
+
+    return instance;
+  }
 })(jQuery);
 (function(jQuery) {
   "use strict";
@@ -10836,6 +10677,14 @@ var Webxray = (function() {
           if (cb)
             cb();
         });
+      }
+
+      function hide() {
+        div.hide();
+      }
+
+      function show() {
+        div.hide();
       }
 
       if (duration)
@@ -10901,8 +10750,7 @@ var Webxray = (function() {
     "word-spacing",
     "word-wrap",
     "z-index"
-  ].sort(),
-  l10n = Localized.get;
+  ].sort();
 
   DEFAULT_PROPERTIES.forEach(function(name) {
     if (name.match(/image$/))
@@ -11034,10 +10882,10 @@ var Webxray = (function() {
 
     row.data("propertyWidget", self);
     row.mouseover(function() {
-      if (l10n(name)) {
+      if (name) {
         var moreInfo = $('<span class="webxray-more-info"></span>')
-          .text(l10n("more-info"));
-        $(hud.overlay).html(l10n(name))
+          .text("more-info");
+        $(hud.overlay).html(name)
           .append(moreInfo)
           .find("a").css({textDecoration: "none"});
       }
@@ -11153,7 +11001,6 @@ var Webxray = (function() {
       var commandManager = options.commandManager;
       var propertyNames = options.propertyNames;
       var mouseMonitor = options.mouseMonitor;
-      var hud = options.hud;
       var body = options.body || document.body;
       var isVisible = false;
       var modalOverlay = null;
@@ -11175,8 +11022,8 @@ var Webxray = (function() {
           var info = $(primary).getStyleInfo(propertyNames, hud);
           var instructions = $('<div class="webxray-instructions"></div>');
           var close = $('<div class="webxray-close-button"></div>');
-          instructions.html(l10n("tap-space-html"));
-          close.text(l10n("dialog-common:ok"));
+          instructions.html("tap-space-html");
+          close.text("dialog-common:ok");
           overlay.append(info).append(instructions).append(close);
           overlay.show();
         } else {
@@ -11228,7 +11075,7 @@ var Webxray = (function() {
             modalOverlay = ModalOverlay(overlay, primary, input);
             modalOverlay.on('change-style', function(style) {
               commandManager.run("ChangeAttributeCmd", {
-                name: l10n("style-change"),
+                name: "style-change",
                 attribute: "style",
                 value: style,
                 element: primary
@@ -11296,265 +11143,6 @@ var Webxray = (function() {
       return info;
     }
   });
-})(jQuery);
-(function(jQuery) {
-  "use strict";
-
-  var $ = jQuery;
-
-  var uprootableClass = "webxray-uprootable-element";
-
-  function NullTransitionEffectManager() {
-    return {
-      enableDuring: function enableDuring(fn) { fn(); }
-    };
-  }
-
-  function TransitionEffectManager(commandManager) {
-    var isEnabled = false;
-
-    commandManager.on('command-created', function(cmd) {
-      cmd.on('before-replace', function before(elementToReplace) {
-        if (!isEnabled)
-          return;
-        var overlay = $(elementToReplace).overlay();
-        cmd.on('after-replace', function after(newContent) {
-          cmd.removeListener('after-replace', after);
-          overlay.applyTagColor(newContent, 0.25)
-                 .resizeToAndFadeOut(newContent);
-        });
-      });
-    });
-
-    return {
-      enableDuring: function enableDuring(fn) {
-        if (!isEnabled) {
-          isEnabled = true;
-          fn();
-          isEnabled = false;
-        } else
-          fn();
-      }
-    };
-  }
-
-  function MixMaster(options) {
-    var hud = options.hud;
-    var focused = options.focusedOverlay;
-    var commandManager = options.commandManager;
-    var l10n = Localized.get;
-    var dialogPageMods = null;
-    var transitionEffects;
-
-    if (options.disableTransitionEffects)
-      transitionEffects = new NullTransitionEffectManager();
-    else
-      transitionEffects = new TransitionEffectManager(commandManager);
-
-    function updateStatus(verb, command) {
-      var span = $('<span></span>');
-      span.text(verb + ' ' + command.name + '.');
-      $(hud.overlay).empty().append(span);
-    }
-
-    function runCommand(name, options) {
-      focused.unfocus();
-      var command = commandManager.run(name, options);
-      updateStatus(l10n('command-manager:executed'), command);
-    }
-
-    var self = {
-      undo: function() {
-        if (commandManager.canUndo()) {
-          focused.unfocus();
-          transitionEffects.enableDuring(function() {
-            updateStatus(l10n('command-manager:undid'),
-                         commandManager.undo());
-          });
-        } else {
-          var msg = l10n('cannot-undo-html');
-          $(hud.overlay).html(msg);
-        }
-      },
-      redo: function() {
-        if (commandManager.canRedo()) {
-          focused.unfocus();
-          transitionEffects.enableDuring(function() {
-            updateStatus(l10n('command-manager:redid'),
-                         commandManager.redo());
-          });
-        } else {
-          var msg = l10n('cannot-redo-html');
-          $(hud.overlay).html(msg);
-        }
-      },
-      htmlToJQuery: function htmlToJQuery(html) {
-        if (html === '' || typeof(html) != 'string')
-          return $('<span></span>');
-        if (html[0] != '<')
-          html = '<span>' + html + '</span>';
-        return $(html);
-      },
-      deleteFocusedElement: function deleteFocusedElement() {
-        var elementToDelete = focused.getPrimaryElement();
-        if (elementToDelete) {
-          if ($(elementToDelete).is('html, body')) {
-            var msg = l10n('too-big-to-change');
-            jQuery.transparentMessage($('<div></div>').text(msg));
-            return;
-          }
-          // Replacing the element with a zero-length invisible
-          // span is a lot easier than actually deleting the element,
-          // since it allows us to place a "bookmark" in the DOM
-          // that can easily be undone if the user wishes.
-          var placeholder = $('<span class="webxray-deleted"></span>');
-          transitionEffects.enableDuring(function() {
-            runCommand("ReplaceWithCmd", {
-              name: l10n('deletion'),
-              elementToReplace: elementToDelete,
-              newContent: placeholder
-            });
-          });
-        }
-      },
-      infoForFocusedElement: function infoForFocusedElement(open) {
-        var element = focused.getPrimaryElement();
-        open = open || window.open;
-        if (element) {
-          var url = 'https://developer.mozilla.org/en/HTML/Element/' +
-                    element.nodeName.toLowerCase();
-          open(url, 'info');
-        }
-      },
-      replaceElement: function(originalElement, elementToReplace, html, saveState) {
-        var newContent = self.htmlToJQuery(html);
-
-        // Use saveState to determine whether or not this action should be put on the
-        // undo/redo stack.
-        if (saveState) {
-
-          // To avoid tapping too far down the Command rabbit-hole, just put the
-          // original element back, and apply new changes on top of it.
-          $(elementToReplace).replaceWith(originalElement);
-
-          runCommand("ReplaceWithCmd", {
-            name: l10n('replacement'),
-            elementToReplace: originalElement,
-            newContent: newContent
-          });
-        }
-        else {
-          $(elementToReplace).replaceWith(newContent);
-        }
-        return newContent;
-      },
-      setDialogPageMods: function(mods) {
-        dialogPageMods = mods;
-      },
-      replaceFocusedElementWithDialog: function(options) {
-        var input = options.input;
-        var dialogURL = options.dialogURL;
-        var sendFullDocument = options.sendFullDocument;
-        var MAX_HTML_LENGTH = 5000;
-        var focusedElement =  focused.getPrimaryElement();
-        if (!focusedElement)
-          return;
-
-        // We need to remove any script tags in the element now, or else
-        // we'll likely re-execute them.
-        $(focusedElement).find("script").remove();
-
-        var focusedHTML = $(focusedElement).outerHtml();
-
-        if ($(focusedElement).is('html, body')) {
-          var msg = l10n("too-big-to-change");
-          jQuery.transparentMessage($('<div></div>').text(msg));
-          return;
-        }
-
-        if (focusedHTML.length === 0 ||
-            focusedHTML.length > MAX_HTML_LENGTH) {
-          var tagName = focusedElement.nodeName.toLowerCase();
-          var nmsg = l10n("too-big-to-remix-html").replace("${tagName}",
-                                                          tagName);
-          jQuery.transparentMessage($(nmsg));
-          return;
-        }
-
-        if (sendFullDocument) {
-          $(focusedElement).addClass(uprootableClass);
-          $(document).uprootIgnoringWebxray(function (html) {
-            begin({
-              html: html,
-              selector: "."+uprootableClass
-            });
-          });
-        } else {
-          begin(focusedHTML);
-        }
-
-        function begin(startHTML) {
-          focused.unfocus();
-
-          var originalElement = focusedElement;
-
-          jQuery.morphElementIntoDialog({
-            input: input,
-            body: options.body,
-            url: dialogURL,
-            element: focusedElement,
-            onLoad: function(dialog) {
-              dialog.iframe.postMessage(JSON.stringify({
-                startHTML: startHTML,
-                mods: dialogPageMods,
-                baseURI: document.location.href
-              }), "*");
-              dialog.iframe.fadeIn();
-              dialog.iframe.bind("message", function onMessage(event, data) {
-                try {
-                  data = JSON.parse(data);
-
-                  if (data.msg === "ok") {
-                    // The dialog may have decided to replace all our spaces
-                    // with non-breaking ones, so we'll undo that.
-                    var html = data.endHTML.replace(/\u00a0/g, " ");
-                    var newContent = self.replaceElement(originalElement, focusedElement, html, data.finished);
-                    focusedElement = newContent[0];
-
-                    if(data.finished) {
-                      newContent.addClass(uprootableClass);
-                      jQuery.morphDialogIntoElement({
-                        dialog: dialog,
-                        input: input,
-                        element: newContent,
-                        finished: data.finished,
-                        canceled: data.canceled,
-                        onDone: function() {
-                          newContent.reallyRemoveClass(uprootableClass);
-                          window.postMessage("goggles-edit-finished", "*");
-                        }
-                      });
-                    } else {
-                      window.postMessage("goggles-edit-start", "*");
-                    }
-                  } else {
-                    // TODO: Re-focus previously focused elements?
-                    $(focusedElement).reallyRemoveClass(uprootableClass);
-                    dialog.close();
-                  }
-                } catch (e) {
-                  console.error("postmessage was not valid JSON");
-                }
-              });
-            }
-          });
-        }
-      }
-    };
-    return self;
-  }
-
-  jQuery.extend({mixMaster: MixMaster});
 })(jQuery);
 (function(jQuery) {
   "use strict";
@@ -11790,216 +11378,6 @@ var Webxray = (function() {
 
   jQuery.extend({commandManager: CommandManager});
 })(jQuery);
-(function(jQuery) {
-  "use strict";
-
-  var $ = jQuery;
-
-  jQuery.extend({
-    commandManagerPersistence: function CMPersistence(commandManager) {
-      return {
-        saveHistoryToDOM: function saveHistoryToDOM() {
-          // this history isn't used by our interface, as we do cannot
-          // "load" goggles publications after the fact
-          $('#webxray-serialized-history-v1').remove();
-        },
-        loadHistoryFromDOM: function loadHistoryFromDOM() {
-          // see above
-          $('#webxray-serialized-history-v1').remove();
-        }
-      };
-    }
-  });
-})(jQuery);
-(function(jQuery) {
-  "use strict";
-
-  var $ = jQuery;
-
-  jQuery.fn.extend({
-    postMessage: function(message, targetOrigin) {
-      if ((jQuery.browser.mozilla && typeof(self) == "object" &&
-           self.port && self.port.emit) ||
-          (typeof(chrome) == "object" && chrome.extension)) {
-        // We're most likely in a Jetpack, and need to work around
-        // bug 666547. Or, we're in a Chrome extension and are
-        // stymied by http://stackoverflow.com/q/4062879.
-
-        if (!this.attr("id"))
-          // Likelyhood of a naming collision here is very low,
-          // and it's only a temporary workaround anyways.
-          this.attr("id", "webxray-iframe-" + Math.random());
-
-        var script = document.createElement("script");
-
-        script.text = "(" + (function(id, message) {
-          var iframe = document.getElementById(id);
-          iframe.contentWindow.postMessage(message, "*");
-        }).toString() + ")(" + JSON.stringify(this.attr("id")) + ", " +
-        JSON.stringify(message) + ");";
-
-        document.body.appendChild(script);
-        document.body.removeChild(script);
-      } else
-        this[0].contentWindow.postMessage(message, targetOrigin);
-    }
-  });
-
-  jQuery.extend({
-    getModalDialogDimensions: function() {
-      var div = $('<div class="webxray-base webxray-dialog-overlay">' +
-                  '<div class="webxray-base webxray-dialog-outer">' +
-                  '<div class="webxray-base webxray-dialog-middle">' +
-                  '<div class="webxray-base webxray-dialog-inner">' +
-                  '<div class="webxray-base webxray-dialog-content">' +
-                  '</div></div></div></div></div>');
-      $(document.body).append(div);
-
-      var content = div.find('.webxray-dialog-content');
-      var pos = content.offset();
-      var dimensions = {
-        top: pos.top,
-        left: pos.left,
-        width: content.outerWidth(),
-        height: content.outerHeight()
-      };
-
-      div.remove();
-      return dimensions;
-    },
-    simpleModalDialog: function(options) {
-      var dialog = jQuery.modalDialog({
-        input: options.input,
-        url: options.url,
-        classes: options.classes
-      });
-      dialog.iframe.one("load", function() {
-        $(this).postMessage(options.payload, "*");
-        $(this).show().bind("message", function(event, data) {
-          if (data == "close")
-            dialog.close();
-        });
-      });
-      return dialog;
-    },
-    modalDialog: function(options) {
-      var input = options.input;
-      var body = options.body || document.body;
-      var url = options.url;
-      var classes = options.classes ? " " + options.classes : '';
-      var div = $('<div class="webxray-base webxray-dialog-overlay">' +
-                  '<div class="webxray-base webxray-dialog-outer">' +
-                  '<div class="webxray-base webxray-dialog-middle">' +
-                  '<div class="webxray-base webxray-dialog-inner">' +
-                  '<iframe class="webxray-base'+classes+'" src="' + url + '"></iframe>' +
-                  '</div></div></div></div>');
-      var iframe = div.find("iframe");
-
-      function onMessage(event) {
-        if (event.source == self.iframe.get(0).contentWindow) {
-          iframe.trigger("message", [event.data]);
-        }
-      }
-
-      window.addEventListener("message", onMessage, false);
-      iframe.hide();
-
-      var self = {
-        iframe: iframe,
-        close: function close(cb) {
-          div.fadeOut(function() {
-            window.removeEventListener("message", onMessage, false);
-            div.remove();
-            div = null;
-
-            // Firefox seems to trigger a mouseout/mouseover event
-            // when we remove the dialog div, so we'll wait a moment
-            // before re-activating input so that we don't distract
-            // the user by focusing on whatever their mouse happens
-            // to be over when the dialog closes.
-            setTimeout(function() {
-              input.activate();
-              input = null;
-              window.focus();
-              if (cb)
-                cb();
-            }, 50);
-          });
-        }
-      };
-
-      input.deactivate();
-      $(body).append(div);
-
-      return self;
-    },
-    morphElementIntoDialog: function(options) {
-      var input = options.input;
-      var element = options.element;
-      var body = options.body || document.body;
-      var url = options.url;
-      var overlay = $(element).overlayWithTagColor(1.0);
-      var backdrop = $('<div class="webxray-base webxray-dialog-overlay">' +
-                       '</div>');
-
-      document.body.classList.add("webxray-padded");
-
-      // Closing the dialog we make later will re-activate this for us.
-      input.deactivate();
-
-      $(body).append(backdrop);
-      overlay.addClass('webxray-topmost');
-      overlay.animate(jQuery.getModalDialogDimensions(), function() {
-        var dialog = jQuery.modalDialog({
-          input: input,
-          body: body,
-          url: url
-        });
-
-        backdrop.remove();
-
-        dialog.iframe.one("load", function onLoad() {
-          overlay.fadeOut(function() {
-            overlay.remove();
-            options.onLoad(dialog);
-          });
-        });
-      });
-    },
-    morphDialogIntoElement: function(options) {
-      var element = options.element;
-      var dialog = options.dialog;
-      var input = options.input;
-      var finished = options.finished;
-      var canceled = options.canceled;
-      var overlay = dialog.iframe.overlay();
-
-      document.body.classList.remove("webxray-padded");
-
-      overlay.applyTagColor(element, 1.0);
-      overlay.hide();
-      overlay.fadeIn(function() {
-        dialog.close(function() {
-          // input was just re-activated when the dialog closed, but
-          // we want to deactivate it again because we're not actually
-          // done with our transition.
-          input.deactivate();
-          overlay.resizeTo(element, function() {
-            $(this).fadeOut(function() {
-              $(this).remove();
-              input.activate();
-              if(finished && !canceled) {
-                document.dispatchEvent(new CustomEvent("webxray-element-modified"))
-              }
-            });
-            options.onDone();
-          });
-        });
-      });
-    }
-  });
-})(jQuery);
-
 (function(jQuery) {
   "use strict";
 
@@ -12255,13 +11633,15 @@ var Webxray = (function() {
     },
     xRayInput: function xRayInput(options) {
       var focused = options.focusedOverlay;
-      var mixMaster = options.mixMaster;
+      var clickfocused= options.clickfocusedOverlay;
       var commandManager = options.commandManager;
       var eventSource = options.eventSource;
       var onQuit = options.onQuit;
-      var persistence = options.persistence;
       var styleInfo = options.styleInfoOverlay;
       var touchesReceived = false;
+      var disableFocusOveraly = false;
+
+      // Handles Mouse Events
       var self = jQuery.inputHandlerChain([
         'keydown',
         'keyup',
@@ -12270,13 +11650,39 @@ var Webxray = (function() {
         'mouseover',
         'touchstart',
         'touchmove',
-        'touchend'
+        'touchend',
+        'disableOverlay'
       ], eventSource);
 
       self.add({
         click: function(event) {
+          console.log("Mouse Click");
           if (isValidFocusTarget(event.target)) {
-            self.commandBindings.remix.execute();
+            // TODO Add code here
+            if (event.target != null) {
+              clickfocused.clickunset();
+              if ($(event.target).is('html, body')) {
+                console.log("Clik on Nested elements");
+                window.parent.postMessage(JSON.stringify({
+                  func: "element_click",
+                  tagName: null,
+                  id: null,
+                  type: null,
+                  className: null,
+                  outerHTML: event.target.outerHTML
+                }), "*");
+              } else {
+                clickfocused.clickset(event.target);
+                window.parent.postMessage(JSON.stringify({
+                  func: "element_click",
+                  tagName: event.target.tagName,
+                  id: event.target.id,
+                  type: event.target.type,
+                  className: event.target.className,
+                  outerHTML: event.target.outerHTML
+                }), "*");
+              }
+            }
             return true;
           }
         },
@@ -12316,13 +11722,6 @@ var Webxray = (function() {
         simpleKeyBindings: jQuery.simpleKeyBindings(),
         keyboardHelp: [],
         commandBindings: {},
-        showKeyboardHelp: function() {
-          jQuery.simpleModalDialog({
-            input: self,
-            url: jQuery.webxraySettings.url("helpDialogURL"),
-            classes: "webxray-publish-dialog"
-          });
-        },
         addSimpleKeyBindings: function(bindings) {
           bindings.forEach(function(binding) {
             if (binding.cmd) {
@@ -12340,15 +11739,6 @@ var Webxray = (function() {
 
       self.addSimpleKeyBindings([
         {
-          key: 'P',
-          cmd: 'uproot',
-          alwaysInToolbar: true,
-          execute: function() {
-            persistence.saveHistoryToDOM();
-            jQuery.openUprootDialog(self);
-          }
-        },
-        {
           key: 'ESC',
           cmd: 'quit',
           alwaysInToolbar: true,
@@ -12357,45 +11747,21 @@ var Webxray = (function() {
           }
         },
         {
-          key: 'LEFT',
-          cmd: 'undo',
-          alwaysInToolbar: true,
-          execute: function() { mixMaster.undo(); }
-        },
-        {
-          key: 'RIGHT',
-          cmd: 'redo',
-          alwaysInToolbar: true,
-          execute: function() { mixMaster.redo(); }
-        },
-        {
-          key: 'H',
-          cmd: 'help',
-          alwaysInToolbar: true,
-          execute: function() {
-            self.showKeyboardHelp();
-          }
-        },
-        {
           key: 'R',
           cmd: 'remix',
-          execute: function() {
-            mixMaster.replaceFocusedElementWithDialog({
-              input: self,
-              dialogURL: jQuery.webxraySettings.url("easyRemixDialogURL"),
-              sendFullDocument: true
-            });
-          }
-        },
-        {
-          key: 'C',
-          cmd: 'css-quasimode'
+          // execute: function() {
+          //   mixMaster.replaceFocusedElementWithDialog({
+          //     input: self,
+          //     dialogURL: jQuery.webxraySettings.url("easyRemixDialogURL"),
+          //     sendFullDocument: true
+          //   });
+          // }
         },
         {
           key: 'DELETE',
           cmd: 'remove',
           execute: function() {
-            mixMaster.deleteFocusedElement();
+            //mixMaster.deleteFocusedElement();
           }
         },
         {
@@ -12413,7 +11779,7 @@ var Webxray = (function() {
         {
           key: 'I',
           execute: function() {
-            mixMaster.infoForFocusedElement();
+            //mixMaster.infoForFocusedElement();
           }
         }
       ]);
@@ -12435,172 +11801,46 @@ var Webxray = (function() {
 
   var $ = jQuery;
 
-  function canBeTouched() {
-    return ('ontouchstart' in window);
-  }
-
-  function makeButton(glyph, text, cb) {
-    var button = $(
-      '<div class="webxray-toolbar-button">' +
-      '<div class="webxray-toolbar-button-glyph"></div>' +
-      '<div class="webxray-toolbar-button-text"></div>' +
-      '</div>'
-      );
-    button.addClass("glyph-"+glyph);
-    var glyphDiv = $('.webxray-toolbar-button-glyph', button);
-    glyphDiv.text(glyph);
-    if (glyph.length != 1)
-      glyphDiv.addClass('webxray-toolbar-button-glyph-tiny');
-    $('.webxray-toolbar-button-text', button).text(text);
-    button.find('*').andSelf().addClass('webxray-base');
-    button.bind('touchstart touchmove click', function(event) {
-      event.preventDefault();
-      cb.call(this);
-    });
-    return button;
-  }
-
-  jQuery.extend({
-    touchToolbar: function(input, locale, platform) {
-      locale = locale || jQuery.locale;
-      platform = platform || navigator.platform;
-
-      var toolbar = $('<div class="webxray-base webxray-toolbar"></div>');
-
-      input.keyboardHelp.forEach(function(binding) {
-        if (binding.execute && (canBeTouched() || binding.alwaysInToolbar))
-          makeButton(jQuery.nameForKey(binding.key, locale, platform),
-                     Localized.get("short-command-descriptions:" + binding.cmd), function() {
-                       binding.execute();
-                     }).appendTo(toolbar);
-      });
-
-      toolbar.appendTo(document.body);
-
-      input.on('activate', function() { toolbar.fadeIn(); });
-      input.on('deactivate', function() { toolbar.fadeOut(); });
-
-      return {
-        unload: function() {
-          toolbar.remove();
-          toolbar = null;
-        }
-      };
-    }
-  });
-})(jQuery);
-(function(jQuery) {
-  "use strict";
-
-  var $ = jQuery;
-
-  jQuery.extend({
-    blurIndicator: function(input, focusable, body) {
-      body = body || document.body;
-
-      function showBlurIndicator() {
-        var blurIndicator = $('<div class="webxray-base ' +
-                              'webxray-dialog-overlay"></div>');
-        $(body).append(blurIndicator);
-        $(focusable).one('focus', function() {
-          // If we wait a moment before removing the indicator, it'll receive
-          // any click events instead of elements underneath it. We can
-          // safely assume that any click events made immediately after
-          // focus are really just intended to focus the page rather
-          // than click on a specific element, so we want to swallow
-          // such events rather than e.g. take the user to a new page.
-          setTimeout(function() {
-            blurIndicator.remove();
-            blurIndicator = null;
-          }, 10);
-          input.activate();
-        });
-        input.deactivate();
-      }
-
-      input.on('activate', function() {
-        $(focusable).bind('blur', showBlurIndicator);
-      });
-      input.on('deactivate', function() {
-        $(focusable).unbind('blur', showBlurIndicator);
-      });
-    }
-  });
-})(jQuery);
-(function(jQuery) {
-  "use strict";
-
-  var $ = jQuery;
-
-  function addHelpButton(hud, input) {
-    var help = $('<div class="webxray-base webxray-help">?</div>');
-    help.click(input.showKeyboardHelp);
-    $(hud.overlayContainer).append(help);
-  }
-
-  // If the user has made changes to the page, we don't want them
-  // to be able to navigate away from it without facing a modal
-  // dialog.
-  function ModalUnloadBlocker(commandManager) {
-    function beforeUnload(event) {
-      if (commandManager.canUndo()) {
-        event.preventDefault();
-        return Localized.get("unload-blocked");
-      }
-    }
-
-    window.addEventListener("beforeunload", beforeUnload, true);
-
-    return {
-      unload: function() {
-        window.removeEventListener("beforeunload", beforeUnload, true);
-      }
-    };
-  }
-
   jQuery.extend({
     xRayUI: function xRayUI(options) {
       var isUnloaded = false;
-      var hud = jQuery.hudOverlay();
       var focused = jQuery.focusedOverlay({
         useAnimation: true
       });
-      var commandManager = jQuery.commandManager();
-      var mixMaster = jQuery.mixMaster({
-        hud: hud,
-        focusedOverlay: focused,
-        commandManager: commandManager
+      var clickfocused = jQuery.clickfocusedOverlay({
+        useAnimation: true
       });
-      var persistence = jQuery.commandManagerPersistence(commandManager);
+      var commandManager = jQuery.commandManager();
       var mouseMonitor = jQuery.mouseMonitor();
       var styleInfo = jQuery.styleInfoOverlay({
         focused: focused,
         commandManager: commandManager,
         mouseMonitor: mouseMonitor,
-        hud: hud
       });
       var input = jQuery.xRayInput({
         focusedOverlay: focused,
+        clickfocusedOverlay: clickfocused,
         styleInfoOverlay: styleInfo,
-        mixMaster: mixMaster,
         commandManager: commandManager,
-        persistence: persistence,
         eventSource: options.eventSource,
         onQuit: function() {
           self.emit('quit');
         }
       });
-      var touchToolbar = jQuery.touchToolbar(input);
-      var indicator = jQuery.blurIndicator(input, window);
-      var modalUnloadBlocker = new ModalUnloadBlocker(commandManager);
 
       var self = jQuery.eventEmitter({
-        persistence: persistence,
         start: function() {
-          persistence.loadHistoryFromDOM();
-          addHelpButton(hud, input);
-          $(document.body).append(hud.overlayContainer);
-          focused.on('change', hud.onFocusChange);
+          // Main On Focus changes
+          focused.on('change', function handleEvent(focused) {
+            if (focused.element != null) {
+              if ($(focused.element).is('html, body')) {
+                console.log("Nested elements");
+              } else {
+                console.log(focused.element)
+              }
+            }
+              
+          });
           input.activate();
           $(window).focus();
           window.parent.postMessage("goggles-start", "*");
@@ -12612,17 +11852,10 @@ var Webxray = (function() {
             focused = null;
             input.deactivate();
             input = null;
-            touchToolbar.unload();
-            touchToolbar = null;
-            hud.destroy();
-            hud = null;
             styleInfo.destroy();
             styleInfo = null;
-            indicator = null;
             mouseMonitor.unload();
             mouseMonitor = null;
-            modalUnloadBlocker.unload();
-            modalUnloadBlocker = null;
             window.parent.postMessage("goggles-end", "*");
           }
         },
@@ -12630,12 +11863,10 @@ var Webxray = (function() {
         // These exports are primarily for use by third-party code.
         jQuery: jQuery,
         focusedOverlay: focused,
-        hudOverlay: hud,
-        mixMaster: mixMaster,
+        clickfocusedOverlay: clickfocused,
         styleInfoOverlay: styleInfo,
         commandManager: commandManager,
         input: input,
-        modalUnloadBlocker: modalUnloadBlocker
       });
 
       return self;
@@ -12646,6 +11877,8 @@ var Webxray = (function() {
 
   var $ = jQuery;
   var removeOnUnload = $();
+  var previouscss_g = null;
+  var pcbset_g = false;
 
   function getMyScript() {
     return $('script.webxray, script[src$="webxray.js"]');
@@ -12688,31 +11921,6 @@ var Webxray = (function() {
     return deferred;
   }
 
-  function waitForPreferencesToLoad() {
-    var deferred = jQuery.Deferred();
-
-    var iframe = document.createElement('iframe');
-    iframe.src = jQuery.webxraySettings.url('preferencesURL');
-    $(document.body).append(iframe);
-    $(iframe).hide();
-    window.addEventListener('message', function onMessage(event) {
-      if (event.source == iframe.contentWindow) {
-        window.removeEventListener('message', onMessage, false);
-        $(iframe).remove();
-        try {
-          var prefs = JSON.parse(event.data);
-          jQuery.webxraySettings.extend(prefs);
-        } catch (e) {
-          jQuery.warn("loading preferences failed");
-          jQuery.warn("preference data is", event.data);
-          jQuery.warn("exception thrown is", e);
-        }
-        deferred.resolve();
-      }
-    }, false);
-    return deferred;
-  }
-
   function loadPrerequisites(cb) {
     var script = getMyScript();
 
@@ -12721,13 +11929,14 @@ var Webxray = (function() {
       jQuery.webxraySettings.baseURI = baseURI;
     }
 
+    // Add webxray.css 
     var cssURL = jQuery.webxraySettings.url("cssURL");
     var cssLink = $('link[href="' + cssURL + '"]');
     var active = $('<div id="webxray-is-active"></div>');
-
     script.remove();
     active.hide();
     $(document.body).append(active);
+
 
     // This is a test to see if we're using legacy bookmarklet code,
     // which inserts the link tag itself.
@@ -12739,9 +11948,8 @@ var Webxray = (function() {
     removeOnUnload = removeOnUnload.add([cssLink.get(0), active.get(0)]);
 
     var cssLoaded = waitForCSSToLoad();
-    var prefsLoaded = waitForPreferencesToLoad();
 
-    jQuery.when(prefsLoaded, cssLoaded).done(cb);
+    jQuery.when(cssLoaded).done(cb);
   }
 
   function loadPlugins(cb) {
@@ -12755,34 +11963,280 @@ var Webxray = (function() {
 
   jQuery.extend({webxrayBuildMetadata: buildMetadata});
 
-  Localized.ready({url: xray.url}, function() {
-    if (window.console && console.log) {
-      console.log("Initializing Web X-Ray Goggles built on " +
-                  buildMetadata.date + " (commit " +
-                  buildMetadata.commit + ").");
-    }
+  // ### MAIN START
+  $(function() {
 
-    loadPrerequisites(function() {
-      var ui = jQuery.xRayUI({eventSource: document});
-      window.webxrayUI = ui;
-      loadPlugins(function() {
-        var welcomeMsg = $("<div></div>");
-        welcomeMsg.html(Localized.get("default-html"));
-        jQuery.transparentMessage(welcomeMsg);
+    MAINSTART();
 
-        ui.start();
-        Webxray.triggerWhenLoaded(ui);
-        ui.on('quit', function() {
-          ui.persistence.saveHistoryToDOM();
-          $(document).trigger('unload');
-          delete window.webxrayUI;
-        });
-        $(document).unload(function() {
-          ui.unload();
-          removeOnUnload.remove();
+    function MAINSTART() {
+      console.log("MAIN START");
+      if (window.console && console.log) {
+        console.log("Initializing Web X-Ray Goggles built on " +
+                    buildMetadata.date + " (commit " +
+                    buildMetadata.commit + ").");
+      }
+
+      window.parent.postMessage("Hi Parent!", '*');
+
+
+      loadPrerequisites(function() {
+
+        // Add pcbfy components.css
+        $("head link[rel='stylesheet']").last().after("<link rel='stylesheet' href="+baseURI+"/pcbfy/components.css>");
+
+        // Start webxray ui
+        var ui = jQuery.xRayUI({eventSource: document});
+        window.webxrayUI = ui;
+        loadPlugins(function() {
+          // var welcomeMsg = $("<div></div>");
+          // welcomeMsg.html("default-html");
+          // jQuery.transparentMessage(welcomeMsg);
+
+          ui.start();
+          Webxray.triggerWhenLoaded(ui);
+          ui.on('quit', function() {
+            $(document).trigger('unload');
+            delete window.webxrayUI;
+          });
+          $(document).unload(function() {
+            ui.unload();
+            removeOnUnload.remove();
+          });
+
         });
       });
+
+    // END MAIN START
+    }
+
+    function stopWebxray () {
+      $(document).trigger('unload');
+      //delete window.webxrayUI;
+      console.log("UNLOADING WEBXRAY");
+    }
+
+
+    // Recieve outer iframe messages
+    window.addEventListener('message', function onMessage(event) {
+      var data = JSON.parse(event.data);
+
+      if (data.type == "screen_set") {
+        if (data.id != null) {
+          // Save previeous body
+          this.previouscss_g = $('body').clone();
+
+          // Remove everything except screen
+          $('body > :not(#'+data.id+')').hide(); //hide all nodes directly under the body
+          $('#myDiv').appendTo('body');
+          // Remove any overlays
+          window.webxrayUI.clickfocusedOverlay.overlayhide();
+          window.webxrayUI.focusedOverlay.overlayhide();
+        }
+      } else if (data.type == "pcb_set") {
+        // Remove any overlays
+        //window.webxrayUI.focusedOverlay.overlayhide();
+        //window.webxrayUI.clickfocusedOverlay.overlayhide();
+
+        if (!jQuery.isEmptyObject(data.components)) {
+          console.log(data.components);
+
+          // Set pcb to true to revert website if call to unset.
+          pcbset_g = true;
+
+          // Add 1mm div to be able to convert px to mm
+          if (!$("#px_to_mm").length) {
+            document.body.innerHTML += '<div id="px_to_mm" style="height:1mm;display:none"></div>';
+          }
+          var onePixelTomm = $("#px_to_mm").height();
+
+
+          // Hide all software components and leave only hardware components
+          var hdwidList = "";
+          for (var id in data.components) {
+            //Add Id to Hdw Id List
+            if (hdwidList == "") {
+              hdwidList = hdwidList+"#"+id;
+            } else {
+              hdwidList = hdwidList+", #"+id;
+            }
+          }
+          console.log("HDWIDLIST: "+hdwidList);
+          $('body > :not('+hdwidList+')').hide();
+
+
+
+          // Add pcb-top div
+          $("body > *").wrapAll( "<div id='pcb-top'></div>" );
+
+          // Add Resizable option to pcb-top.
+          $('#pcb-top').css("resize", "both");
+          $('#pcb-top').css("overflow", "auto");
+
+          // Get PCB Resize events:
+          let observer = new MutationObserver(function(mutations) {
+            var pcbtopwidth = parseFloat($('#pcb-top').css("width"))/onePixelTomm;
+            var pcbtopheight = parseFloat($('#pcb-top').css("height"))/onePixelTomm;
+
+            window.parent.postMessage(JSON.stringify({
+                func: "pcb_resize",
+                pcbtopwidth: pcbtopwidth,
+                pcbtopheight: pcbtopheight
+            }), "*");
+            // TODO update PCB width and height box
+          });
+          let child = document.querySelector('#pcb-top');
+          observer.observe(child, { attributes: true });
+
+          // Add components defined class
+          var maxPxHeight = 0;
+          var maxPxWidth = 0;
+          for (var id in data.components) {
+            if (data.components[id]["type"] == "screens") {
+              // Component is a screen // Add component class / look and dimensions
+              $('#'+id).addClass("physical-screen");
+              // Add a vessel
+              $('#'+id).css("border","15px solid black");
+              // Add vessel rounded corners
+              $('#'+id).css("border-radius","10px");
+            } else {
+              // Component is a electronic component // Add component class / look and dimensions
+              $('#'+id).addClass(data.components[id]["type"]+"-"+data.components[id]["pwc"]).text("");
+              // Add Background-image
+              $('#'+id).css("background-image", "url("+baseURI+"/pcbfy/images/"+data.components[id]["image"]+")");
+              // Add Background-size
+              $('#'+id).css("background-size", data.components[id]["width"]+" "+data.components[id]["height"]);
+            }
+
+            // Add Height and Width
+            $('#'+id).css("height", data.components[id]["height"]);
+            $('#'+id).css("width", data.components[id]["width"]);
+            // Make it draggable
+            $('#'+id).mousedown(function(e) {
+
+              // Send Commponent id
+              window.parent.postMessage(JSON.stringify({
+                func: "pcb_dragged_component_id",
+                id: e.target.id
+              }), "*");
+
+              window.my_dragging = {};
+              my_dragging.pageX0 = e.pageX;
+              my_dragging.pageY0 = e.pageY;
+              my_dragging.elem = this;
+              my_dragging.offset0 = $(this).offset();
+              function handle_dragging(e){
+                  var left = my_dragging.offset0.left + (e.pageX - my_dragging.pageX0);
+                  var top = my_dragging.offset0.top + (e.pageY - my_dragging.pageY0);
+                  $(my_dragging.elem)
+                  .offset({top: top, left: left});
+              }
+              function handle_mouseup(e){
+                  $('body')
+                  .off('mousemove', handle_dragging)
+                  .off('mouseup', handle_mouseup);
+              }
+              $('body')
+              .on('mouseup', handle_mouseup)
+              .on('mousemove', handle_dragging);
+            });
+            
+
+            // Get Maximum component width and heigth to set pcb size accordingly later
+            // Something wrong with offset top(), not accurate.
+            var compHeight = + $('#'+id).height() + $('#'+id).offset().top;
+            //console.log("Height, Pos:", $('#'+id).height(), $('#'+id).offset().top);
+            //console.log("CompHeight:", compHeight);
+            if ( compHeight >  maxPxHeight) {
+              maxPxHeight = compHeight;
+            }
+            var compWidth = $('#'+id).width() + $('#'+id).offset().left;
+            if ( compWidth >  maxPxWidth) {
+              maxPxWidth = compWidth;
+            }
+
+            // End of loop
+          }
+
+          // Set PCB Height and Width of maximum component.
+          $("#pcb-top").css("height", maxPxHeight);
+          $("#pcb-top").css("width", maxPxWidth+40);
+
+
+          // Stop webxray and webxray html overlay
+          stopWebxray();
+          $(".webxray-overlay").remove();
+        }
+        
+      } else if (data.type == "pcb_new_height") {
+
+        // Add 1mm div to be able to convert px to mm
+        if (!$("#px_to_mm").length) {
+          document.body.innerHTML += '<div id="px_to_mm" style="height:1mm;display:none"></div>';
+        }
+        var onePixelTomm = $("#px_to_mm").height();
+
+        console.log(onePixelTomm);
+        $("#pcb-top").css("height", data.value+"mm");
+
+        // Make Correction for mm error
+        var error = 0;
+        for (var i=0; i<2; i++) {
+          var realValue = parseFloat($("#pcb-top").css("height"))/onePixelTomm;
+          //console.log("RealValue:", realValue);
+          error = (parseFloat(data.value) - realValue) + error;
+          //console.log("Error:", error);
+          var correctionValue = parseFloat(data.value)+error;
+          //console.log("Correction:", correctionValue);
+          $("#pcb-top").css("height", correctionValue+"mm");
+        }
+        
+
+      } else if (data.type == "pcb_new_width") {
+
+        // Add 1mm div to be able to convert px to mm
+        if (!$("#px_to_mm").length) {
+          document.body.innerHTML += '<div id="px_to_mm" style="height:1mm;display:none"></div>';
+        }
+        var onePixelTomm = $("#px_to_mm").height();
+
+        console.log(onePixelTomm);
+        $("#pcb-top").css("width", data.value+"mm");
+
+        // Make Correction for mm error
+        var error = 0;
+        for (var i=0; i<2; i++) {
+          var realValue = parseFloat($("#pcb-top").css("width"))/onePixelTomm;
+          //console.log("RealValue:", realValue);
+          error = (parseFloat(data.value) - realValue) + error;
+          //console.log("Error:", error);
+          var correctionValue = parseFloat(data.value)+error;
+          //console.log("Correction:", correctionValue);
+          $("#pcb-top").css("width", correctionValue+"mm");
+        }
+
+      } else if (data.type == "unset") {
+        console.log("Call to unset", this.previouscss_g);
+        if (this.previouscss_g != null) {
+          console.log("Previews CSS is not null");
+          // Restore body
+          $('body').remove();
+          $('html').append(this.previouscss_g);
+          this.previouscss_g = null;
+          // Restore overlays
+          window.webxrayUI.clickfocusedOverlay.overlayshow();
+          window.webxrayUI.focusedOverlay.overlayshow();
+          // Start Webxray again
+          //MAINSTART(false); 
+        } else if(pcbset_g == true) {
+          // Reload webpage
+          document.location.reload(true);
+          pcbset_g = false;
+        }
+      }
+      
     });
+
+
   });
 })(jQuery);
 // Make sure we don't conflict in any way with our parent window.
