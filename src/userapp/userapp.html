@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Youtube Physical Player</title>
+
+
+  <link rel="stylesheet" href="index.css">
+  <script src="./jquery-3.3.1.min.js"></script>
+
+  <style>
+    button:disabled {
+      color: initial;
+    }
+  </style>
+
+</head>
+<body>
+
+    <div id="video-placeholder"></div>
+    <button onclick="playPause()" id="playPause">Play/Pause</button>
+    <button onclick="prev()" id="prev">Prev</button>
+    <button onclick="next()" id="next">Next</button>
+    <input type="range" min="0" max="100" step="1" value="10" id="slider">
+    <input type="range" min="0" max="10" step="1" value="0" id="progressBar">
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+
+      var player = null;
+      var playerState = null;
+
+      function onYouTubeIframeAPIReady() {
+        player = new YT.Player('video-placeholder', {
+          width: 600,
+          height: 475,
+          videoId: 'DCLrDnZO_0E',
+          playerVars: {
+            rel: 0,
+            color: 'white',
+            playlist: 'dQiNVk_u0po, IvUU8joBb1Q,S-m-CHigCY4,HpaHvUOk3F0'
+          },
+          events: {
+            onReady: youtubeInit,
+            onStateChange: onPlayerStateChange
+          }
+        });
+      }
+
+      function youtubeInit () {
+        console.log("Youtube Init");
+        var progressBar = document.getElementById("progressBar");
+        progressBar.max = player.getDuration();
+        playerState = YT.PlayerState.PAUSED;
+        player.unMute(); // unMute by Defalut
+
+        setInterval(function () {
+          updateProgressBar();
+        }, 1000);
+      }
+
+      function updateProgressBar() {
+        var progressBar = document.getElementById("progressBar");
+        progressBar.setAttribute("value", `${player.getCurrentTime()}`);
+        // Check this chrome error, this way it doesn't trigger attribute-change
+        // progressBar.value = player.getCurrentTime();
+      }
+
+      function formatTime(time){
+        time = Math.round(time);
+        var minutes = Math.floor(time / 60),
+        seconds = time - minutes * 60;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+        return minutes + ":" + seconds;
+      }
+
+      function onPlayerStateChange (event) {
+        playerState = event.data;
+        // TODO: Add fullscreen when playing
+        if (playerState == YT.PlayerState.PLAYING) {
+          progressBar.max = player.getDuration();
+        }
+      }
+
+      function playPause () {
+        if (playerState == YT.PlayerState.PAUSED) {
+          player.playVideo();
+        } else {
+          player.pauseVideo();
+        }
+      }
+
+      function prev () {
+        player.previousVideo();
+      }
+
+      function next () {
+        player.nextVideo();
+      }
+
+      var slider = document.getElementById("slider");
+      slider.oninput = function() {
+        if (typeof player.setVolume === 'function' && player != null) {
+          player.setVolume(this.value);
+        }
+      }
+
+      var progressBar = document.getElementById("progressBar");
+      progressBar.oninput = function() {
+        if (typeof player.seekTo === 'function' && player != null) {
+          player.seekTo(this.value);
+        }
+      }
+
+      window.onmouseover=function(e) {
+        // console.log(e.target.tagName);
+        // console.log("ID:"+e.target.id);
+        // console.log(e.target.type);
+        // console.log(e.target.className);
+        if ($(e.target).is('html, body')) {
+          console.log("Mose over html or body");
+        } else {
+          console.log("MOUSE IN:"+e.target.outerHTML);
+          //e.target.disabled = true;
+
+          // Set draggable item to true.
+          $('#'+e.target.id).attr('draggable', 'true');
+        }
+
+      };
+
+      window.onmouseout=function(e) {
+        if ($(e.target).is('html, body')) {
+          console.log("Mose over html or body");
+        } else {
+          console.log("MOUSE OUT:"+e.target.outerHTML);
+        }
+      }
+
+      window.onmousedown =function(e) {
+        if ($(e.target).is('html, body')) {
+          console.log("Mose click on html or body");
+        } else {
+          console.log("MOUSE CLICK:"+e.target.outerHTML);
+
+          // Send message to parent containing the element's info.
+          window.parent.postMessage(JSON.stringify({
+            func: "element",
+            tagName: e.target.tagName,
+            id: e.target.id,
+            type: e.target.type,
+            className: e.target.className,
+            outerHTML: e.target.outerHTML
+          }), "*");
+
+          // // Make it draggable
+          // window.my_dragging = {};
+          // my_dragging.pageX0 = e.pageX;
+          // my_dragging.pageY0 = e.pageY;
+          // my_dragging.elem = this;
+          // my_dragging.offset0 = $(this).offset();
+          // function handle_dragging(e){
+          //     var left = my_dragging.offset0.left + (e.pageX - my_dragging.pageX0);
+          //     var top = my_dragging.offset0.top + (e.pageY - my_dragging.pageY0);
+          //     $(my_dragging.elem)
+          //     .offset({top: top, left: left});
+          // }
+          // function handle_mouseup(e){
+          //     $('body')
+          //     .off('mousemove', handle_dragging)
+          //     .off('mouseup', handle_mouseup);
+          // }
+          // $('body')
+          // .on('mouseup', handle_mouseup)
+          // .on('mousemove', handle_dragging);
+
+        }
+      };
+
+      // window.onmouseup =function(e) {
+      //   $(".modal").css("pointer-events", "none");
+      // }
+
+      // var form = document.getElementById("myForm");
+      // var elements = form.elements;
+      // for (var i = 0, len = elements.length; i < len; ++i) {
+      //   elements[i].readOnly = true;
+      // }
+
+    </script>
+</body>
+</html>
