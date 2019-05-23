@@ -9,12 +9,6 @@
   <link rel="stylesheet" href="index.css">
   <script src="./jquery-3.3.1.min.js"></script>
 
-  <style>
-    button:disabled {
-      color: initial;
-    }
-  </style>
-
 </head>
 <body>
 
@@ -114,46 +108,46 @@
         }
       }
 
-      window.onmouseover=function(e) {
-        // console.log(e.target.tagName);
-        // console.log("ID:"+e.target.id);
-        // console.log(e.target.type);
-        // console.log(e.target.className);
-        if ($(e.target).is('html, body')) {
-          console.log("Mose over html or body");
-        } else {
-          console.log("MOUSE IN:"+e.target.outerHTML);
-          //e.target.disabled = true;
-
-          // Set draggable item to true.
-          $('#'+e.target.id).attr('draggable', 'true');
-        }
-
-      };
-
-      window.onmouseout=function(e) {
-        if ($(e.target).is('html, body')) {
-          console.log("Mose over html or body");
-        } else {
-          console.log("MOUSE OUT:"+e.target.outerHTML);
-        }
-      }
-
-      window.onmousedown =function(e) {
-        if ($(e.target).is('html, body')) {
-          console.log("Mose click on html or body");
-        } else {
-          console.log("MOUSE CLICK:"+e.target.outerHTML);
-
-          // Send message to parent containing the element's info.
-          window.parent.postMessage(JSON.stringify({
-            func: "element",
-            tagName: e.target.tagName,
-            id: e.target.id,
-            type: e.target.type,
-            className: e.target.className,
-            outerHTML: e.target.outerHTML
-          }), "*");
+      // window.onmouseover=function(e) {
+      //   // console.log(e.target.tagName);
+      //   // console.log("ID:"+e.target.id);
+      //   // console.log(e.target.type);
+      //   // console.log(e.target.className);
+      //   if ($(e.target).is('html, body')) {
+      //     console.log("Mose over html or body");
+      //   } else {
+      //     console.log("MOUSE IN:"+e.target.outerHTML);
+      //     //e.target.disabled = true;
+      //
+      //     // Set draggable item to true.
+      //     $('#'+e.target.id).attr('draggable', 'true');
+      //   }
+      //
+      // };
+      //
+      // window.onmouseout=function(e) {
+      //   if ($(e.target).is('html, body')) {
+      //     console.log("Mose over html or body");
+      //   } else {
+      //     console.log("MOUSE OUT:"+e.target.outerHTML);
+      //   }
+      // }
+      //
+      // window.onmousedown =function(e) {
+      //   if ($(e.target).is('html, body')) {
+      //     console.log("Mose click on html or body");
+      //   } else {
+      //     console.log("MOUSE CLICK:"+e.target.outerHTML);
+      //
+      //     // Send message to parent containing the element's info.
+      //     window.parent.postMessage(JSON.stringify({
+      //       func: "element",
+      //       tagName: e.target.tagName,
+      //       id: e.target.id,
+      //       type: e.target.type,
+      //       className: e.target.className,
+      //       outerHTML: e.target.outerHTML
+      //     }), "*");
 
           // // Make it draggable
           // window.my_dragging = {};
@@ -176,8 +170,8 @@
           // .on('mouseup', handle_mouseup)
           // .on('mousemove', handle_dragging);
 
-        }
-      };
+      //   }
+      // };
 
       // window.onmouseup =function(e) {
       //   $(".modal").css("pointer-events", "none");
