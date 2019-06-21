@@ -1,8 +1,6 @@
 <!--
 // Tomorrow:
 // TODO Add test click for slider and screen components
-// TODO Add visibility hidden and change id (Test delete)
-// $('#'+e.target.id).css("visibility", "hidden");
 -->
 
 <template>
@@ -44,14 +42,15 @@
     <!-- #ToolBar Content -->
     <v-toolbar color="indigo" dark fixed app>
       <v-toolbar-side-icon class="vbtn" @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-      <v-toolbar-title>Applian??zer</v-toolbar-title>
+      <v-toolbar-title class="hidden-sm-and-down">Applian??zer</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-toolbar-items class="hidden-sm-and-down">
-      <v-btn class="vbtn" flat @click="runEnviroment()">{{runStopString}}</v-btn>
-      <v-btn class="vbtn" flat @click="testClick()">TEST</v-btn>
-      <v-btn class="vbtn" flat @click="testClick2()">TEST2</v-btn>
-      <v-btn class="vbtn" flat @click="testClick3()">TEST2</v-btn>
-    </v-toolbar-items>
+      <v-toolbar-items>
+        <v-btn class="vbtn" flat @click="runEnviroment()">{{runStopString}}</v-btn>
+        <v-btn class="vbtn" flat @click="testClick()">TEST</v-btn>
+        <v-btn class="vbtn" flat @click="testClick2()">TEST2</v-btn>
+        <v-btn class="vbtn" flat @click="testClick3()">TEST3</v-btn>
+         <v-btn class="vbtn" flat @click="testClick4()">TEST4</v-btn>
+      </v-toolbar-items>
     </v-toolbar>
 
     <!-- #Main Content -->
@@ -77,7 +76,7 @@
 
                     <div class="filler" id="PCB" ref="pcbcontainer" :style="{filter: pcbBrightness}"
                         ondragover="event.preventDefault()" :ondrop="drop">
-                      <div>PCB</div>
+                      <div style="color:white"><strong>PCB</strong></div>
 
                       <!-- <div id="ADIV" style="display:inline-block;border: 3px solid rgba(50, 50, 50, 0.2);border-radius: 5px;">
                         <div class="protector" :style="{ display: protectorStatus }"></div> -->
@@ -137,7 +136,7 @@ import Splitpanes from 'splitpanes';
 import 'splitpanes/dist/splitpanes.css';
 import ElectronicComponent from './components/ElectronicComponent.vue';
 import $ from 'jquery';
-import 'jquery-ui/ui/widgets/draggable'
+import 'jquery-ui/ui/widgets/draggable';
 
 
 export default {
@@ -155,8 +154,8 @@ export default {
         panelHeight: 0,
         panelWidth: 0,
         pcbPanelHeight: '100%',
-        pcbHeight: 200,
-        pcbWidth: 200,
+        pcbWidth: 250,
+        pcbHeight: 300,
         pcbBrightness: 'brightness(1)',
         drawer: false,
         componentSelected: 0,
@@ -172,11 +171,13 @@ export default {
         eComponentList: null,
         eComponentImages: [],
         eComponentSaved: {},
+        eAvailableComponents: [],
         menu_show: false,
         menu_y: 0,
         menu_x: 0,
+        iframeOnScreen : false,
         menu_items: [
-          { title: 'Delete' }
+          { title: 'Remove' }
         ]
   }),
   mounted: function () {
@@ -185,20 +186,23 @@ export default {
     this.eComponentList = {
             "submit": {
               0: {
-                "component": "physical-button1",
-                "image":"buttons/1.png",
+                "component": "physical-button-red",
+                "partImage": "buttons/tactile-button-round-red.jpg",
+                "image":"buttons/red-round-button.2D.svg",
                 "height": "10mm",
                 "width": "10mm"
               },
               1: {
-                "component": "physical-button2",
-                "image":"buttons/2.png",
+                "component": "physical-button-blue",
+                "partImage": "buttons/tactile-button-round-blue.jpg",
+                "image":"buttons/blue-round-button.2D.svg",
                 "height": "20mm",
                 "width": "20mm"
               },
               2: {
-                "component": "physical-button3",
-                "image":"buttons/3.png",
+                "component": "physical-button-green",
+                "partImage": "buttons/tactile-button-round-green.jpg",
+                "image":"buttons/green-round-button.2D.svg",
                 "height": "30mm",
                 "width": "30mm"
               }
@@ -220,15 +224,17 @@ export default {
             "screens" : {
               0: {
                 "component": "utronics3-5inch",
-                "image":"utronics_3.5inch.png",
-                "height": "80mm",
-                "width": "80mm"
+                "image":"",
+                "partImage":"screens/utronics_3.5inch.png",
+                "height": "50mm",
+                "width": "50mm"
               },
               1: {
                 "comopnent" : "geeekpi5inch",
-                "image":"geeekpi_5inch.png",
-                "height": "90mm",
-                "width": "90mm"
+                "image":"",
+                "partImage":"screens/geeekpi_5inch.png",
+                "height": "60mm",
+                "width": "60mm"
               }
             }
           }
@@ -239,8 +245,30 @@ export default {
 
     document.addEventListener("dragstart", function( event ) {
       console.log("DRAGSTART", event.target);
-      event.dataTransfer.setData("id", event.target.id);
-      event.dataTransfer.setData("outerHTML", event.target.outerHTML);
+      // if it's a frame send only the children content data
+
+      if($(event.target).hasClass('draggable_element')) {
+        var e_id = $(event.target).children()[0].id;
+        var e_outerHTML = $(event.target).children()[0].outerHTML;
+        var e_type = $(event.target).children()[0].type;
+        var e_tagName = $(event.target).children()[0].tagName;
+
+        if (e_tagName == "IFRAME") {
+          e_type = "screens";
+          $("iframe").css("pointer-events", "none");
+        }
+
+        event.dataTransfer.setData("id", e_id);
+        event.dataTransfer.setData("outerHTML", e_outerHTML);
+        event.dataTransfer.setData("type", e_type);
+        
+        console.log("startID:"+e_id);
+        console.log("startOuterHTML:",e_outerHTML);
+        console.log("startTYPE:"+e_type);
+      } else {
+        console.warn("WARNING, THIS ELEMENT CAN NOT BE A COMPONENT");
+      }
+
     }, false);
 
     document.addEventListener("dragenter", ( event ) =>  {
@@ -264,16 +292,27 @@ export default {
       console.log("DROPED IN", event.target);
       var dataID = event.dataTransfer.getData("id");
       var dataOuterHTML = event.dataTransfer.getData("outerHTML");
-      console.log("data:"+dataID);
-      console.log("data:"+dataOuterHTML);
+      var dataType = event.dataTransfer.getData("type");
 
       if (event.target.id == "PCB") {
         this.pcbBrightness = 'brightness(1)';
-        // TODO Remove component from user webpage
-        $("#"+dataID).remove();
-        // ADD soft element to PCB
-        this.addNewComponent(dataID, "submit",
+
+        // // ADD soft element to PCB
+        // if (dataID == "draggable_iframe") {
+        //   console.log("iTSA DRAGG")
+        //   dataID = $('#draggable_iframe').children().attr("id");
+        //   dataOuterHTML = $('#draggable_iframe').children()[0].outerHTML
+        //   dataType = "screens";
+        //   this.iframeOnScreen = true;
+        //   $('#draggable_iframe').children().unwrap();
+        // } 
+
+        console.log("dataID:"+dataID);
+        console.log("dataOuterHTML:"+dataOuterHTML);
+        console.log("dataTYPE:"+dataType);
+        this.addNewComponent(dataID, dataType,
               dataOuterHTML);
+
       }
 
     }, false);
@@ -307,6 +346,7 @@ export default {
     panelResize(resize) {
       console.log(resize);
     },
+    // When a component is clicked from the list.
     componentClick(selectedNumber) {
       if (this.currentComponentId != 'None'|| this.currentComponentType != 'None') {
         this.componentSelected = parseInt(selectedNumber);
@@ -323,13 +363,17 @@ export default {
         console.log("Component not selected");
       }
     },
+    // Changes the comopnent in the PCB and in the directory.
     setNewComponentSelection(compId, compType, newNumber){
       // Get new image path
       var image = this.eComponentList[compType][newNumber].image;
       var height = this.eComponentList[compType][newNumber].height;
       var width = this.eComponentList[compType][newNumber].width;
-      // Change the image
-      $("#"+compId).css("background-image", 'url(\'' + require('./assets/'+image) + '\')');
+
+      if (image != "") {
+        // Change the image
+        $("#"+compId).css("background-image", 'url(\'' + require('./assets/'+image) + '\')');
+      }
       // Change size
       $("#"+compId).css("height", height);
       $("#"+compId).css("width", width);
@@ -347,17 +391,38 @@ export default {
       return require('./assets/'+item);
     },
     runEnviroment() {
-      console.log("Run enviroment");
+      
       if (this.runStop == false) {
+        console.log("Running MODE");
+        // Running mode
         this.runStop = true;
         this.runStopString = "STOP";
-        // Jquery
+        // Remove protector from elements in PCB
         $(".protector").css("display", "none");
+        // Set iframe events to all
+        $("iframe").css("pointer-events", "all");
+        // For all available comopnents, remove their draggable class
+        for (var ele of this.eAvailableComponents) {
+          console.log(ele);
+          $('#'+ele+'_drag').removeClass('draggable_element');
+          $('#'+ele+'_drag').attr("draggable", "false");
+        }
       } else {
+        console.log("Edit MODE");
+        // Edit mode
         this.runStop = false;
         this.runStopString = "RUN";
-        // Jquery
+        // Add protector from elements in PCB
         $(".protector").css("display", "block");
+        // Set iframe events to none
+        $("iframe").css("pointer-events", "all");
+        // For all available comopnents, add their draggable class
+        for (var ele of this.eAvailableComponents) {
+          console.log(ele);
+          $('#'+ele+'_drag').addClass('draggable_element');
+          $('#'+ele+'_drag').attr("draggable", "true");
+        }
+
       }
 
       // // TEST ADDING DRAGGABEL COMPONENTS
@@ -392,7 +457,26 @@ export default {
       this.addNewComponent("playPause2", "submit",
             '<button onclick="console.log(\'Button Click\')" id="playPause2"></button>');
     },
+    testClick4() {
+      // this.addNewComponent("video-placeholder", "screens",
+      //       '<iframe id="video-placeholder" frameborder="0" allowfullscreen="1" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" title="YouTube video player" src="https://www.youtube.com/embed/DCLrDnZO_0E?rel=0&amp;color=white&amp;playlist=dQiNVk_u0po%2C%20IvUU8joBb1Q%2CS-m-CHigCY4%2CHpaHvUOk3F0&amp;enablejsapi=1&amp;origin=http%3A%2F%2Flocalhost%3A8080&amp;widgetid=1" draggable="true"></iframe>');
+      //var iframeBody = document.getElementById('video-placeholder').contentWindow.document.body.innerHTML; //$('#video-placeholder').contents();
+      //console.log(iframeBody);
+
+    },
+    // Adds a new component to the PCB
     addNewComponent(thisId, thisType, thisHtml) {
+
+      // // Hide the soft comonent in the user webpage
+      // $('#'+thisId).css("visibility", "hidden");
+      // // Change the id name of the user webpage
+      // $('#'+thisId).attr("id",thisId+"_edit");
+
+      // Get element data to save later:
+      var thisWidth = $('#'+thisId).outerWidth();
+      var thisHeight = $('#'+thisId).outerHeight();
+      var thisInnerHTML = $('#'+thisId).html();
+
       // Generate unique id:
       var elementId = "element_"+this.uniqueId;
       this.uniqueId++;
@@ -406,10 +490,13 @@ export default {
       // Create protector
       $("#"+elementId).append('<div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div>');
       // Get user web element data // TODO
-      $("#"+elementId).append(thisHtml);
+      $("#"+thisId).detach().appendTo("#"+elementId)
+
       // Add component element style class (TODO: select class accodign to the type)
       if (thisType == "submit") {
         $("#"+thisId).addClass("submit-physical-button");
+      } else if (thisType == "screens") {
+        $("#"+thisId).addClass("physical-screen");
       } else {
         console.error("Unknown element type");
       }
@@ -419,6 +506,8 @@ export default {
 
       // Make it draggable
       $("#"+elementId).draggable({ containment: "#PCBBoard", scroll: false });
+      
+      // When the component in the PCB is clicked do:
       $("#"+elementId).mousedown((element) => {
         if (this.runStop == false) {
           console.log(this.mouseoverComponent);
@@ -426,15 +515,22 @@ export default {
           // Get current ID
           this.currentComponentId = ele.id;
           // Get current Type
-          this.currentComponentType = ele.type;
+          if (ele.type == undefined) {
+            // If type is not detected then is a screen
+            this.currentComponentType = "screens";
+          } else {
+            this.currentComponentType = ele.type;
+          }
+          
+          console.log("Eleemnt TYPE:"+this.currentComponentType);
 
           // Pupulate Component List Images
           this.eComponentImages = []; // Clear list
           var type = this.eComponentSaved[this.currentComponentId].type; // Get component type
           var elements = this.eComponentList[type]; // Get all components of the selected type
           for (var i in elements) {
-            var image = elements[i].image;
-            this.eComponentImages.push(image);
+            var partImage = elements[i].partImage;
+            this.eComponentImages.push(partImage);
           }
 
           // Update component selected for this element
@@ -470,7 +566,10 @@ export default {
                   "elementId": elementId,
                   "type": thisType,
                   "componentSelected": selectedNumber,
-                  "html": thisHtml
+                  "html": thisHtml,
+                  "width": thisWidth,
+                  "height": thisHeight,
+                  "innerHTML": thisInnerHTML
                 };
 
       // Apply style settings for new component (TODO: get Id and type)
@@ -480,29 +579,59 @@ export default {
     menuItemClick(item) {
       console.log("Item Cliked"+item);
 
-      // TODO: delete item
+      // Get data
+      var elementId = this.eComponentSaved[this.currentComponentId].elementId;
+      var e_type = this.eComponentSaved[this.currentComponentId].type;
+      // var e_width = this.eComponentSaved[this.currentComponentId].width;
+      // var e_height = this.eComponentSaved[this.currentComponentId].height;
+      var e_innerHTML = this.eComponentSaved[this.currentComponentId].innerHTML;
+
+      // Delete component id key from dictionary
+      delete this.eComponentSaved[this.currentComponentId];
+
+      // Restore user soft component id and visibility
+      $('#'+this.currentComponentId).detach().appendTo('#'+this.currentComponentId+'_drag')
+
+      // Remove type class
+      if (e_type == "submit") {
+        $("#"+this.currentComponentId).removeClass("submit-physical-button");
+      } else if (e_type == "screens") {
+        $("#"+this.currentComponentId).removeClass("physical-screen");
+      } else {
+        console.error("Unknown element type");
+      } 
+
+      // Restore data
+      $("#"+this.currentComponentId).css("background-image", "");
+      $("#"+this.currentComponentId).css("height", "");
+      $("#"+this.currentComponentId).css("width", "");
+      $("#"+this.currentComponentId).html(e_innerHTML);
 
       // Hide Component Selection List
       this.componentListDisplay = 'none';
       this.pcbPanelHeight = '100%';
+
+      // Remove rest of the comoponent
+      $('#'+elementId).remove();
     },
     onGlobalClick(e) {
       //console.log("Global: ", $(e.target.parentElement).hasClass('noGlobalTrigger'));
       //console.log("Parent:"+ targetParent.className);
+
+      // On a Global clikc, remove the border from the components selected.
       var targetParent = e.target.parentElement;
       if (!$(targetParent).hasClass('noGlobalTrigger')) {
-
         // Unselect components
         for (var key in this.eComponentSaved) {
             // Remove selection border
             $("#"+this.eComponentSaved[key].elementId).css("border" , "");
         }
-
         // Hide Component Selection List
         this.componentListDisplay = 'none';
         this.pcbPanelHeight = '100%';
       }
     },
+    // Make user webpage elements draggable
     webPageMouseOver(e) {
         console.log(e.target.tagName);
         console.log("ID:"+e.target.id);
@@ -514,14 +643,28 @@ export default {
           console.log("Element has childrens");
         } else {
           // If target has ID
-          if ($(e.target).attr('id')) {
+          if ($(e.target).attr('id') && 
+            !$(e.target).parent().hasClass('dragy') &&
+            !$(e.target).hasClass('dragy')) {
             console.log("MOUSE IN:"+e.target.outerHTML);
             if (this.runStopString == 'RUN') {
-              // Set draggable item to true if in edit mode
-              $('#'+e.target.id).attr('draggable', 'true');
+                // Only executed once (Execute at init??)
+                // Wrapp iframe element, we only need this once
+                var e_width = $('#'+e.target.id).outerWidth()+6;
+                var e_height = $('#'+e.target.id).outerHeight()+6;        
+                $('#'+e.target.id).wrap(
+                  `<div id="${e.target.id}_drag" class="dragy draggable_element" 
+                    draggable="true" style="width:${e_width}px;height:${e_height}px;display:inline-block;">
+                    </div>`);
+
+                // Add id to the available components that can ve moved
+                this.eAvailableComponents.push(e.target.id);
+
             } else {
               // Set draggable item to true if running demo
               $('#'+e.target.id).attr('draggable', 'false');
+              //$('#'+e.target.id).css('pointer-events', 'auto');
+              //$('#'+e.target.id).draggable( 'disable' );
             }
 
           }
@@ -657,6 +800,24 @@ export default {
   border: 4px solid black;
 }
 
+/* Make iframe draggable */
+.draggable_element {
+  background: transparent;
+	position: relative;/*parent must have positioning*/
+  border-color:rgb(174, 213, 129);
+  border-style: dotted;
+}
+
+.draggable_element:after {
+  content: "";
+	display: block;
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+}
+
 /*
 Vuetify removed styles
 */
@@ -679,6 +840,7 @@ Component Styles
 
 /* # Submit Style */
 .submit-physical-button {
+ display: block;
  background-color: transparent;
  background-size: contain;
  border-style: none;
@@ -693,6 +855,7 @@ Component Styles
 
 /* # Range Style */
 .range-physical-slider {
+  display: block;
   -webkit-appearance: none;
   /* background-image: url('~@/assets/buttons/1.png'); */
   background-size: contain;
@@ -709,6 +872,13 @@ Component Styles
 }
 .range-physical-slider::-webkit-slider-thumb {
   margin-top: -9px;
+}
+
+/* # Physical Screen */
+.physical-screen {
+ display: block;
+ border:10px solid rgb(17, 17, 17);
+ border-radius: 15px;
 }
 
 </style>

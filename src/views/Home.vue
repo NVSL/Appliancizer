@@ -2,7 +2,7 @@
   <div class="home">
     <div id="video-placeholder"></div>
     <br>
-    <button onclick="playPause()" id="playPause">Play/Pause</button>
+      <button onclick="playPause()" id="playPause">Play/Pause</button>
     <button onclick="prev()" id="prev">Prev</button>
     <button onclick="next()" id="next">Next</button>
     <input type="range" min="0" max="100" step="1" value="10" id="slider">
@@ -33,6 +33,7 @@ export default {
     console.log("Mounted");
 
     window.onYouTubeIframeAPIReady = function() {
+      player = null;
       player = new YT.Player('video-placeholder', {
         width: '600',
         height: '475',
@@ -75,6 +76,7 @@ export default {
       return minutes + ":" + seconds;
     }
     function onPlayerStateChange (event) {
+      console.log("Player state changed");
       playerState = event.data;
       if (playerState == YT.PlayerState.PLAYING) {
         var progressBar = document.getElementById("progressBar");
@@ -84,10 +86,13 @@ export default {
       }
     }
     window.playPause = function() {
+      console.log("Button Click")
       if (playerState == YT.PlayerState.PAUSED) {
         player.playVideo();
+        playerState = YT.PlayerState.PLAYING;
       } else {
         player.pauseVideo();
+        playerState = YT.PlayerState.PAUSED;
       }
     }
     window.prev = function() {
@@ -115,6 +120,7 @@ export default {
 
 <style>
 #video-placeholder {
+  display: block;
   width: 100%;
 }
 

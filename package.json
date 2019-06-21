@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "expose-loader": "^0.7.5",
+    "html2canvas": "^1.0.0-rc.3",
     "jquery": "^3.4.1",
     "jquery-ui": "^1.12.1",
     "material-design-icons-iconfont": "^5.0.1",
