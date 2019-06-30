@@ -42,72 +42,96 @@
     <!-- #ToolBar Content -->
     <v-toolbar color="indigo" dark fixed app>
       <v-toolbar-side-icon class="vbtn" @click.stop="drawer = !drawer"></v-toolbar-side-icon>
-      <v-toolbar-title class="hidden-sm-and-down">Applian??zer</v-toolbar-title>
+      <v-toolbar-title class="hidden-sm-and-down">Appliancizer</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn class="vbtn" flat @click="runEnviroment()">{{runStopString}}</v-btn>
-        <v-btn class="vbtn" flat @click="testClick()">TEST</v-btn>
-        <v-btn class="vbtn" flat @click="testClick2()">TEST2</v-btn>
-        <v-btn class="vbtn" flat @click="testClick3()">TEST3</v-btn>
-         <v-btn class="vbtn" flat @click="testClick4()">TEST4</v-btn>
+        <v-tabs right slider-color="rgb(174, 213, 129)" color="indigo">
+          <v-tab @click="setEditMode()">
+            <v-btn class="vbtn" flat >
+              EDIT
+              <v-icon>edit</v-icon>
+            </v-btn>
+          </v-tab>
+          <v-tab @click="setRunMode()">
+            <v-btn class="vbtn" flat >
+              RUN
+              <v-icon>play_arrow</v-icon>
+            </v-btn>
+          </v-tab>
+        </v-tabs>
+        <!-- 
+        
+        <!-- <v-btn class="vbtn" flat @click="testClick()">TEST</v-btn> -->
       </v-toolbar-items>
     </v-toolbar>
 
     <!-- #Main Content -->
     <v-content>
       <v-container fluid fill-height>
-        <splitpanes class="default-theme"  @resize="panelResize($event)" watch-slots>
-            <span>
-              <div id="webpageContainer" @mouseover="webPageMouseOver($event)" @mouseout="webPageMouseOut($event)">
-                <router-view/>
-                <!-- Note: The thing below may work, just I need to change how the content is loaded -->
-                <!-- <object type="text/html" data="./userapp/userapp.html" style="width:100%; height:100%">
-                <p>backup content</p>
-                </object> -->
+        <v-layout row wrap>
+          <splitpanes class="default-theme" watch-slots>
+              <span :splitpanes-size="webpageContainerPaneSize">
+                <div id="webpageContainerProgressbar" class="text-xs-center">
+                  <v-progress-circular  color="rgb(174, 213, 129)" :size="50" indeterminate></v-progress-circular>
+                </div>
+                <div id="webpageContainer" @mouseover="webPageMouseOver($event)" @mouseout="webPageMouseOut($event)">
+                  <router-view/>
+                  <!-- Note: The thing below may work, just I need to change how the content is loaded -->
+                  <!-- <object type="text/html" data="./userapp/userapp.html" style="width:100%; height:100%">
+                  <p>backup content</p>
+                  </object> -->
 
-              </div>
+                </div>
+              </span>
+              <span>
+                <div id="PCBPanel" :style="{height: pcbPanelHeight}">
+                  <VueDragResize id="PCBBoard" class="noGlobalTrigger" :w="pcbWidth" :h="pcbHeight" :x="10" :y="10"
+                    :isDraggable="false" v-on:resizing="resize" :sticks="['mr', 'bm', 'br']">
+
+                      <div class="filler" id="PCB" ref="pcbcontainer" :style="{filter: pcbBrightness}"
+                          ondragover="event.preventDefault()">
+                      </div>
+
+                  </VueDragResize>
+                </div>
+                <!-- #Component Title -->
+                <v-card dark color="indigo" :style="{display: componentListDisplay}">
+                    <v-card-text class="subheading"><strong>Part Number: </strong> | <strong> Type: </strong> {{currentComponentType}} | <strong> ID: </strong> {{currentComponentId}}</v-card-text>
+                </v-card>
+                <!-- #List of Components -->
+                <v-layout row class="noGlobalTrigger" :style="{display: componentListDisplay}" justify-start>
+                  <v-flex class="noGlobalTrigger" xs2 v-for="(item, index) in eComponentImages">
+                    <v-img :key="index" @click="componentClick(index)"
+                    :src="getComponentsImg(item)"
+                    class="componentImages noGlobalTrigger"
+                    v-bind:class="{componentSelect: componentSelected === index}"
+                    ></v-img>
+                  </v-flex>
+                </v-layout>
             </span>
-            <span>
-              <div id="PCBPanel" :style="{height: pcbPanelHeight}">
-                <VueDragResize id="PCBBoard" class="noGlobalTrigger" :w="pcbWidth" :h="pcbHeight" :x="10" :y="10"
-                  :isDraggable="false" v-on:resizing="resize" :sticks="['mr', 'bm', 'br']">
-                <!-- <VueDragResize :isActive="true" :w="100" :h="100" :x="140" :y="30" v-on:resizing="resize" v-on:dragging="resize"> -->
-                    <!-- <div class="filler" style="background-color: rgb(174, 213, 129);" ondrop="drop(event)" ondragover="allowDrop(event)"> -->
-
-                    <div class="filler" id="PCB" ref="pcbcontainer" :style="{filter: pcbBrightness}"
-                        ondragover="event.preventDefault()" :ondrop="drop">
-                      <div style="color:white"><strong>PCB</strong></div>
-
-                      <!-- <div id="ADIV" style="display:inline-block;border: 3px solid rgba(50, 50, 50, 0.2);border-radius: 5px;">
-                        <div class="protector" :style="{ display: protectorStatus }"></div> -->
-                        <!-- <button onclick="console.log('Button Click')" id="playPause" class="submit-physical-button"></button> -->
-                        <!-- <input type="range" min="0" max="10" step="1" value="0" id="progressBar" class="range-physical-slider"> -->
-                        <!-- class="range-physical-slider" -->
-                      <!-- </div> -->
-
-
-                    </div>
-
-                </VueDragResize>
-              </div>
-              <!-- #Component Title -->
-              <v-card dark color="indigo" :style="{display: componentListDisplay}">
-                  <v-card-text class="subheading"><strong>Part Number: </strong> | <strong> Type: </strong> {{currentComponentType}} | <strong> ID: </strong> {{currentComponentId}}</v-card-text>
-              </v-card>
-              <!-- #List of Components -->
-              <v-layout row class="noGlobalTrigger" :style="{display: componentListDisplay}" justify-start>
-                <v-flex class="noGlobalTrigger" xs2 v-for="(item, index) in eComponentImages">
-                  <v-img :key="index" @click="componentClick(index)"
-                   :src="getComponentsImg(item)"
-                   class="componentImages noGlobalTrigger"
-                   v-bind:class="{componentSelect: componentSelected === index}"
-                  ></v-img>
-                </v-flex>
-              </v-layout>
-          </span>
-        </splitpanes>
+          </splitpanes>
+        </v-layout>
       </v-container>
     </v-content>
+
+
+    <!-- Snackbar for Info -->
+    <v-snackbar
+        v-model="snackbar"
+        :color="snackbarColor"
+        :bottom="false"
+        :left="false"
+        :multi-line="false"
+        :right="false"
+        :timeout="snackbarTimeout"
+        :top="true"
+        :vertical="false"
+      >
+        {{ snackbarText }}
+        <v-btn class="vbtn" flat @click="snackbar = false">
+          Close
+        </v-btn>
+      </v-snackbar>
 
     <!-- #Footer -->
     <v-footer color="indigo">
@@ -157,11 +181,12 @@ export default {
         pcbWidth: 250,
         pcbHeight: 300,
         pcbBrightness: 'brightness(1)',
+        webpageContainerPaneSize: 49,
         drawer: false,
         componentSelected: 0,
         componentSlot:'',
         protectorStatus: 'block',
-        runStopString: 'RUN',
+        runStopString: 'white',
         runStop: false,
         componentListDisplay: 'none',
         mouseoverComponent: true,
@@ -172,6 +197,10 @@ export default {
         eComponentImages: [],
         eComponentSaved: {},
         eAvailableComponents: [],
+        snackbar: false,
+        snackbarText: "Hi!",
+        snackbarColor: "success",
+        snackbarTimeout: 6000,
         menu_show: false,
         menu_y: 0,
         menu_x: 0,
@@ -210,13 +239,15 @@ export default {
             "range" : {
               0: {
                 "component": "physical-static-range",
-                "image":"pot.png",
+                "partImage": "range/pot.png",
+                "image":"range/potentiometer.png",
                 "height": "20mm",
                 "width": "20mm"
               },
               1: {
                 "component": "physical-dynamic-range",
-                "image":"slider.jpg",
+                "partImage": "range/motorized-potentiometer.png",
+                "image":"range/motorizedPot.png",
                 "height": "9mm",
                 "width": "152mm"
               }
@@ -290,28 +321,27 @@ export default {
       event.preventDefault();
       // console.log("DROP", currentElement_g.outerHTML);
       console.log("DROPED IN", event.target);
+
+      // Get coordinates where the element was droped
+      var dataLeft = event.pageX - $(event.target).offset().left;
+      var dataTop = event.pageY - $(event.target).offset().top;
+
+      // Get soft comonent data
       var dataID = event.dataTransfer.getData("id");
       var dataOuterHTML = event.dataTransfer.getData("outerHTML");
       var dataType = event.dataTransfer.getData("type");
 
+      // If dropped inside the PCB add the component
       if (event.target.id == "PCB") {
         this.pcbBrightness = 'brightness(1)';
-
-        // // ADD soft element to PCB
-        // if (dataID == "draggable_iframe") {
-        //   console.log("iTSA DRAGG")
-        //   dataID = $('#draggable_iframe').children().attr("id");
-        //   dataOuterHTML = $('#draggable_iframe').children()[0].outerHTML
-        //   dataType = "screens";
-        //   this.iframeOnScreen = true;
-        //   $('#draggable_iframe').children().unwrap();
-        // } 
 
         console.log("dataID:"+dataID);
         console.log("dataOuterHTML:"+dataOuterHTML);
         console.log("dataTYPE:"+dataType);
-        this.addNewComponent(dataID, dataType,
-              dataOuterHTML);
+        console.log("Coordinates Mouse:", event.pageX , event.pageY);
+        console.log("Coordinates Rect:", $(event.target).offset().left , $(event.target).offset().top);
+        console.log("Coordinates Droped:", dataLeft , dataTop);
+        this.addNewComponent(dataID, dataType, dataOuterHTML, dataLeft, dataTop);
 
       }
 
@@ -334,8 +364,60 @@ export default {
 
     //$("#webpageContainer").load("@/userapp/userapp.html");
 
+    // Initialize search of soft elements that can be harden. 
+    this.searchSoftElements();
+
   },
   methods: {
+    searchSoftElements () {
+
+      // Execute funtion after 4 seconds
+      setTimeout( () => { 
+
+        var hardenNumber = 0;
+        for (var element of $('#webpageContainer').find( "*" )) {  
+          // If element has no children and has an id
+          if ($(element).children().length == 0 && $(element).attr('id')) {
+            // If element is of type iframe, button or range then..
+            if (element.tagName == 'IFRAME' || element.tagName == 'BUTTON' || element.type == 'range') {
+              var e_width = $(element).outerWidth()+6;
+              var e_height = $(element).outerHeight()+6;        
+              $(element).wrap(
+                `<div id="${element.id}_drag" class="dragy draggable_element" 
+                  draggable="true" style="width:${e_width}px;height:${e_height}px;display:inline-block;">
+                  </div>`);
+
+              // Add id to the available components that can ve moved
+              this.eAvailableComponents.push(element.id);
+
+              // Increase elements that can be harden
+              hardenNumber++;
+            }  
+          }
+
+        }
+
+        
+        // Hide progress bar
+        $('#webpageContainerProgressbar').css("display", "none")
+        
+        // Make webpageContainer visible
+        $('#webpageContainer').css("visibility", "visible")
+
+        // Make webpageContainer a little to the right to make all contents visible
+        this.webpageContainerPaneSize = 50;
+
+        // Show snackbar
+        this.launchSnackbar(`Great! You can harden ${hardenNumber} elements`, "success", 6000);
+
+      }, 3000);
+    },
+    launchSnackbar(text, color, timeout) {
+      this.snackbarText = text;
+      this.snackbarColor = color;
+      this.snackbarTimeout = timeout;
+      this.snackbar = true;
+    },
     resize(newRect) {
         console.log("Resizing!!"+this.panelHeight);
         this.lwidth = newRect.width;
@@ -390,40 +472,31 @@ export default {
     getComponentsImg(item) {
       return require('./assets/'+item);
     },
-    runEnviroment() {
-      
-      if (this.runStop == false) {
-        console.log("Running MODE");
-        // Running mode
-        this.runStop = true;
-        this.runStopString = "STOP";
-        // Remove protector from elements in PCB
-        $(".protector").css("display", "none");
-        // Set iframe events to all
-        $("iframe").css("pointer-events", "all");
-        // For all available comopnents, remove their draggable class
-        for (var ele of this.eAvailableComponents) {
-          console.log(ele);
-          $('#'+ele+'_drag').removeClass('draggable_element');
-          $('#'+ele+'_drag').attr("draggable", "false");
-        }
-      } else {
-        console.log("Edit MODE");
-        // Edit mode
-        this.runStop = false;
-        this.runStopString = "RUN";
-        // Add protector from elements in PCB
-        $(".protector").css("display", "block");
-        // Set iframe events to none
-        $("iframe").css("pointer-events", "all");
-        // For all available comopnents, add their draggable class
-        for (var ele of this.eAvailableComponents) {
-          console.log(ele);
-          $('#'+ele+'_drag').addClass('draggable_element');
-          $('#'+ele+'_drag').attr("draggable", "true");
-        }
+    setRunMode() {
+      console.log("Running MODE");
 
+      // If already in run mode return 
+      if (this.runStop ==  true) return;
+
+      // Running mode
+      this.runStop = true;
+      this.runStopString = "EDIT";
+      // Remove protector from elements in PCB
+      $(".protector").css("display", "none");
+      // Set iframe events to all
+      $("iframe").css("pointer-events", "all");
+      // For all available comopnents, remove their draggable class
+      for (var ele of this.eAvailableComponents) {
+        console.log(ele);
+        $('#'+ele+'_drag').removeClass('draggable_element');
+        $('#'+ele+'_drag').attr("draggable", "false");
       }
+      // if (this.runStop == false) {
+        
+      // } else {
+        
+
+      // }
 
       // // TEST ADDING DRAGGABEL COMPONENTS
       // var img = $('<img/>')
@@ -442,22 +515,31 @@ export default {
       // instance.$mount() // pass nothing
       // this.$refs.pcbcontainer.appendChild(instance.$el);
     },
+    setEditMode() {
+      console.log("Edit MODE");
+
+      // If already in edit mode return 
+      if (this.runStop ==  false) return;
+
+      // Edit mode
+      this.runStop = false;
+      this.runStopString = "RUN";
+      // Add protector from elements in PCB
+      $(".protector").css("display", "block");
+      // Set iframe events to none
+      $("iframe").css("pointer-events", "all");
+      // For all available comopnents, add their draggable class
+      for (var ele of this.eAvailableComponents) {
+        console.log(ele);
+        $('#'+ele+'_drag').addClass('draggable_element');
+        $('#'+ele+'_drag').attr("draggable", "true");
+      }
+    },
     testClick() {
       // TEST ADDING A BUTTON
       this.addNewComponent("playPause", "submit",
             '<button onclick="playPause()" id="playPause"></button>');
 
-    },testClick2() {
-      // TEST ADDING A BUTTON
-      this.addNewComponent("playPause2", "submit",
-            '<button onclick="console.log(\'Button Click\')" id="playPause2"></button>');
-    },
-    testClick3() {
-      // TEST ADDING A SLIDER
-      this.addNewComponent("playPause2", "submit",
-            '<button onclick="console.log(\'Button Click\')" id="playPause2"></button>');
-    },
-    testClick4() {
       // this.addNewComponent("video-placeholder", "screens",
       //       '<iframe id="video-placeholder" frameborder="0" allowfullscreen="1" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" title="YouTube video player" src="https://www.youtube.com/embed/DCLrDnZO_0E?rel=0&amp;color=white&amp;playlist=dQiNVk_u0po%2C%20IvUU8joBb1Q%2CS-m-CHigCY4%2CHpaHvUOk3F0&amp;enablejsapi=1&amp;origin=http%3A%2F%2Flocalhost%3A8080&amp;widgetid=1" draggable="true"></iframe>');
       //var iframeBody = document.getElementById('video-placeholder').contentWindow.document.body.innerHTML; //$('#video-placeholder').contents();
@@ -465,7 +547,7 @@ export default {
 
     },
     // Adds a new component to the PCB
-    addNewComponent(thisId, thisType, thisHtml) {
+    addNewComponent(thisId, thisType, thisHtml, thisLeft, thisTop) {
 
       // // Hide the soft comonent in the user webpage
       // $('#'+thisId).css("visibility", "hidden");
@@ -485,27 +567,40 @@ export default {
       $("<div/>", {
         id: elementId,
         class: "noGlobalTrigger",
-        style: "display:inline-block;border-radius: 5px;"
+        style: "position:absolute;display:inline-block;border-radius:5px;"
       }).appendTo("#PCB");
       // Create protector
       $("#"+elementId).append('<div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div>');
+
       // Get user web element data // TODO
-      $("#"+thisId).detach().appendTo("#"+elementId)
+      $("#"+thisId).detach().appendTo("#"+elementId);
 
       // Add component element style class (TODO: select class accodign to the type)
       if (thisType == "submit") {
         $("#"+thisId).addClass("submit-physical-button");
+      } else if (thisType == "range") {
+        $("#"+thisId).addClass("range-physical-slider");
       } else if (thisType == "screens") {
         $("#"+thisId).addClass("physical-screen");
       } else {
         console.error("Unknown element type");
       }
+
       // Remove any innerHTML
       $("#"+thisId).empty();
 
-
       // Make it draggable
-      $("#"+elementId).draggable({ containment: "#PCBBoard", scroll: false });
+      $("#"+elementId).draggable({ containment: "#PCB", scroll: false });
+
+      // Get element width and height for centering it;
+      var eleId_center_x = $("#"+elementId).outerWidth() / 2;
+      var eleId_center_y = $("#"+elementId).outerHeight() / 2;
+      var mouse_center_x =  thisLeft - eleId_center_x;
+      var mouse_center_y =  thisTop - eleId_center_y;
+
+      // Move element to its dropped coordinated
+      $("#"+elementId).css("left", (mouse_center_x > 0)? mouse_center_x : thisLeft+"px");
+      $("#"+elementId).css("top", (mouse_center_y > 0)? mouse_center_y : thisTop+"px");
       
       // When the component in the PCB is clicked do:
       $("#"+elementId).mousedown((element) => {
@@ -595,6 +690,8 @@ export default {
       // Remove type class
       if (e_type == "submit") {
         $("#"+this.currentComponentId).removeClass("submit-physical-button");
+      } else if (e_type == "range") {
+        $("#"+this.currentComponentId).removeClass("range-physical-slider");
       } else if (e_type == "screens") {
         $("#"+this.currentComponentId).removeClass("physical-screen");
       } else {
@@ -633,42 +730,42 @@ export default {
     },
     // Make user webpage elements draggable
     webPageMouseOver(e) {
-        console.log(e.target.tagName);
-        console.log("ID:"+e.target.id);
-        console.log(e.target.type);
-        console.log(e.target.className);
-        if ($(e.target).is('html, body')) {
-          console.log("Element is html or body");
-        } else if ($(e.target).children().length > 0) {
-          console.log("Element has childrens");
-        } else {
-          // If target has ID
-          if ($(e.target).attr('id') && 
-            !$(e.target).parent().hasClass('dragy') &&
-            !$(e.target).hasClass('dragy')) {
-            console.log("MOUSE IN:"+e.target.outerHTML);
-            if (this.runStopString == 'RUN') {
-                // Only executed once (Execute at init??)
-                // Wrapp iframe element, we only need this once
-                var e_width = $('#'+e.target.id).outerWidth()+6;
-                var e_height = $('#'+e.target.id).outerHeight()+6;        
-                $('#'+e.target.id).wrap(
-                  `<div id="${e.target.id}_drag" class="dragy draggable_element" 
-                    draggable="true" style="width:${e_width}px;height:${e_height}px;display:inline-block;">
-                    </div>`);
+        // console.log(e.target.tagName);
+        // console.log("ID:"+e.target.id);
+        // console.log(e.target.type);
+        // console.log(e.target.className);
+        // if ($(e.target).is('html, body')) {
+        //   console.log("Element is html or body");
+        // } else if ($(e.target).children().length > 0) {
+        //   console.log("Element has childrens");
+        // } else {
+        //   // If target has ID
+        //   if ($(e.target).attr('id') && 
+        //     !$(e.target).parent().hasClass('dragy') &&
+        //     !$(e.target).hasClass('dragy')) {
+        //     console.log("MOUSE IN:"+e.target.outerHTML);
+        //     if (this.runStopString == 'RUN') {
+        //         // Only executed once (Execute at init??)
+        //         // Wrapp iframe element, we only need this once
+        //         var e_width = $('#'+e.target.id).outerWidth()+6;
+        //         var e_height = $('#'+e.target.id).outerHeight()+6;        
+        //         $('#'+e.target.id).wrap(
+        //           `<div id="${e.target.id}_drag" class="dragy draggable_element" 
+        //             draggable="true" style="width:${e_width}px;height:${e_height}px;display:inline-block;">
+        //             </div>`);
 
-                // Add id to the available components that can ve moved
-                this.eAvailableComponents.push(e.target.id);
+        //         // Add id to the available components that can ve moved
+        //         this.eAvailableComponents.push(e.target.id);
 
-            } else {
-              // Set draggable item to true if running demo
-              $('#'+e.target.id).attr('draggable', 'false');
-              //$('#'+e.target.id).css('pointer-events', 'auto');
-              //$('#'+e.target.id).draggable( 'disable' );
-            }
+        //     } else {
+        //       // Set draggable item to true if running demo
+        //       $('#'+e.target.id).attr('draggable', 'false');
+        //       //$('#'+e.target.id).css('pointer-events', 'auto');
+        //       //$('#'+e.target.id).draggable( 'disable' );
+        //     }
 
-          }
-        }
+        //   }
+        // }
     },
     webPageMouseOut(e) {
       // TODO: implement css layout
@@ -735,8 +832,8 @@ export default {
 .filler {
   margin:0px;
   padding:0px;
-  width: 100%;
-  height: 100%;
+  width: 30%;
+  height: 50%;
   display: inline-block;
   position: absolute;
   background-color: rgb(174, 213, 129);
@@ -787,8 +884,16 @@ export default {
 }
 
 #webpageContainer {
+  visibility: hidden;
   height: 100%;
   overflow: scroll;
+}
+
+#webpageContainerProgressbar {
+  position: absolute;
+  padding-top: 20%;
+  padding-left: 20%;
+  z-index: 5;
 }
 
 #webframecontiner {
@@ -799,6 +904,11 @@ export default {
   overflow: scroll;
   border: 4px solid black;
 }
+
+#appInfo {
+  width: 100%;
+}
+
 
 /* Make iframe draggable */
 .draggable_element {
@@ -857,18 +967,17 @@ Component Styles
 .range-physical-slider {
   display: block;
   -webkit-appearance: none;
-  /* background-image: url('~@/assets/buttons/1.png'); */
-  background-size: contain;
+  background-image: url('~@/assets/range/motorizedPot.png');
+  background-size: 100% 100%;
   background-repeat: no-repeat;
-  background-color: gray;
-  /* border: 1px solid black; */
+  background-color: transparent;
+  border: none; 
 }
 
 .range-physical-slider::-webkit-slider-runnable-track {
-  /* background: #ddd; */
   background: black;
-  height: 3px;
-  margin-top: -10px;
+  height: 0px;
+  margin-top: -6px;
 }
 .range-physical-slider::-webkit-slider-thumb {
   margin-top: -9px;

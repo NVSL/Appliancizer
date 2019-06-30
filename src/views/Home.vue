@@ -102,13 +102,13 @@ export default {
       player.nextVideo();
     }
     var slider = document.getElementById("slider");
-    slider.oninput = function() {
+    window.slider.oninput = function() {
       if (typeof player.setVolume === 'function' && player != null) {
         player.setVolume(this.value);
       }
     }
     var progressBar = document.getElementById("progressBar");
-    progressBar.oninput = function() {
+    window.progressBar.oninput = function() {
       if (typeof player.seekTo === 'function' && player != null) {
         player.seekTo(this.value);
       }
