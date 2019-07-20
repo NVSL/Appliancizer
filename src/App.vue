@@ -1,6 +1,6 @@
 <!--
 // Tomorrow:
-// TODO Add test click for slider and screen components
+// Clear eAvailableComponents when a new search is done, and the others.
 -->
 
 <template>
@@ -8,44 +8,12 @@
 
     <v-app id="inspire">
 
-    <!-- #Drawer List -->
-    <v-navigation-drawer fixed v-model="drawer" app>
-      <v-list dense>
-        <!-- Home option  -->
-        <v-list-tile @click="">
-          <v-list-tile-action>
-            <v-icon>home</v-icon>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title>Home</v-list-tile-title>
-          </v-list-tile-content>
-        </v-list-tile>
-        <!-- Email option -->
-        <v-list-tile @click="">
-          <v-list-tile-action>
-            <v-icon>contact_mail</v-icon>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title>Contact</v-list-tile-title>
-          </v-list-tile-content>
-        </v-list-tile>
-        <!-- Debug option -->
-        <v-list-tile @click="">
-          <div>
-            <span>PCB dimensions:</span>
-            <p>{{ lwidth }} х {{ height }} | {{ top }} х {{ left }}</p>
-          </div>
-        </v-list-tile>
-      </v-list>
-    </v-navigation-drawer>
-
     <!-- #ToolBar Content -->
-    <v-toolbar color="indigo" dark fixed app>
-      <v-toolbar-side-icon class="vbtn" @click.stop="drawer = !drawer"></v-toolbar-side-icon>
+    <v-toolbar dense color="grey darken-4" dark fixed app>
       <v-toolbar-title class="hidden-sm-and-down">Appliancizer</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-tabs right slider-color="rgb(174, 213, 129)" color="indigo">
+        <v-tabs right slider-color="rgb(174, 213, 129)" color="grey darken-4">
           <v-tab @click="setEditMode()">
             <v-btn class="vbtn" flat >
               EDIT
@@ -74,33 +42,49 @@
                 <div id="webpageContainerProgressbar" class="text-xs-center">
                   <v-progress-circular  color="rgb(174, 213, 129)" :size="50" indeterminate></v-progress-circular>
                 </div>
+                  <v-layout row>
+                    <v-toolbar-title class="pt-2 mx-3">Webpage</v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-btn class="vbtn" @click="openHTMLEditor()">
+                      ADD
+                    <v-icon>add</v-icon>
+                    </v-btn>
+                  </v-layout>
+                <v-divider class="pb-1"></v-divider>
                 <div id="webpageContainer" @mouseover="webPageMouseOver($event)" @mouseout="webPageMouseOut($event)">
-                  <router-view/>
-                  <!-- Note: The thing below may work, just I need to change how the content is loaded -->
-                  <!-- <object type="text/html" data="./userapp/userapp.html" style="width:100%; height:100%">
-                  <p>backup content</p>
-                  </object> -->
-
+                  <!-- User Web page will be injected here -->
                 </div>
               </span>
               <span>
                 <div id="PCBPanel" :style="{height: pcbPanelHeight}">
-                  <VueDragResize id="PCBBoard" class="noGlobalTrigger" :w="pcbWidth" :h="pcbHeight" :x="10" :y="10"
-                    :isDraggable="false" v-on:resizing="resize" :sticks="['mr', 'bm', 'br']">
-
-                      <div class="filler" id="PCB" ref="pcbcontainer" :style="{filter: pcbBrightness}"
-                          ondragover="event.preventDefault()">
-                      </div>
-
-                  </VueDragResize>
+                  <v-layout row>
+                      <v-toolbar-title class="pt-2 mx-3">PCB</v-toolbar-title>
+                      <v-spacer></v-spacer>
+                      <v-btn class="vbtn" @click="openBuildScreen()">
+                        BUILD
+                        <v-icon>build</v-icon>
+                      </v-btn>
+                  </v-layout>
+                  <v-divider class="pb-1"></v-divider>
+                  <PcbBoard id="PCB" :w="pcbWidth" :h="pcbHeight" :brightness="pcbBrightness" 
+                    :color="pcbColor" ondragover="event.preventDefault()" @pcbresize="BuildScreen_pcbresize($event)">
+                    <!-- PCB components will be inserted here -->
+			            </PcbBoard>
                 </div>
                 <!-- #Component Title -->
-                <v-card dark color="indigo" :style="{display: componentListDisplay}">
-                    <v-card-text class="subheading"><strong>Part Number: </strong> | <strong> Type: </strong> {{currentComponentType}} | <strong> ID: </strong> {{currentComponentId}}</v-card-text>
+                <v-card dark color="grey darken-3" :style="{display: componentListDisplay}">
+                    <v-card-title class="subheading py-1">
+                      <strong>Part Number: </strong> | <strong> Type: </strong> {{currentComponentType}} | <strong> ID: </strong> {{currentComponentId}}
+                      <v-spacer></v-spacer>
+                      <v-btn class="vbtn" light @click="removeComponent()">
+                        REMOVE
+                        <v-icon>clear</v-icon>
+                      </v-btn>
+                    </v-card-title>
                 </v-card>
                 <!-- #List of Components -->
                 <v-layout row class="noGlobalTrigger" :style="{display: componentListDisplay}" justify-start>
-                  <v-flex class="noGlobalTrigger" xs2 v-for="(item, index) in eComponentImages">
+                  <v-flex class="noGlobalTrigger" xs2 v-for="(item, index) in eComponentImages" :key="index">
                     <v-img :key="index" @click="componentClick(index)"
                     :src="getComponentsImg(item)"
                     class="componentImages noGlobalTrigger"
@@ -134,18 +118,145 @@
       </v-snackbar>
 
     <!-- #Footer -->
-    <v-footer color="indigo">
+    <v-footer color="grey darken-4">
       <span class="white--text">&copy; NVSL 2019</span>
     </v-footer>
 
     <!-- #Right Click Menu -->
     <v-menu v-model="menu_show" :position-x="menu_x" :position-y="menu_y" absolute offset-y>
-       <v-list>
-         <v-list-tile v-for="(item, index) in menu_items" :key="index" @click="">
-           <v-list-tile-title @click="menuItemClick(index)">{{ item.title }}</v-list-tile-title>
-         </v-list-tile>
-       </v-list>
-     </v-menu>
+      <v-list>
+        <v-list-tile v-for="(item, index) in menu_items" :key="index" @click="">
+          <v-list-tile-title @click="menuItemClick(index)">{{ item.title }}</v-list-tile-title>
+        </v-list-tile>
+      </v-list>
+    </v-menu>
+
+    <!-- HTML/CSS/Javscript Editor -->
+    <v-dialog v-model="HTMLEditor" fullscreen hide-overlay transition="dialog-bottom-transition">
+      <v-card id="dialogHeight">
+        <v-toolbar dark dense color="grey darken-4">
+            <v-toolbar-title>Webpage Editor</v-toolbar-title>
+            <v-divider class="mx-3" inset vertical></v-divider>
+            <v-menu offset-y>
+              <template v-slot:activator="{ on }">
+                <v-btn class="vbtn warning " flat v-on="on">
+                DEMOS
+                  <v-icon>add</v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-tile v-for="(item, index) in Demos" :key="index" @click="HTMLEditor_loadDemo(item.demo)">
+                  <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+                </v-list-tile>
+              </v-list>
+            </v-menu>
+
+            <v-btn class="vbtn success" flat @click="HTMLEditor_run()">
+              RUN
+              <v-icon>arrow_forward_ios</v-icon>
+            </v-btn>
+            <v-spacer></v-spacer>
+            <v-btn dark class="vbtn" color="indigo" @click="HTMLEditor_injectWebPage()">INJECT
+              <v-icon>arrow_downward</v-icon>
+            </v-btn>
+            <v-divider class="mx-3" inset vertical></v-divider>
+            <v-toolbar-items>
+              
+              <v-btn icon dark class="vbtn" @click="HTMLEditor = false">
+                <v-icon>close</v-icon>
+              </v-btn>
+            </v-toolbar-items>
+          </v-toolbar>
+          <v-container id="editorMainPanes" fluid fill-height>
+            <splitpanes  class="default-theme" vertical :push-other-panes="false">
+              <splitpanes horizontal :push-other-panes="false">
+                <span>
+                  <v-toolbar color="grey darken-4" dark dense>
+                    <v-toolbar-title><strong>HTML</strong></v-toolbar-title>
+                  </v-toolbar>
+                  <v-divider></v-divider>
+                  <div id="htmlEditor">{{EditorHTMLText}}</div>
+                </span>
+                <span>
+                  <v-toolbar color="grey darken-4" dark dense>
+                    <v-toolbar-title><strong>CSS</strong></v-toolbar-title>
+                  </v-toolbar>
+                  <v-divider></v-divider>
+                  <div id="cssEditor">{{EditorCSSText}}</div>
+                </span>
+                <span>
+                  <v-expansion-panel color="grey darken-4" dark>
+                    <v-expansion-panel-content>
+                      <template v-slot:header>
+                        <v-toolbar-title><strong>JS</strong></v-toolbar-title>
+                      </template>
+                      <v-card class="white">
+                        <v-container class="pt-4 pb-0 my-0">
+                          <!-- <v-subheader class="py-1 my-1">Example: https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js</v-subheader> -->
+                          <v-text-field light class="pa-0 ma-1" v-model="EditorJS_extSoruceOne" label="External Source 1"  placeholder="https://..." type="text" clearable></v-text-field>
+                          <v-text-field light class="pa-0 ma-1" v-model="EditorJS_extSoruceTwo" label="External Source 2"  placeholder="https://..." type="text" clearable></v-text-field>
+                        </v-container>
+                      </v-card>
+                    </v-expansion-panel-content>
+                  </v-expansion-panel>
+                  <v-divider></v-divider>
+                  <div id="jsEditor">{{EditorJSText}}</div>
+                </span>
+              </splitpanes>
+              <span>
+                <iframe id="HTMLEditor_iframe" @load="HTMLEditor_iframeOnLoad()"
+                sandbox="allow-forms allow-modals allow-pointer-lock allow-popups allow-presentation allow-same-origin allow-scripts"
+                allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media"
+                scrolling="auto" allowtransparency="true" allowpaymentrequest="true" allowfullscreen="true"
+                ></iframe></span>
+            </splitpanes>
+          </v-container>
+        </v-card>
+    </v-dialog>
+
+
+    <!-- Build Screen -->
+    <v-dialog v-model="BuildScreen" fullscreen hide-overlay transition="dialog-bottom-transition">
+      <v-card id="dialogHeight">
+        <v-toolbar dark dense color="grey darken-4">
+            <v-toolbar-title>Build Screen</v-toolbar-title>
+            <v-divider class="mx-3" inset vertical></v-divider>
+            <v-spacer></v-spacer>
+            <v-divider class="mx-3" inset vertical></v-divider>
+            <v-toolbar-items>         
+              <v-btn icon dark class="vbtn" @click="BuildScreen = false">
+                <v-icon>close</v-icon>
+              </v-btn>
+            </v-toolbar-items>
+          </v-toolbar>
+          <v-container id="editorMainPanes" fluid>
+            <h2><strong>PCB Dimension: </strong>{{ FinalPCB.width }} mm х {{ FinalPCB.height }} mm</h2>
+            <v-divider></v-divider>
+            <h2><strong>PCB Electrical Components:</strong></h2>
+             <v-list two-line>
+              <template v-for="(item, index) in items">
+                
+                <v-list-tile v-if="item.title" :key="item.title" avatar>
+
+                  <v-list-tile-avatar>
+                    <img :src="item.avatar">
+                  </v-list-tile-avatar>
+
+                  <v-list-tile-content>
+                    <v-list-tile-title v-html="item.title"></v-list-tile-title>
+                    <v-list-tile-sub-title v-html="item.subtitle"></v-list-tile-sub-title>
+                  </v-list-tile-content>
+
+                </v-list-tile>
+                <v-divider v-if="item.title" :key="index" :inset="true"></v-divider>
+
+              </template>
+            </v-list>
+            <v-divider></v-divider>
+          </v-container>
+        </v-card>
+    </v-dialog>
+
 
   </v-app>
 
@@ -158,17 +269,24 @@ import Vue from "vue";
 import VueDragResize from 'vue-drag-resize';
 import Splitpanes from 'splitpanes';
 import 'splitpanes/dist/splitpanes.css';
-import ElectronicComponent from './components/ElectronicComponent.vue';
+import PcbBoard from './components/PcbBoard.vue';
 import $ from 'jquery';
 import 'jquery-ui/ui/widgets/draggable';
-
+import * as ace from 'brace';
+import 'brace/mode/html';
+import 'brace/mode/css';
+import 'brace/mode/javascript';
+import 'brace/theme/monokai';
+// Demos
+import VideoPlayer from './demos/VideoPlayer'
+import SimpleButton from './demos/SimpleButton'
 
 export default {
   name: "app",
   components: {
     Splitpanes,
     VueDragResize,
-    ElectronicComponent
+    PcbBoard
   },
   data: () => ({
         lwidth: 0,
@@ -178,9 +296,10 @@ export default {
         panelHeight: 0,
         panelWidth: 0,
         pcbPanelHeight: '100%',
-        pcbWidth: 250,
-        pcbHeight: 300,
+        pcbWidth: 120,
+        pcbHeight: 120,
         pcbBrightness: 'brightness(1)',
+        pcbColor: 'rgb(174, 213, 129)',
         webpageContainerPaneSize: 49,
         drawer: false,
         componentSelected: 0,
@@ -197,6 +316,7 @@ export default {
         eComponentImages: [],
         eComponentSaved: {},
         eAvailableComponents: [],
+        nonAvailableComponents: [],
         snackbar: false,
         snackbarText: "Hi!",
         snackbarColor: "success",
@@ -207,6 +327,34 @@ export default {
         iframeOnScreen : false,
         menu_items: [
           { title: 'Remove' }
+        ],
+        HTMLEditor: false,
+        EditorIFRAME_head: undefined,
+        EditorIFRAME_body: undefined,
+        EditorMAIN_cssTag: undefined,
+        EditorMAIN_jsTag: undefined,
+        EditorHTML: undefined,
+        EditorCSS: undefined,
+        EditorJS: undefined,
+        EditorHTMLText: undefined,
+        EditorCSSText: undefined,
+        EditorJSText: undefined,
+        EditorJS_Settings: false,
+        EditorJS_extSoruceOne: undefined,
+        EditorJS_extSoruceTwo: undefined,
+        Demos: [
+          { title: 'Simple Button', demo: SimpleButton},
+          { title: 'Video Player', demo: VideoPlayer },       
+        ],
+        BuildScreen: true,
+        FinalPCB: {
+          height: 0,
+          width: 0
+        },
+        items: [
+          {
+            // avatat, title, subtitle
+          }
         ]
   }),
   mounted: function () {
@@ -238,34 +386,34 @@ export default {
             },
             "range" : {
               0: {
-                "component": "physical-static-range",
-                "partImage": "range/pot.png",
-                "image":"range/potentiometer.png",
-                "height": "20mm",
-                "width": "20mm"
-              },
-              1: {
                 "component": "physical-dynamic-range",
                 "partImage": "range/motorized-potentiometer.png",
                 "image":"range/motorizedPot.png",
                 "height": "9mm",
                 "width": "152mm"
-              }
+              },
+              1: {
+                "component": "physical-static-range",
+                "partImage": "range/pot.png",
+                "image":"range/potentiometer.png",
+                "height": "20mm",
+                "width": "20mm"
+              }   
             },
             "screens" : {
               0: {
                 "component": "utronics3-5inch",
                 "image":"",
                 "partImage":"screens/utronics_3.5inch.png",
-                "height": "50mm",
-                "width": "50mm"
+                "height": "80mm",
+                "width": "100mm"
               },
               1: {
                 "comopnent" : "geeekpi5inch",
                 "image":"",
                 "partImage":"screens/geeekpi_5inch.png",
-                "height": "60mm",
-                "width": "60mm"
+                "height": "100mm",
+                "width": "160mm"
               }
             }
           }
@@ -281,6 +429,7 @@ export default {
       if($(event.target).hasClass('draggable_element')) {
         var e_id = $(event.target).children()[0].id;
         var e_outerHTML = $(event.target).children()[0].outerHTML;
+        var e_innerHTML = $(event.target).children()[0].innerHTML;
         var e_type = $(event.target).children()[0].type;
         var e_tagName = $(event.target).children()[0].tagName;
 
@@ -291,10 +440,12 @@ export default {
 
         event.dataTransfer.setData("id", e_id);
         event.dataTransfer.setData("outerHTML", e_outerHTML);
+        event.dataTransfer.setData("innerHTML", e_innerHTML);    
         event.dataTransfer.setData("type", e_type);
         
         console.log("startID:"+e_id);
         console.log("startOuterHTML:",e_outerHTML);
+        console.log("startInnerHTML:",e_innerHTML);
         console.log("startTYPE:"+e_type);
       } else {
         console.warn("WARNING, THIS ELEMENT CAN NOT BE A COMPONENT");
@@ -329,6 +480,7 @@ export default {
       // Get soft comonent data
       var dataID = event.dataTransfer.getData("id");
       var dataOuterHTML = event.dataTransfer.getData("outerHTML");
+      var dataInnerHTML = event.dataTransfer.getData("innerHTML");
       var dataType = event.dataTransfer.getData("type");
 
       // If dropped inside the PCB add the component
@@ -337,11 +489,12 @@ export default {
 
         console.log("dataID:"+dataID);
         console.log("dataOuterHTML:"+dataOuterHTML);
+        console.log("dataInnerHTML:"+dataInnerHTML);
         console.log("dataTYPE:"+dataType);
         console.log("Coordinates Mouse:", event.pageX , event.pageY);
         console.log("Coordinates Rect:", $(event.target).offset().left , $(event.target).offset().top);
         console.log("Coordinates Droped:", dataLeft , dataTop);
-        this.addNewComponent(dataID, dataType, dataOuterHTML, dataLeft, dataTop);
+        this.addNewComponent(dataID, dataType, dataInnerHTML, dataOuterHTML, dataLeft, dataTop);
 
       }
 
@@ -362,41 +515,136 @@ export default {
     // Add global click
     this.$el.addEventListener('click', this.onGlobalClick)
 
-    //$("#webpageContainer").load("@/userapp/userapp.html");
-
     // Initialize search of soft elements that can be harden. 
-    this.searchSoftElements();
+    //this.searchSoftElements();
+
+    // #### HTML Editor inits
+    // Prepare Main CSS and JS Tags
+    this.EditorMAIN_cssTag = $("<style></style>").appendTo($('head'));
+    this.EditorMAIN_jsTag = $("<script/>").appendTo($('body'));
+    // Prepare IFRAME head and body Tags
+    this.EditorIFRAME_head = $("#HTMLEditor_iframe").contents().find("head");
+    this.EditorIFRAME_body = $("#HTMLEditor_iframe").contents().find("body");
+    // Constumize Editors themes
+    this.EditorHTML = ace.edit('htmlEditor');
+    this.EditorHTML.getSession().setMode('ace/mode/html');
+    this.EditorHTML.setTheme('ace/theme/monokai');
+    this.EditorCSS = ace.edit('cssEditor');
+    this.EditorCSS.getSession().setMode('ace/mode/css');
+    this.EditorCSS.setTheme('ace/theme/monokai');
+    this.EditorJS = ace.edit('jsEditor');
+    this.EditorJS.getSession().setMode('ace/mode/javascript');
+    this.EditorJS.setTheme('ace/theme/monokai');
+    
+    // #### Build PCB 
+    // Init final pcb hieght and width 
+    this.FinalPCB.height = this.pcbWidth;
+    this.FinalPCB.width = this.pcbHeight;
 
   },
   methods: {
     searchSoftElements () {
+      // Zero any previeous arrays
+      this.eAvailableComponents = [];
+      this.nonAvailableComponents = [];
+      this.eComponentSaved = {};
 
-      // Execute funtion after 4 seconds
+      // Empty PCB board of any component
+      $('#PCB').find('*').not('.vdr-stick').remove();
+
+      // Make webpageContainer invisible
+      $('#webpageContainer').css("visibility", "hidden")
+
+      // Start progress bar
+      $('#webpageContainerProgressbar').css("display", "block")
+
+      
+      var uniqueId = 0;
+      let hardenNumber = 0;
+
+      // Add Green Wrap to Buttons and Sliders if found, Red IF not
+      for (var element of $('#webpageContainer').find( "*" )) {
+        var e_width = $(element).outerWidth()+6;
+        var e_height = $(element).outerHeight()+6;    
+
+        // If element has no children and has an id
+        if ($(element).children().length == 0 ) {
+
+          // If element is of type iframe, button or range then..
+          if ( (element.tagName == 'BUTTON' || element.type == 'range')
+            && $(element).attr('id')) {
+    
+            $(element).wrap(
+              `<div id="${element.id}_drag" class="draggable_element" 
+                draggable="true" style="width:${e_width}px;height:${e_height}px;display:inline-block;">
+                </div>`);
+
+            // Add id to the available components that can be moved
+            this.eAvailableComponents.push(element.id);
+
+            // Increase elements that can be harden
+            hardenNumber++;
+
+          } else {
+            // Elements that cannot be dragged
+            var elementID = "";
+            if (element.id == "") {
+              // Add unique id 
+              elementID = uniqueId + "_uniq";
+              uniqueId ++;
+            } else {
+              elementID = element.id;
+            }
+
+            $(element).wrap(
+              `<div id="${elementID}_nondrag" class="none_draggable_element" 
+                style="width:${e_width}px;height:${e_height}px;display:inline-block;">
+                </div>`);
+
+            // Add list of non available components (in red)
+            this.nonAvailableComponents.push(elementID);
+          }
+        } else {
+          console.log("WARNING: OTHER ELEMENTS NOT AVAILABLE: "+element);
+        }
+      }
+
+      // SPECIAL CASE FOR THE STUPID VIDEO PLAYER IFRAME
+      // Execute funtion after 4 seconds to find iframe change.
       setTimeout( () => { 
 
-        var hardenNumber = 0;
         for (var element of $('#webpageContainer').find( "*" )) {  
           // If element has no children and has an id
-          if ($(element).children().length == 0 && $(element).attr('id')) {
+          
+          if ($(element).attr('id')) {
             // If element is of type iframe, button or range then..
-            if (element.tagName == 'IFRAME' || element.tagName == 'BUTTON' || element.type == 'range') {
+            if (element.tagName == 'IFRAME') {
               var e_width = $(element).outerWidth()+6;
-              var e_height = $(element).outerHeight()+6;        
-              $(element).wrap(
-                `<div id="${element.id}_drag" class="dragy draggable_element" 
-                  draggable="true" style="width:${e_width}px;height:${e_height}px;display:inline-block;">
-                  </div>`);
+              var e_height = $(element).outerHeight()+6;
 
-              // Add id to the available components that can ve moved
+              var iframeWrapID = element.id+"_nondrag";
+              
+              // Change warped element to draggable 
+              $("#"+iframeWrapID).removeClass("none_draggable_element");
+              $("#"+iframeWrapID).addClass("draggable_element");
+              $("#"+iframeWrapID).attr("draggable", "true");
+              $("#"+iframeWrapID).css("width", e_width);
+              $("#"+iframeWrapID).css("height", e_height);
+
+              //Change id to drag
+              $("#"+iframeWrapID).attr("id", element.id+"_drag");
+
+              // Move it to eAvailableComponent
+              this.nonAvailableComponents = this.nonAvailableComponents.filter(item => item!=element.id);
+              console.log("NON AVAL:"+  this.nonAvailableComponents);
               this.eAvailableComponents.push(element.id);
+              console.log("AVAL:"+  this.eAvailableComponents);
 
               // Increase elements that can be harden
               hardenNumber++;
-            }  
+            }
           }
-
         }
-
         
         // Hide progress bar
         $('#webpageContainerProgressbar').css("display", "none")
@@ -408,7 +656,14 @@ export default {
         this.webpageContainerPaneSize = 50;
 
         // Show snackbar
-        this.launchSnackbar(`Great! You can harden ${hardenNumber} elements`, "success", 6000);
+        if (hardenNumber == 0) {
+          this.launchSnackbar('Sorry, no elements found that can be harden', "error", 10000);
+        } else if (hardenNumber == 1) {
+          this.launchSnackbar(`Great! You can harden ${hardenNumber} element`, "success", 6000);
+        } else {
+          this.launchSnackbar(`Great! You can harden ${hardenNumber} elements`, "success", 6000);
+        }
+        
 
       }, 3000);
     },
@@ -448,6 +703,8 @@ export default {
     // Changes the comopnent in the PCB and in the directory.
     setNewComponentSelection(compId, compType, newNumber){
       // Get new image path
+      var name = this.eComponentList[compType][newNumber].component;
+      var partImage = this.eComponentList[compType][newNumber].partImage;
       var image = this.eComponentList[compType][newNumber].image;
       var height = this.eComponentList[compType][newNumber].height;
       var width = this.eComponentList[compType][newNumber].width;
@@ -460,7 +717,12 @@ export default {
       $("#"+compId).css("height", height);
       $("#"+compId).css("width", width);
       // Save the new component number selected [Here we save the new selected component]
-      this.eComponentSaved[compId].componentSelected = newNumber; // Get component selected
+      this.eComponentSaved[compId].componentSelected = newNumber;   // Set new component selected
+      this.eComponentSaved[compId].componentName = name;            // Set new component name
+      this.eComponentSaved[compId].componentPartImage = partImage;  // Set new component name
+      this.eComponentSaved[compId].componentImage = image;          // Set new component image path
+      this.eComponentSaved[compId].componentWidth = width;          // Set new component width
+      this.eComponentSaved[compId].componentHeight = height;        // Set new component height
     },
     drop(event) {
       event.preventDefault();
@@ -490,6 +752,11 @@ export default {
         console.log(ele);
         $('#'+ele+'_drag').removeClass('draggable_element');
         $('#'+ele+'_drag').attr("draggable", "false");
+      }
+      // For all non available comopnents, remove their class
+      for (var ele of this.nonAvailableComponents) {
+        console.log(ele);
+        $('#'+ele+'_nondrag').removeClass('none_draggable_element');
       }
       // if (this.runStop == false) {
         
@@ -534,6 +801,11 @@ export default {
         $('#'+ele+'_drag').addClass('draggable_element');
         $('#'+ele+'_drag').attr("draggable", "true");
       }
+      // For all non available comopnents, add their class
+      for (var ele of this.nonAvailableComponents) {
+        console.log(ele);
+        $('#'+ele+'_nondrag').addClass('none_draggable_element');
+      }
     },
     testClick() {
       // TEST ADDING A BUTTON
@@ -547,7 +819,7 @@ export default {
 
     },
     // Adds a new component to the PCB
-    addNewComponent(thisId, thisType, thisHtml, thisLeft, thisTop) {
+    addNewComponent(thisId, thisType, thisInnerHtml, thisHtml, thisLeft, thisTop) {
 
       // // Hide the soft comonent in the user webpage
       // $('#'+thisId).css("visibility", "hidden");
@@ -557,7 +829,6 @@ export default {
       // Get element data to save later:
       var thisWidth = $('#'+thisId).outerWidth();
       var thisHeight = $('#'+thisId).outerHeight();
-      var thisInnerHTML = $('#'+thisId).html();
 
       // Generate unique id:
       var elementId = "element_"+this.uniqueId;
@@ -567,7 +838,7 @@ export default {
       $("<div/>", {
         id: elementId,
         class: "noGlobalTrigger",
-        style: "position:absolute;display:inline-block;border-radius:5px;"
+        style: "position:absolute;display:inline-block;border-radius:5px;border:3px solid transparent;"
       }).appendTo("#PCB");
       // Create protector
       $("#"+elementId).append('<div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div>');
@@ -590,7 +861,16 @@ export default {
       $("#"+thisId).empty();
 
       // Make it draggable
-      $("#"+elementId).draggable({ containment: "#PCB", scroll: false });
+      $("#"+elementId).draggable({ containment: "#PCB", scroll: false,
+        stop: ( event, ui ) => {
+          // Set new component position
+          for (var key in this.eComponentSaved) {
+            if (this.eComponentSaved[key].elementId == elementId) {
+              this.setComponentPosition(key);
+            }
+          }
+        }
+      });
 
       // Get element width and height for centering it;
       var eleId_center_x = $("#"+elementId).outerWidth() / 2;
@@ -645,7 +925,7 @@ export default {
               $("#"+this.eComponentSaved[key].elementId).css("border" , "3px solid rgba(50, 50, 50, 0.2)");
             } else {
               // Remove selection border
-              $("#"+this.eComponentSaved[key].elementId).css("border" , "");
+              $("#"+this.eComponentSaved[key].elementId).css("border" , "3px solid transparent");
             }
           }
 
@@ -660,20 +940,64 @@ export default {
       this.eComponentSaved[thisId] = {
                   "elementId": elementId,
                   "type": thisType,
+                  // Physical component values
                   "componentSelected": selectedNumber,
+                  "componentName": null,        // Set in the next function
+                  "componentPartImage": null,   // Set in the next function
+                  "componentImage": null,       // Set in the next function
+                  "componentWidth": null,       // Set in the next function
+                  "componentHeight": null,      // Set in the next function
+                  "componentLeft": null,        // Set in get position
+                  "comopnentTop": null,         // Set in get position
+                  "componentCenterLeft": null,  // Set in get position
+                  "componentCenterTop": null,
+                  // Original html tag values
                   "html": thisHtml,
                   "width": thisWidth,
                   "height": thisHeight,
-                  "innerHTML": thisInnerHTML
+                  "innerHTML": thisInnerHtml
                 };
 
       // Apply style settings for new component (TODO: get Id and type)
       this.setNewComponentSelection(thisId, thisType, selectedNumber);
 
+      // Set component position
+      this.setComponentPosition(thisId);
+
+    },
+    setComponentPosition(thisId) {
+
+      // Get component data
+      var elementId  = this.eComponentSaved[thisId].elementId;
+      var componentWidth = parseFloat(this.eComponentSaved[thisId].componentWidth);
+      var componentHeight = parseFloat(this.eComponentSaved[thisId].componentHeight);
+
+      // Get top and left in mm
+      var leftpx = parseFloat($("#"+elementId).css("left"));
+      var toppx = parseFloat($("#"+elementId).css("top"));
+      var ruler = $('#mm_rule').height();  
+      var leftmm = Math.floor(leftpx/ (ruler/100));
+      var topmm = Math.floor(toppx/ (ruler/100));
+
+      // Set comopnent Top and left in mm
+      this.eComponentSaved[thisId].componentLeft = leftmm;
+      this.eComponentSaved[thisId].componentTop = topmm;
+
+      // Set component center left and top in mm
+      var centerLeft = leftmm + (componentWidth/2);
+      var centerTop = topmm + (componentHeight/2);
+      this.eComponentSaved[thisId].componentCenterLeft = centerLeft;
+      this.eComponentSaved[thisId].componentCenterTop = centerTop;
+
+      console.log("CENTER LEFT: "+ centerLeft +"mm" );
+      console.log("CENTER TOP: "+ centerTop +"mm" );
+
     },
     menuItemClick(item) {
       console.log("Item Cliked"+item);
-
+      removeComponent();
+    },
+    removeComponent() {
       // Get data
       var elementId = this.eComponentSaved[this.currentComponentId].elementId;
       var e_type = this.eComponentSaved[this.currentComponentId].type;
@@ -721,7 +1045,7 @@ export default {
         // Unselect components
         for (var key in this.eComponentSaved) {
             // Remove selection border
-            $("#"+this.eComponentSaved[key].elementId).css("border" , "");
+            $("#"+this.eComponentSaved[key].elementId).css("border" , "3px solid transparent");
         }
         // Hide Component Selection List
         this.componentListDisplay = 'none';
@@ -770,6 +1094,101 @@ export default {
     webPageMouseOut(e) {
       // TODO: implement css layout
       // console.log("Mouse out of:"+e)
+    },
+    openHTMLEditor() {
+      this.HTMLEditor = true;
+    },
+    HTMLEditor_loadDemo(Demo) {
+      // HTML
+      this.EditorHTMLText = Demo.html;
+      this.EditorHTML.getSession().setValue(this.EditorHTMLText);
+      // CSS
+      this.EditorCSSText = Demo.css;
+      this.EditorCSS.getSession().setValue(this.EditorCSSText);
+      // JS
+      this.EditorJSText = Demo.js;
+      this.EditorJS.getSession().setValue(this.EditorJSText);
+    },
+    HTMLEditor_run() {
+      
+      // Refresh iframe 
+      var iframe = document.querySelector('#HTMLEditor_iframe');
+      iframe.contentWindow.location.reload(true); 
+        // Will call funcition on iframe load:HTMLEditor_iframeOnLoad()
+
+    },
+    HTMLEditor_iframeOnLoad () {
+      this.EditorIFRAME_head = $("#HTMLEditor_iframe").contents().find("head");
+      this.EditorIFRAME_body = $("#HTMLEditor_iframe").contents().find("body");
+
+      // this.EditorIFRAME_head.empty();
+      // this.EditorIFRAME_body.empty();
+
+      // Set External script sources
+      if (this.EditorJS_extSoruceOne != undefined) {
+        console.log("Ext Soruce One has:"+this.EditorJS_extSoruceOne);
+        this.EditorIFRAME_head.append($("<script />", {
+		      src: `${this.EditorJS_extSoruceOne}`
+        }));
+      }     
+      if (this.EditorJS_extSoruceTwo != undefined) {
+        console.log("Ext Soruce Two has:"+this.EditorJS_extSoruceTwo);
+      }
+
+      // Set CSS
+      this.EditorIFRAME_head.append($("<style />", {
+		    text: `${this.EditorCSS.getSession().getValue()}`
+      }));
+
+      // Set HTML
+      this.EditorIFRAME_body.html(this.EditorHTML.getSession().getValue());
+
+      // Set JS
+      this.EditorIFRAME_body.append($("<script />", {
+		    html: `${this.EditorJS.getSession().getValue()}`
+      }));
+
+    },
+    HTMLEditor_injectWebPage() {
+      console.log("Injecting to Appliancizer");
+      this.HTMLEditor = false;
+    
+      // Inject HTML to webpageContainer
+      $("#webpageContainer").empty();
+      $("#webpageContainer").append(this.EditorHTML.getSession().getValue());
+      // Inject CSS to whole document
+      this.EditorMAIN_cssTag.remove();
+      this.EditorMAIN_cssTag = $("<style></style>").appendTo($('head'));
+      this.EditorMAIN_cssTag.text(this.EditorCSS.getSession().getValue());
+      // Inject JS to whole document
+      this.EditorMAIN_jsTag.remove();
+      this.EditorMAIN_jsTag = $("<script/>").appendTo($('body'));
+      this.EditorMAIN_jsTag.text(this.EditorJS.getSession().getValue());
+      // Initialize search of soft elements that can be harden. 
+      this.searchSoftElements();
+    },
+    openBuildScreen() {
+      this.BuildScreen = true;
+      // Reset items
+      this.items = [];
+      // Output all component data:
+      for (var key in this.eComponentSaved) {
+        console.log("COMPONENT:", this.eComponentSaved[key]);
+        // Push to list
+        this.items.push({
+          avatar: this.getComponentsImg(this.eComponentSaved[key].componentPartImage),
+          title: this.eComponentSaved[key].componentName,
+          subtitle: `Width: ${this.eComponentSaved[key].componentWidth} 
+                     Height: ${this.eComponentSaved[key].componentHeight} |
+                     CenterLeft: ${this.eComponentSaved[key].componentCenterLeft}mm
+                     CenterTop: ${this.eComponentSaved[key].componentCenterTop}mm`
+        })
+      }
+
+    },
+    BuildScreen_pcbresize(pcb) {
+      this.FinalPCB.height = pcb.height;
+      this.FinalPCB.width = pcb.width;
     }
 
   },
@@ -846,7 +1265,7 @@ export default {
   height: 75%;
 }
 
-#PCBBoard {
+#PCB {
   position: relative !important; /* Makes the PCB inlined to parent */
 }
 
@@ -890,6 +1309,7 @@ export default {
 }
 
 #webpageContainerProgressbar {
+  display : none;
   position: absolute;
   padding-top: 20%;
   padding-left: 20%;
@@ -910,7 +1330,7 @@ export default {
 }
 
 
-/* Make iframe draggable */
+/* Draggable elements css */
 .draggable_element {
   background: transparent;
 	position: relative;/*parent must have positioning*/
@@ -928,14 +1348,93 @@ export default {
 	bottom: 0;
 }
 
+/* None draggable elements css */
+.none_draggable_element {
+  background: transparent;
+	position: relative;/*parent must have positioning*/
+  border-color: red;
+  border-style: dotted;
+}
+
+.none_draggable_element:after {
+  content: "";
+	display: block;
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+}
+
+
 /*
-Vuetify removed styles
+HTML Editor css
+*/
+#dialogHeight {
+  height: 100%;
+}
+
+#htmlEditor{
+  width: 100%;
+  height: 80%;
+  overflow: hidden;
+}
+
+#cssEditor{
+  width: 100%;
+  height: 80%;
+  overflow: hidden;
+}
+
+#jsEditor{
+  width: 100%;
+  height: 80%;
+  overflow: hidden;
+}
+
+#HTMLEditor_iframe {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+#editorMainPanes {
+  height: 90%;
+}
+
+.output {
+   background: #fff;
+   border-left: 1px solid #f3f3f3;
+   overflow: hidden;
+   padding: 0 20px;
+   margin: 20px 0;
+}
+.output iframe {
+   border: none;
+   width: 100%;
+   height: 100%;
+   overflow: hidden;
+}
+.output iframe::-webkit-scrollbar {
+   display: none;
+}
+
+
+/*
+Vuetify edited styles
 */
 .vbtn {
+  /* Set vewutify styles again */
   background-color: transparent;
   border-style: none;
   color: inherit;
 }
+
+.v-expansion-panel__container {
+  /* Get expansion panel color right */
+  background-color: #212121 !important;
+}
+
 
 /*
 Component Styles

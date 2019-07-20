@@ -41,7 +41,7 @@ export default {
         playerVars: {
           rel: 0,
           color: 'white',
-          playlist: 'dQiNVk_u0po, IvUU8joBb1Q,S-m-CHigCY4,HpaHvUOk3F0'
+          playlist: 'dQiNVk_u0po, ln2BVxSR6gk,VIwSn8bC3uM,IvUU8joBb1Q,S-m-CHigCY4,HpaHvUOk3F0'
         },
         events: {
           'onReady': youtubeInit,
@@ -97,9 +97,18 @@ export default {
     }
     window.prev = function() {
       player.previousVideo();
+      setTimeout(function(){ 
+        var progressBar = document.getElementById("progressBar");
+        progressBar.setAttribute("max", `${player.getDuration()}`); 
+      }, 1000);
+      
     }
     window.next = function() {
       player.nextVideo();
+      setTimeout(function(){ 
+        var progressBar = document.getElementById("progressBar");
+        progressBar.setAttribute("max", `${player.getDuration()}`); 
+      }, 1000);
     }
     var slider = document.getElementById("slider");
     window.slider.oninput = function() {

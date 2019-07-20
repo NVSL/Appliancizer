@@ -10,7 +10,7 @@ import "vuetify/dist/vuetify.css"; // Ensure you are using css-loader
 // window.JQuery = require('jquery')
 Vue.config.productionTip = false;
 Vue.use(Vuetify, {
- iconfont: 'ma'
+  iconfont: "ma"
 });
 
 new Vue({
