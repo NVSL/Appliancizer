@@ -105,8 +105,8 @@ export default {
 </script>
 
 <style>
-  .filler {
-    margin:0px;
+  .pcb {
+    margin-right:10px !important;
     padding:0px;
     /* width: 30%;
     height: 50%; */

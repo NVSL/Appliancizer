@@ -1,6 +1,11 @@
 <!--
 // Tomorrow:
-// Clear eAvailableComponents when a new search is done, and the others.
+// - Add generator of code and sd image. 
+// - Integrate this with gadgetron.
+// - Add more components (like an LED and more smd push buttons)
+// - Add Header
+// - Add external components. 
+
 -->
 
 <template>
@@ -229,31 +234,81 @@
               </v-btn>
             </v-toolbar-items>
           </v-toolbar>
-          <v-container id="editorMainPanes" fluid>
-            <h2><strong>PCB Dimension: </strong>{{ FinalPCB.width }} mm х {{ FinalPCB.height }} mm</h2>
+          <v-container id="buildScreen_mainPane" fluid>
+            <v-layout row wrap id="buildScreen_layoutHeight">
+              <div id="buildScreen_pcbHeightText" class="textVertical text-xs-center">{{ FinalPCB.height }} mm</div>
+              <v-flex id="buildScreen_pcbCanvas" xs6 class="pr-3 flexBoxHeight">
+                <div id="canvasPCBimage" class="pr-3">
+                  <!-- PCB image goes here  -->
+                </div>
+                <div id="buildScreen_pcbWidthText" class="text-sm-center">{{ FinalPCB.width }} mm</div>  
+              </v-flex>
+              <v-divider id="buildScreen_dividerHeight" class="mx-3" inset vertical></v-divider>
+              <v-flex  xs4 id="buildScreen_info" class="flexBoxHeight">
+                <h2><strong>PCB Dimensions: </strong>{{ FinalPCB.width }} mm х {{ FinalPCB.height }} mm</h2>
+                <h2><strong>PCB Electrical Components:</strong></h2>
+                <v-list two-line>
+                  <template v-for="(item, index) in FinalComponents">
+                    
+                    <v-list-tile v-if="item.title" :key="index+'_list'" avatar>
+
+                      <v-list-tile-avatar size="73">
+                        <img :src="item.image">
+                      </v-list-tile-avatar>
+
+                      <v-list-tile-content class="pl-4">
+                        <v-list-tile-title v-html="item.title"></v-list-tile-title>
+                        <v-list-tile-sub-title v-html="item.subtitle"></v-list-tile-sub-title>
+                      </v-list-tile-content>
+
+                    </v-list-tile>
+                    <v-divider v-if="item.title" :key="index+'_divider'" :inset="true"></v-divider>
+
+                  </template>
+                </v-list>
+              </v-flex>
+            </v-layout>
             <v-divider></v-divider>
-            <h2><strong>PCB Electrical Components:</strong></h2>
-             <v-list two-line>
-              <template v-for="(item, index) in items">
-                
-                <v-list-tile v-if="item.title" :key="item.title" avatar>
-
-                  <v-list-tile-avatar>
-                    <img :src="item.avatar">
-                  </v-list-tile-avatar>
-
-                  <v-list-tile-content>
-                    <v-list-tile-title v-html="item.title"></v-list-tile-title>
-                    <v-list-tile-sub-title v-html="item.subtitle"></v-list-tile-sub-title>
-                  </v-list-tile-content>
-
-                </v-list-tile>
-                <v-divider v-if="item.title" :key="index" :inset="true"></v-divider>
-
-              </template>
-            </v-list>
-            <v-divider></v-divider>
+            <div class="text-sm-center pl-5 ml-4">
+              <v-btn class="vbtn info" flat @click="BuildScreen_build()">
+                {{BuildButtonText}}
+                <!-- <v-icon>arrow_forward_ios</v-icon> -->
+              </v-btn>
+            </div>
           </v-container>
+          <v-container id="buildScreen_downloadPane" fluid>
+            <v-layout row wrap id="buildDownload_layoutHeight">
+              <v-flex  xs6>
+                <h3>Generating Embedded System Code</h3>
+                <v-progress-linear :indeterminate="true"></v-progress-linear>
+                <!-- <a class="vbtn info v-btn v-btn--flat theme--light" id="buildScreen_downloadOsImage">
+                  <div class="v-btn__content">
+                  DOWNLOAD OS IMAGE
+                  </div>
+                </a> -->
+                <v-btn id="buildScreen_downloadOsImage" class="vbtn info" flat @click="BuildScreen_downloadOSImage()">
+                  DOWNLOAD OS IMAGE
+                </v-btn>
+                <h3>Generating PCB Gerber Files</h3>
+                <v-progress-linear :indeterminate="true"></v-progress-linear>
+                <v-btn class="vbtn info" flat @click="BuildScreen_downloadPCBFiles()">
+                  DOWNLOAD PCB FILES
+                  <!-- <v-icon>arrow_forward_ios</v-icon> -->
+                </v-btn>
+                <v-layout row wrap class="pt-5">
+                  <div id="generatedPcbTop"></div>
+                  <div id="generatedPcbBottom"></div>
+                 </v-layout>
+              </v-flex>
+            </v-layout>
+            <v-divider></v-divider>
+            <div class="text-sm-center pl-5 ml-4">
+              <v-btn class="vbtn info" flat @click="BuildScreen_cancelBuild()">
+                {{ CancelBuildButtonText }}
+                <!-- <v-icon>arrow_forward_ios</v-icon> -->
+              </v-btn>
+            </div>
+           </v-container>
         </v-card>
     </v-dialog>
 
@@ -277,9 +332,13 @@ import 'brace/mode/html';
 import 'brace/mode/css';
 import 'brace/mode/javascript';
 import 'brace/theme/monokai';
+import html2canvas from 'html2canvas';
+import JSZip from 'jszip';
+import FileSaver from 'file-saver';
+// import pcbStackup from 'pcb-stackup';
 // Demos
-import VideoPlayer from './demos/VideoPlayer'
-import SimpleButton from './demos/SimpleButton'
+import VideoPlayer from './demos/VideoPlayer';
+import SimpleButton from './demos/SimpleButton';
 
 export default {
   name: "app",
@@ -346,24 +405,31 @@ export default {
           { title: 'Simple Button', demo: SimpleButton},
           { title: 'Video Player', demo: VideoPlayer },       
         ],
-        BuildScreen: true,
+        BuildScreen: false,
         FinalPCB: {
           height: 0,
           width: 0
         },
-        items: [
+        FinalComponents: [
           {
-            // avatat, title, subtitle
+            // image, title, subtitle
           }
-        ]
+        ],
+        BuildButtonText : "BUILD",
+        BuildButtonCount : 0,
+        CancelBuildButtonText : "CANCEL",
+        CancelBuildButtonCount : 0,
+        GeneratedPCBimageTop: "",
+        GeneratedPCBimageBottom: ""
   }),
   mounted: function () {
-
+  
     // Load electrical component List:
     this.eComponentList = {
             "submit": {
               0: {
                 "component": "physical-button-red",
+                "hardElement": "physical-button",
                 "partImage": "buttons/tactile-button-round-red.jpg",
                 "image":"buttons/red-round-button.2D.svg",
                 "height": "10mm",
@@ -371,6 +437,7 @@ export default {
               },
               1: {
                 "component": "physical-button-blue",
+                "hardElement": "physical-button",
                 "partImage": "buttons/tactile-button-round-blue.jpg",
                 "image":"buttons/blue-round-button.2D.svg",
                 "height": "20mm",
@@ -378,6 +445,7 @@ export default {
               },
               2: {
                 "component": "physical-button-green",
+                "hardElement": "physical-button",
                 "partImage": "buttons/tactile-button-round-green.jpg",
                 "image":"buttons/green-round-button.2D.svg",
                 "height": "30mm",
@@ -387,6 +455,7 @@ export default {
             "range" : {
               0: {
                 "component": "physical-dynamic-range",
+                "hardElement": "physical-motorized-pot",
                 "partImage": "range/motorized-potentiometer.png",
                 "image":"range/motorizedPot.png",
                 "height": "9mm",
@@ -394,6 +463,7 @@ export default {
               },
               1: {
                 "component": "physical-static-range",
+                "hardElement": "physical-pot",
                 "partImage": "range/pot.png",
                 "image":"range/potentiometer.png",
                 "height": "20mm",
@@ -403,13 +473,15 @@ export default {
             "screens" : {
               0: {
                 "component": "utronics3-5inch",
+                "hardElement": "",
                 "image":"",
                 "partImage":"screens/utronics_3.5inch.png",
                 "height": "80mm",
                 "width": "100mm"
               },
               1: {
-                "comopnent" : "geeekpi5inch",
+                "component" : "geeekpi5inch",
+                "hardElement": "",
                 "image":"",
                 "partImage":"screens/geeekpi_5inch.png",
                 "height": "100mm",
@@ -570,6 +642,11 @@ export default {
         // If element has no children and has an id
         if ($(element).children().length == 0 ) {
 
+          // Skip specific elements 
+          if (element.tagName == 'BR') {
+            continue;
+          }
+
           // If element is of type iframe, button or range then..
           if ( (element.tagName == 'BUTTON' || element.type == 'range')
             && $(element).attr('id')) {
@@ -704,6 +781,7 @@ export default {
     setNewComponentSelection(compId, compType, newNumber){
       // Get new image path
       var name = this.eComponentList[compType][newNumber].component;
+      var hardElement = this.eComponentList[compType][newNumber].hardElement;
       var partImage = this.eComponentList[compType][newNumber].partImage;
       var image = this.eComponentList[compType][newNumber].image;
       var height = this.eComponentList[compType][newNumber].height;
@@ -719,7 +797,8 @@ export default {
       // Save the new component number selected [Here we save the new selected component]
       this.eComponentSaved[compId].componentSelected = newNumber;   // Set new component selected
       this.eComponentSaved[compId].componentName = name;            // Set new component name
-      this.eComponentSaved[compId].componentPartImage = partImage;  // Set new component name
+      this.eComponentSaved[compId].componentHardElement = hardElement;            // Set new component hardElement
+      this.eComponentSaved[compId].componentPartImage = partImage;  // Set new component part Image
       this.eComponentSaved[compId].componentImage = image;          // Set new component image path
       this.eComponentSaved[compId].componentWidth = width;          // Set new component width
       this.eComponentSaved[compId].componentHeight = height;        // Set new component height
@@ -728,8 +807,8 @@ export default {
       event.preventDefault();
       // console.log("Drop EVENT", event.target); // this element
     },
-    getImgUrl(image) {
-      return require('./assets/'+image);
+    getImgUrl(imagePath) {
+      return require(imagePath);
     },
     getComponentsImg(item) {
       return require('./assets/'+item);
@@ -918,7 +997,6 @@ export default {
           //console.log(ele.tagName.toLowerCase());
 
           // Add this element border and unselect others
-          console.log(this.eComponentSaved);
           for (var key in this.eComponentSaved) {
             if (key == this.currentComponentId) {
               // Add selection border
@@ -943,6 +1021,7 @@ export default {
                   // Physical component values
                   "componentSelected": selectedNumber,
                   "componentName": null,        // Set in the next function
+                  "componentHardElement": null, // Set in the next function
                   "componentPartImage": null,   // Set in the next function
                   "componentImage": null,       // Set in the next function
                   "componentWidth": null,       // Set in the next function
@@ -950,7 +1029,7 @@ export default {
                   "componentLeft": null,        // Set in get position
                   "comopnentTop": null,         // Set in get position
                   "componentCenterLeft": null,  // Set in get position
-                  "componentCenterTop": null,
+                  "componentCenterTop": null,   // Set in get position
                   // Original html tag values
                   "html": thisHtml,
                   "width": thisWidth,
@@ -1042,15 +1121,18 @@ export default {
       // On a Global clikc, remove the border from the components selected.
       var targetParent = e.target.parentElement;
       if (!$(targetParent).hasClass('noGlobalTrigger')) {
-        // Unselect components
-        for (var key in this.eComponentSaved) {
-            // Remove selection border
-            $("#"+this.eComponentSaved[key].elementId).css("border" , "3px solid transparent");
-        }
-        // Hide Component Selection List
-        this.componentListDisplay = 'none';
-        this.pcbPanelHeight = '100%';
+        this.unselectComponents();
       }
+    },
+    unselectComponents() {
+      // Unselect components
+      for (var key in this.eComponentSaved) {
+          // Remove selection border
+          $("#"+this.eComponentSaved[key].elementId).css("border" , "3px solid transparent");
+      }
+      // Hide Component Selection List
+      this.componentListDisplay = 'none';
+      this.pcbPanelHeight = '100%';
     },
     // Make user webpage elements draggable
     webPageMouseOver(e) {
@@ -1168,16 +1250,43 @@ export default {
       this.searchSoftElements();
     },
     openBuildScreen() {
+      // Just to test Build screen
       this.BuildScreen = true;
-      // Reset items
-      this.items = [];
+      // Reset Final Components
+      this.FinalComponents = [];
+
+      // Just for Test, Fill random component
+      // this.eComponentSaved["fakeid"] = {
+      //   comopnentTop: null,
+      //   componentCenterLeft: 5,
+      //   componentCenterTop: 5,
+      //   componentHeight: "10mm",
+      //   componentImage: "buttons/red-round-button.2D.svg",
+      //   componentLeft: 0,
+      //   componentName: "physical-button-red",
+      //   componentHardElement : "physical-button",
+      //   componentPartImage: "buttons/tactile-button-round-red.jpg",
+      //   componentSelected: 0,
+      //   componentTop: 0,
+      //   componentWidth: "10mm",
+      //   elementId: "element_X",
+      //   height: 25,
+      //   html: '<button id="myButton" onclick="test()">test</button>',
+      //   innerHTML: "test",
+      //   type: "submit",
+      //   width: 26.5781
+      // };
+
+      // Unselect components before screenshoot
+      this.unselectComponents();
+
       // Output all component data:
       for (var key in this.eComponentSaved) {
         console.log("COMPONENT:", this.eComponentSaved[key]);
         // Push to list
-        this.items.push({
-          avatar: this.getComponentsImg(this.eComponentSaved[key].componentPartImage),
-          title: this.eComponentSaved[key].componentName,
+        this.FinalComponents.push({
+          image: this.getComponentsImg(this.eComponentSaved[key].componentPartImage),
+          title: this.eComponentSaved[key].componentName + " &lt"+this.eComponentSaved[key].componentHardElement+"&gt",
           subtitle: `Width: ${this.eComponentSaved[key].componentWidth} 
                      Height: ${this.eComponentSaved[key].componentHeight} |
                      CenterLeft: ${this.eComponentSaved[key].componentCenterLeft}mm
@@ -1185,11 +1294,150 @@ export default {
         })
       }
 
+      // Take a picture of the PCB and add it to the left 
+      $('#canvasPCBimage').empty(); // Delete previous image
+      html2canvas(document.querySelector('#PCB')).then(function(canvas) {
+
+        // Add canvas pcb image 
+        document.querySelector('#canvasPCBimage').appendChild(canvas);
+
+        // Adjust horizontal pcb width Text
+        var widthFlexBox = $('#buildScreen_pcbCanvas').width()
+        var widthCanvas =  canvas.width;
+        var widthFinal = 0;
+        if (widthCanvas > widthFlexBox ) {
+          widthFinal = widthFlexBox;
+        } else {
+          widthFinal = widthCanvas;    
+        }
+        $('#buildScreen_pcbWidthText').css("width", widthFinal + 'px');
+        
+        // Adjust vertical pcb Text
+        var heightFlexBox = $('#buildScreen_pcbCanvas').height()
+        var heightCanvas =  canvas.height;
+        var heightFinal = 0;
+        if (heightCanvas > heightFlexBox ) {
+          heightFinal = heightFlexBox;
+        } else {
+          heightFinal = heightCanvas;    
+        }
+        $('#buildScreen_pcbHeightText').css("height",  heightFinal + 'px');
+
+      });
+
     },
     BuildScreen_pcbresize(pcb) {
       this.FinalPCB.height = pcb.height;
       this.FinalPCB.width = pcb.width;
+    },
+    BuildScreen_build() {
+      if (this.BuildButtonCount == 0) {
+        this.BuildButtonText = "THIS WILL TAKE TIME, ARE YOU SURE?";
+        this.BuildButtonCount++;
+      } else {
+        // Execute Stuff here
+        $('#buildScreen_mainPane').css("display", "none");
+        $('#buildScreen_downloadPane').css("display", "block");
+        // Return Button to normal value
+        this.BuildButtonText = "BUILD";
+        this.BuildButtonCount = 0;
+      }
+    },
+    BuildScreen_cancelBuild() {
+      if (this.CancelBuildButtonCount == 0) {
+        this.CancelBuildButtonText = "THIS WILL CACNEL THE BUILD PROCESS, ARE YOU SURE?";
+        this.CancelBuildButtonCount++;
+      } else {
+        // Execute Stuff here
+        $('#buildScreen_mainPane').css("display", "block");
+        $('#buildScreen_downloadPane').css("display", "none");
+        // Return Button to normal value
+        this.CancelBuildButtonText = "CANCEL";
+        this.CancelBuildButtonCount = 0;
+      }
+    },
+    BuildScreen_downloadPCBFiles() {
+      this.GeneratedPCBimageTop;
+
+      // Empty images
+      $('#generatedPcbTop').empty();
+      $('#generatedPcbBottom').empty();
+
+      // const layers = [
+      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.dri').default, filename: './gerberfiles/Arduino/arduino.dri'},
+      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GBL').default, filename: './gerberfiles/Arduino/arduino.GBL'},
+      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GBP').default, filename: './gerberfiles/Arduino/arduino.GBP'},
+      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GBS').default, filename: './gerberfiles/Arduino/arduino.GBS'},
+      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GML').default, filename: './gerberfiles/Arduino/arduino.GML'},
+      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.gpi').default, filename: './gerberfiles/Arduino/arduino.gpi'},
+      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GTL').default, filename: './gerberfiles/Arduino/arduino.GTL'},
+      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GTO').default, filename: './gerberfiles/Arduino/arduino.GTO'},
+      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GTP').default, filename: './gerberfiles/Arduino/arduino.GTP'},
+      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GTS').default, filename: './gerberfiles/Arduino/arduino.GTS'},
+      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.TXT').default, filename: './gerberfiles/Arduino/arduino.TXT'}
+      // ]
+
+      const layers = [
+        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GBL').default, filename: './gerberfiles/artik530/artik530.GBL'},
+        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GBO').default, filename: './gerberfiles/artik530/artik530.GBO'},
+        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GBP').default, filename: './gerberfiles/artik530/artik530.GBP'},
+        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GBS').default, filename: './gerberfiles/artik530/artik530.GBS'},
+        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GML').default, filename: './gerberfiles/artik530/artik530.GML'},
+        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GTL').default, filename: './gerberfiles/artik530/artik530.GTL'},
+        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GTO').default, filename: './gerberfiles/artik530/artik530.GTO'},
+        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GTP').default, filename: './gerberfiles/artik530/artik530.GTP'},
+        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GTS').default, filename: './gerberfiles/artik530/artik530.GTS'},
+        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.TXT').default, filename: './gerberfiles/artik530/artik530.TXT'}
+      ]
+
+      console.log(layers);
+
+      pcbStackup(layers).then(stackup => {
+        //console.log(stackup.top.svg) // logs "<svg ... </svg>"
+        //console.log(stackup.bottom.svg) // logs "<svg ... </svg>"
+        $('#generatedPcbTop').append(stackup.top.svg);
+        $('#generatedPcbBottom').append(stackup.bottom.svg);
+      })
+      
+    }, BuildScreen_downloadOSImage() {
+      // Just for testing 
+//       var text = 
+// '<!DOCTYPE html>\n\
+// <html lang="en">\n\
+//   <head>\n\
+//   <meta charset="UTF-8">\n\
+//   <meta http-equiv="X-UA-Compatible" content="IE=edge">\n\
+//   <meta name="viewport" content="width=device-width,initial-scale=1.0">\n\
+//   <link rel="import" href="amalgam/amalgam.html">\n\
+//   <link rel="stylesheet" href="hardware.css">\n\
+//   <style>\n'+VideoPlayer.css+'  </style>\n\
+//   </head>\n\
+//   <body>\n'+VideoPlayer.html+
+//     '\n  <script>\n'+ VideoPlayer.js +'  <\/script>\n\
+//   </body>\n\
+// </html>\n';
+//       var name = "myfilename.html";
+//       var type = "text/plain";
+//       var a = document.getElementById("buildScreen_downloadOsImage");
+//       var file = new Blob([text], {type: type});
+//       a.href = URL.createObjectURL(file);
+//       a.download = name;
+
+      var zip = new JSZip();
+
+      zip.file("Hello.txt", "Hello World\n");
+      zip.file("Hello2.txt", "Hello World2\n");
+      var img = zip.folder("images");
+      // img.file("~/assets/logo.png", imgData, {base64: true});
+
+      zip.generateAsync({type:"blob"}).then(function(content) {
+          // see FileSaver.js
+          FileSaver.saveAs(content, "theexample.zip");
+      });
+
     }
+
+
 
   },
   created () {
@@ -1329,8 +1577,63 @@ export default {
   width: 100%;
 }
 
+/* 
+Build Screen css 
+*/
+.textVertical {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+}
 
-/* Draggable elements css */
+.flexBoxHeight {
+  height: 100%;
+}
+
+#buildScreen_mainPane {
+  display: none;
+  height: 94%;
+}
+
+#buildScreen_info {
+  overflow-y: auto;
+}
+
+#buildScreen_pcbCanvas {
+  overflow: auto;
+}
+
+#buildScreen_layoutHeight {
+  height: 88%;
+}
+
+#buildScreen_dividerHeight {
+  height: 100%;
+}
+
+/* Download Screen */
+
+#buildScreen_downloadPane {
+  display: block;
+  height: 94%;
+}
+
+#buildDownload_layoutHeight {
+  height: 88%;
+}
+
+#generatedPcbTop {
+  height: 20%;
+}
+
+#generatedPcbBottom {
+  height: 20%;
+}
+
+
+/* 
+Draggable elements css 
+*/
 .draggable_element {
   background: transparent;
 	position: relative;/*parent must have positioning*/

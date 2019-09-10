@@ -3,7 +3,7 @@ export default {
     '<div id="video-placeholder"></div> \n\
 <br>\n\
 <button onclick="playPause()" id="playPause">Play/Pause</button>\n\
-<button onclick="prev()">Prev</button>\n\
+<button onclick="prev()" id="prev">Prev</button>\n\
 <button onclick="next()" id="next">Next</button>\n\
 <input type="range" min="0" max="100" step="1" value="10" id="slider">\n\
 <input type="range" min="0" max="10" step="1" value="0" id="progressBar">\n',
@@ -38,7 +38,7 @@ function onYouTubeIframeAPIReady() {\n\
     playerVars: {\n\
       rel: 0,\n\
       color: "white",\n\
-      playlist: "dQiNVk_u0po, IvUU8joBb1Q,S-m-CHigCY4,HpaHvUOk3F0",\n\
+      playlist: "ln2BVxSR6gk, dQiNVk_u0po, IvUU8joBb1Q,S-m-CHigCY4,HpaHvUOk3F0",\n\
     },\n\
     events: {\n\
       onReady: youtubeInit\n\
@@ -58,6 +58,7 @@ function youtubeInit () { \n\
 }\n\
 function updateProgressBar() {\n\
   var progressBar = document.getElementById("progressBar");\n\
+  if (progressBar == null) return;\n\
   //progressBar.setAttribute("value", `${player.getCurrentTime()}`);\n\
   // Chrome bug: this way it doesnt trigger webcompoent attribute-change\n\
   progressBar.value = player.getCurrentTime(); \n\
