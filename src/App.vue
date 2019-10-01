@@ -328,7 +328,6 @@
 
 <script>
 import Vue from "vue";
-import VueDragResize from 'vue-drag-resize';
 import Splitpanes from 'splitpanes';
 import 'splitpanes/dist/splitpanes.css';
 import PcbBoard from './components/PcbBoard.vue';
@@ -350,8 +349,6 @@ import VideoPlayer from './demos/VideoPlayer';
 import SimpleButton from './demos/SimpleButton';
 import SimpleLED from './demos/SimpleLED';
 
-import AmalgamZip from 'raw-loader!./amalgamNative.zip';
-
 
 // Server URL
 const server = axios.create({
@@ -363,7 +360,6 @@ export default {
   name: "app",
   components: {
     Splitpanes,
-    VueDragResize,
     PcbBoard
   },
   data: () => ({
