@@ -279,17 +279,24 @@
           <v-container id="buildScreen_downloadPane" fluid>
             <v-layout row wrap id="buildDownload_layoutHeight">
               <v-flex  xs6>
-                <h3>Generating Embedded System Code</h3>
-                <v-progress-linear :indeterminate="true"></v-progress-linear>
-                <!-- <a class="vbtn info v-btn v-btn--flat theme--light" id="buildScreen_downloadOsImage">
-                  <div class="v-btn__content">
-                  DOWNLOAD OS IMAGE
-                  </div>
-                </a> -->
-                <v-btn id="buildScreen_downloadOsImage" class="vbtn info" flat @click="BuildScreen_downloadOSImage()">
+                <h3>Build Steps </h3>
+                <h3>1. Download the OS image below and flash it to your raspberry pi SD card. We recomend 
+                  <a href="https://www.balena.io/etcher/">Balena Etcher</a>   
+                    for flashing the OS image.
+                </h3>
+                <v-btn class="vbtn info" flat @click="BuildScreen_downloadOSImage()">
                   DOWNLOAD OS IMAGE
                 </v-btn>
-                <h3>Generating PCB Gerber Files</h3>
+                <h3>2. Download the generated app to your raspberry pi or deploy it online. </h3>
+                <v-btn  class="vbtn info" flat @click="BuildScreen_downloadAPP()">
+                  DOWNLOAD APP
+                </v-btn>
+                <v-btn  class="vbtn info" flat @click="BuildScreen_deployOnline()">
+                  DEPLOY APP ONLINE
+                </v-btn>
+                <br>
+                <a :href="GeneratedLink" target="_blank">{{GeneratedLink}}</a>   
+                <h3>3. Generate PCB Gerber Files for mmanufacture.</h3>
                 <v-progress-linear :indeterminate="true"></v-progress-linear>
                 <v-btn class="vbtn info" flat @click="BuildScreen_downloadPCBFiles()">
                   DOWNLOAD PCB FILES
@@ -334,12 +341,24 @@ import 'brace/mode/javascript';
 import 'brace/theme/monokai';
 import html2canvas from 'html2canvas';
 import JSZip from 'jszip';
+import JSZipUtils from 'jszip-utils';
 import FileSaver from 'file-saver';
+import axios from 'axios';
 // import pcbStackup from 'pcb-stackup';
 // Demos
 import VideoPlayer from './demos/VideoPlayer';
 import SimpleButton from './demos/SimpleButton';
+import SimpleLED from './demos/SimpleLED';
 
+import AmalgamZip from 'raw-loader!./amalgamNative.zip';
+
+
+// Server URL
+const server = axios.create({
+  baseURL: `http://localhost:8081/`
+})
+
+// App
 export default {
   name: "app",
   components: {
@@ -402,8 +421,9 @@ export default {
         EditorJS_extSoruceOne: undefined,
         EditorJS_extSoruceTwo: undefined,
         Demos: [
+          { title: 'Simple LED', demo: SimpleLED  },   
           { title: 'Simple Button', demo: SimpleButton},
-          { title: 'Video Player', demo: VideoPlayer },       
+          { title: 'Video Player', demo: VideoPlayer },
         ],
         BuildScreen: false,
         FinalPCB: {
@@ -415,80 +435,141 @@ export default {
             // image, title, subtitle
           }
         ],
+        raspberryPinMap: {},
+        FinalPinMap: {
+          "gpio": [],
+          "i2c": [],
+          "spi": [],
+          "serial": []
+        },
         BuildButtonText : "BUILD",
         BuildButtonCount : 0,
         CancelBuildButtonText : "CANCEL",
         CancelBuildButtonCount : 0,
         GeneratedPCBimageTop: "",
-        GeneratedPCBimageBottom: ""
+        GeneratedPCBimageBottom: "",
+        GeneratedLink: ""
   }),
   mounted: function () {
   
     // Load electrical component List:
     this.eComponentList = {
-            "submit": {
-              0: {
-                "component": "physical-button-red",
-                "hardElement": "physical-button",
-                "partImage": "buttons/tactile-button-round-red.jpg",
-                "image":"buttons/red-round-button.2D.svg",
-                "height": "10mm",
-                "width": "10mm"
-              },
-              1: {
-                "component": "physical-button-blue",
-                "hardElement": "physical-button",
-                "partImage": "buttons/tactile-button-round-blue.jpg",
-                "image":"buttons/blue-round-button.2D.svg",
-                "height": "20mm",
-                "width": "20mm"
-              },
-              2: {
-                "component": "physical-button-green",
-                "hardElement": "physical-button",
-                "partImage": "buttons/tactile-button-round-green.jpg",
-                "image":"buttons/green-round-button.2D.svg",
-                "height": "30mm",
-                "width": "30mm"
-              }
-            },
-            "range" : {
-              0: {
-                "component": "physical-dynamic-range",
-                "hardElement": "physical-motorized-pot",
-                "partImage": "range/motorized-potentiometer.png",
-                "image":"range/motorizedPot.png",
-                "height": "9mm",
-                "width": "152mm"
-              },
-              1: {
-                "component": "physical-static-range",
-                "hardElement": "physical-pot",
-                "partImage": "range/pot.png",
-                "image":"range/potentiometer.png",
-                "height": "20mm",
-                "width": "20mm"
-              }   
-            },
-            "screens" : {
-              0: {
-                "component": "utronics3-5inch",
-                "hardElement": "",
-                "image":"",
-                "partImage":"screens/utronics_3.5inch.png",
-                "height": "80mm",
-                "width": "100mm"
-              },
-              1: {
-                "component" : "geeekpi5inch",
-                "hardElement": "",
-                "image":"",
-                "partImage":"screens/geeekpi_5inch.png",
-                "height": "100mm",
-                "width": "160mm"
-              }
-            }
-          }
+      "submit": {
+        0: {
+          "component": "physical-button-red",
+          "hardElement": "physical-button",
+          "hardElementVars": '(gpio:$gpio)',
+          "partImage": "buttons/tactile-button-round-red.jpg",
+          "image":"buttons/red-round-button.2D.svg",
+          "height": "10mm",
+          "width": "10mm"
+        },
+        1: {
+          "component": "physical-button-blue",
+          "hardElement": "physical-button",
+          "hardElementVars": '(gpio:$gpio)',
+          "partImage": "buttons/tactile-button-round-blue.jpg",
+          "image":"buttons/blue-round-button.2D.svg",
+          "height": "20mm",
+          "width": "20mm"
+        },
+        2: {
+          "component": "physical-button-green",
+          "hardElement": "physical-button",
+          "hardElementVars": '(gpio:$gpio)',
+          "partImage": "buttons/tactile-button-round-green.jpg",
+          "image":"buttons/green-round-button.2D.svg",
+          "height": "30mm",
+          "width": "30mm"
+        }
+      },
+      "span": {
+        0: {
+          "component": "LED-5mm-red",
+          "hardElement": "physical-output",
+          "hardElementVars": '(gpio:$gpio)',
+          "partImage": "output/LED-RED.jpg",
+          "image":"output/red-5mm-LED.2D.svg",
+          "height": "10mm",
+          "width": "10mm"
+        },
+        1: {
+          "component": "LED-5mm-blue",
+          "hardElement": "physical-output",
+          "hardElementVars": '(gpio:$gpio)',
+          "partImage": "output/LED-BLUE.jpg",
+          "image":"output/blue-5mm-LED.2D.svg",
+          "height": "10mm",
+          "width": "10mm"
+        },
+        2: {
+          "component": "LED-5mm-green",
+          "hardElement": "physical-output",
+          "hardElementVars": '(gpio:$gpio)',
+          "partImage": "output/LED-GREEN.jpg",
+          "image":"output/green-5mm-LED.2D.svg",
+          "height": "10mm",
+          "width": "10mm"
+        },
+        3: {
+          "component": "LED-5mm-white",
+          "hardElement": "physical-output",
+          "hardElementVars": '(gpio:$gpio)',
+          "partImage": "output/LED-WHITE.jpg",
+          "image":"output/white-5mm-LED.2D.svg",
+          "height": "10mm",
+          "width": "10mm"
+        }
+      },
+      "range" : {
+        0: {
+          "component": "physical-dynamic-range",
+          "hardElement": "physical-motorized-pot",
+          "hardElementVars": '(i2c-port:url($i2c), i2c-addr:0x40)',
+          "partImage": "range/motorized-potentiometer.png",
+          "image":"range/motorizedPot.png",
+          "height": "9mm",
+          "width": "152mm"
+        },
+        1: {
+          "component": "physical-static-range",
+          "hardElement": "physical-pot",
+          "hardElementVars": '(motora:$gpio, motorb:$gpio, \
+                touch:$gpio, i2c-addr:0x48, i2c-port:url($i2c))',
+          "partImage": "range/pot.png",
+          "image":"range/potentiometer.png",
+          "height": "20mm",
+          "width": "20mm"
+        }   
+      },
+      "screens" : {
+        0: {
+          "component": "utronics3-5inch",
+          "hardElement": "",
+          "image":"",
+          "partImage":"screens/utronics_3.5inch.png",
+          "height": "80mm",
+          "width": "100mm"
+        },
+        1: {
+          "component" : "geeekpi5inch",
+          "hardElement": "",
+          "image":"",
+          "partImage":"screens/geeekpi_5inch.png",
+          "height": "100mm",
+          "width": "160mm"
+        }
+      }
+    }
+
+    this.raspberryPinMap = {
+      "gpio" :  ["4", "17", "27", "22", "5", "6", "13",
+          "26", "18", "23", "24", "25", "12"],
+      "i2c": ["/dev/i2c-1"],
+      "spi": ["/dev/spidev0.0"],
+      "serial" : ["/dev/ttyUSB0"]
+    }
+
 
     document.addEventListener("drag", function( event ) {
       console.log("DRAG");
@@ -505,9 +586,12 @@ export default {
         var e_type = $(event.target).children()[0].type;
         var e_tagName = $(event.target).children()[0].tagName;
 
+        // Set special cases (TODO: change in favor of (sensors, input, output))
         if (e_tagName == "IFRAME") {
           e_type = "screens";
           $("iframe").css("pointer-events", "none");
+        } else if (e_tagName == "SPAN") {
+          e_type = "span";
         }
 
         event.dataTransfer.setData("id", e_id);
@@ -648,8 +732,8 @@ export default {
           }
 
           // If element is of type iframe, button or range then..
-          if ( (element.tagName == 'BUTTON' || element.type == 'range')
-            && $(element).attr('id')) {
+          if ( (element.tagName == 'BUTTON' || element.type == 'range' )
+            || element.tagName == 'SPAN' && $(element).attr('id')) {
     
             $(element).wrap(
               `<div id="${element.id}_drag" class="draggable_element" 
@@ -782,6 +866,7 @@ export default {
       // Get new image path
       var name = this.eComponentList[compType][newNumber].component;
       var hardElement = this.eComponentList[compType][newNumber].hardElement;
+      var hardElementVars = this.eComponentList[compType][newNumber].hardElementVars;
       var partImage = this.eComponentList[compType][newNumber].partImage;
       var image = this.eComponentList[compType][newNumber].image;
       var height = this.eComponentList[compType][newNumber].height;
@@ -795,13 +880,14 @@ export default {
       $("#"+compId).css("height", height);
       $("#"+compId).css("width", width);
       // Save the new component number selected [Here we save the new selected component]
-      this.eComponentSaved[compId].componentSelected = newNumber;   // Set new component selected
-      this.eComponentSaved[compId].componentName = name;            // Set new component name
-      this.eComponentSaved[compId].componentHardElement = hardElement;            // Set new component hardElement
-      this.eComponentSaved[compId].componentPartImage = partImage;  // Set new component part Image
-      this.eComponentSaved[compId].componentImage = image;          // Set new component image path
-      this.eComponentSaved[compId].componentWidth = width;          // Set new component width
-      this.eComponentSaved[compId].componentHeight = height;        // Set new component height
+      this.eComponentSaved[compId].componentSelected = newNumber;       // Set new component selected
+      this.eComponentSaved[compId].componentName = name;                // Set new component name
+      this.eComponentSaved[compId].componentHardElement = hardElement;  // Set new component hardElement
+      this.eComponentSaved[compId].componentHardElementVars = hardElementVars;  // Set new component hardElement
+      this.eComponentSaved[compId].componentPartImage = partImage;      // Set new component part Image
+      this.eComponentSaved[compId].componentImage = image;              // Set new component image path
+      this.eComponentSaved[compId].componentWidth = width;              // Set new component width
+      this.eComponentSaved[compId].componentHeight = height;            // Set new component height
     },
     drop(event) {
       event.preventDefault();
@@ -924,16 +1010,19 @@ export default {
 
       // Get user web element data // TODO
       $("#"+thisId).detach().appendTo("#"+elementId);
-
+      console.log("ELEMENT TYPE = ", thisType, thisType == "span");
       // Add component element style class (TODO: select class accodign to the type)
       if (thisType == "submit") {
+        $("#"+thisId).addClass("submit-physical-button");
+      } else if (thisType == "span") {
         $("#"+thisId).addClass("submit-physical-button");
       } else if (thisType == "range") {
         $("#"+thisId).addClass("range-physical-slider");
       } else if (thisType == "screens") {
         $("#"+thisId).addClass("physical-screen");
       } else {
-        console.error("Unknown element type");
+        console.error("FATAL ERROR: Unknown element type");
+        return;
       }
 
       // Remove any innerHTML
@@ -969,11 +1058,15 @@ export default {
           // Get current ID
           this.currentComponentId = ele.id;
           // Get current Type
-          if (ele.type == undefined) {
+          console.log("Ele TAGNAME", ele.tagName);
+          if (ele.type == undefined && ele.tagName != "SPAN") {
             // If type is not detected then is a screen
             this.currentComponentType = "screens";
           } else {
-            this.currentComponentType = ele.type;
+            if (ele.tagName == "SPAN")
+              this.currentComponentType = "span";
+            else
+              this.currentComponentType = ele.type;
           }
           
           console.log("Eleemnt TYPE:"+this.currentComponentType);
@@ -983,6 +1076,7 @@ export default {
           var type = this.eComponentSaved[this.currentComponentId].type; // Get component type
           var elements = this.eComponentList[type]; // Get all components of the selected type
           for (var i in elements) {
+            console.log("PART IMAGE:", elements[i].partImage);
             var partImage = elements[i].partImage;
             this.eComponentImages.push(partImage);
           }
@@ -1016,26 +1110,27 @@ export default {
       // Save new component
       var selectedNumber = 0; // First element by default
       this.eComponentSaved[thisId] = {
-                  "elementId": elementId,
-                  "type": thisType,
-                  // Physical component values
-                  "componentSelected": selectedNumber,
-                  "componentName": null,        // Set in the next function
-                  "componentHardElement": null, // Set in the next function
-                  "componentPartImage": null,   // Set in the next function
-                  "componentImage": null,       // Set in the next function
-                  "componentWidth": null,       // Set in the next function
-                  "componentHeight": null,      // Set in the next function
-                  "componentLeft": null,        // Set in get position
-                  "comopnentTop": null,         // Set in get position
-                  "componentCenterLeft": null,  // Set in get position
-                  "componentCenterTop": null,   // Set in get position
-                  // Original html tag values
-                  "html": thisHtml,
-                  "width": thisWidth,
-                  "height": thisHeight,
-                  "innerHTML": thisInnerHtml
-                };
+        "elementId": elementId,
+        "type": thisType,
+        // Physical component values
+        "componentSelected": selectedNumber,
+        "componentName": null,            // Set in the next function
+        "componentHardElement": null,     // Set in the next function
+        "componentHardElementVars": null, // Set in the next function
+        "componentPartImage": null,       // Set in the next function
+        "componentImage": null,           // Set in the next function
+        "componentWidth": null,           // Set in the next function
+        "componentHeight": null,          // Set in the next function
+        "componentLeft": null,            // Set in get position
+        "comopnentTop": null,             // Set in get position
+        "componentCenterLeft": null,      // Set in get position
+        "componentCenterTop": null,       // Set in get position
+        // Original html tag values
+        "html": thisHtml,
+        "width": thisWidth,
+        "height": thisHeight,
+        "innerHTML": thisInnerHtml
+      };
 
       // Apply style settings for new component (TODO: get Id and type)
       this.setNewComponentSelection(thisId, thisType, selectedNumber);
@@ -1092,6 +1187,8 @@ export default {
 
       // Remove type class
       if (e_type == "submit") {
+        $("#"+this.currentComponentId).removeClass("submit-physical-button");
+      } else if (e_type == "span") {
         $("#"+this.currentComponentId).removeClass("submit-physical-button");
       } else if (e_type == "range") {
         $("#"+this.currentComponentId).removeClass("range-physical-slider");
@@ -1249,6 +1346,33 @@ export default {
       // Initialize search of soft elements that can be harden. 
       this.searchSoftElements();
     },
+    mapComponentsPins (hardVars) {
+      // Translate Pins (e.g. (gpio:$gpio) to (gpio:4) )
+      do  {
+        var occurrences = false;
+        // Check for gpio, i2c, spi and serial occurences
+        ["gpio", "i2c", "spi", "serial"].forEach((ioName) => {
+          if (hardVars.includes("$"+ioName)) {
+            occurrences = true;
+            var nextPin = this.FinalPinMap[ioName].length;
+            var availablePins = this.raspberryPinMap[ioName].length;
+            if (nextPin >= availablePins) {
+              // No more gpio pins avaliable
+              console.log(`Error: Max num of ${ioName} pins avilable reached`);
+              throw `Error: Max num of ${ioName} pins avilable reached`;          
+            } else {
+              // Replace string with next available Pin
+              var pinName = this.raspberryPinMap[ioName][nextPin];
+              hardVars = hardVars.replace("$"+ioName, `"${pinName}"`);
+              // Add to dictionary
+              this.FinalPinMap[ioName].push(this.raspberryPinMap[ioName][nextPin]);
+            }
+          }
+        });
+      } while (occurrences == true);
+
+      return hardVars;
+    },
     openBuildScreen() {
       // Just to test Build screen
       this.BuildScreen = true;
@@ -1256,7 +1380,7 @@ export default {
       this.FinalComponents = [];
 
       // Just for Test, Fill random component
-      // this.eComponentSaved["fakeid"] = {
+      // this.eComponentSaved["myButton"] = {
       //   comopnentTop: null,
       //   componentCenterLeft: 5,
       //   componentCenterTop: 5,
@@ -1265,6 +1389,7 @@ export default {
       //   componentLeft: 0,
       //   componentName: "physical-button-red",
       //   componentHardElement : "physical-button",
+      //   componentHardElementVars : '(gpio:$gpio)',
       //   componentPartImage: "buttons/tactile-button-round-red.jpg",
       //   componentSelected: 0,
       //   componentTop: 0,
@@ -1277,12 +1402,59 @@ export default {
       //   width: 26.5781
       // };
 
+      // this.eComponentSaved["fakeid2"] = {
+      //   comopnentTop: null,
+      //   componentCenterLeft: 5,
+      //   componentCenterTop: 5,
+      //   componentHeight: "10mm",
+      //   componentImage: "buttons/red-round-button.2D.svg",
+      //   componentLeft: 0,
+      //   componentName: "physical-button-red",
+      //   componentHardElement : "physical-button",
+      //   componentHardElementVars : '(motora:$gpio, motorb:$gpio, touch:$gpio, i2c-addr:0x48, i2c-port:url($i2c))',
+      //   componentPartImage: "buttons/tactile-button-round-red.jpg",
+      //   componentSelected: 0,
+      //   componentTop: 0,
+      //   componentWidth: "10mm",
+      //   elementId: "element_X",
+      //   height: 25,
+      //   html: '<button id="myButton" onclick="test()">test</button>',
+      //   innerHTML: "test",
+      //   type: "submit",
+      //   width: 26.5781
+      // };
+
+      
+      // Reset Final Pin Mmap
+      this.FinalPinMap = {
+          "gpio": [],
+          "i2c": [],
+          "spi": [],
+          "serial": []
+      }; 
+      
+      // Map Component pins
+      for (var key in this.eComponentSaved) {
+        // Get hardware CSS variables
+        var hardVars = this.eComponentSaved[key].componentHardElementVars;
+        console.log("HARDWARE CSS VARS BEFORE:", hardVars);
+        try {
+          var hardVars = this.mapComponentsPins(hardVars);
+        } catch (error) {
+          // TODO manage error
+          console.error(error);
+        }
+        // Save new hardware CSS variables
+        console.log("HARDWARE CSS VARS AFTER:", hardVars);
+        this.eComponentSaved[key].componentHardElementVars = hardVars;   
+      }
+
       // Unselect components before screenshoot
       this.unselectComponents();
 
       // Output all component data:
       for (var key in this.eComponentSaved) {
-        console.log("COMPONENT:", this.eComponentSaved[key]);
+        console.log("COMPONENT ADDED:", this.eComponentSaved[key]);
         // Push to list
         this.FinalComponents.push({
           image: this.getComponentsImg(this.eComponentSaved[key].componentPartImage),
@@ -1297,7 +1469,6 @@ export default {
       // Take a picture of the PCB and add it to the left 
       $('#canvasPCBimage').empty(); // Delete previous image
       html2canvas(document.querySelector('#PCB')).then(function(canvas) {
-
         // Add canvas pcb image 
         document.querySelector('#canvasPCBimage').appendChild(canvas);
 
@@ -1322,7 +1493,6 @@ export default {
           heightFinal = heightCanvas;    
         }
         $('#buildScreen_pcbHeightText').css("height",  heightFinal + 'px');
-
       });
 
     },
@@ -1398,88 +1568,108 @@ export default {
         $('#generatedPcbTop').append(stackup.top.svg);
         $('#generatedPcbBottom').append(stackup.bottom.svg);
       })
-      
+
     }, BuildScreen_downloadOSImage() {
-      // Just for testing 
-//       var text = 
-// '<!DOCTYPE html>\n\
-// <html lang="en">\n\
-//   <head>\n\
-//   <meta charset="UTF-8">\n\
-//   <meta http-equiv="X-UA-Compatible" content="IE=edge">\n\
-//   <meta name="viewport" content="width=device-width,initial-scale=1.0">\n\
-//   <link rel="import" href="amalgam/amalgam.html">\n\
-//   <link rel="stylesheet" href="hardware.css">\n\
-//   <style>\n'+VideoPlayer.css+'  </style>\n\
-//   </head>\n\
-//   <body>\n'+VideoPlayer.html+
-//     '\n  <script>\n'+ VideoPlayer.js +'  <\/script>\n\
-//   </body>\n\
-// </html>\n';
-//       var name = "myfilename.html";
-//       var type = "text/plain";
-//       var a = document.getElementById("buildScreen_downloadOsImage");
-//       var file = new Blob([text], {type: type});
-//       a.href = URL.createObjectURL(file);
-//       a.download = name;
+
+      console.log("Download OS image");
+      
+    }, generateHTMLDoc() {
+    
+      // index.html is generated here
+      return '<!DOCTYPE html>\n\
+<html lang="en">\n\
+  <head>\n\
+  <meta charset="UTF-8">\n\
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">\n\
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">\n\
+  <link rel="import" href="amalgam/amalgam.html">\n\
+  <link rel="stylesheet" href="hardware.css">\n\
+  <style>\n'+SimpleLED.css+'  </style>\n\
+  </head>\n\
+  <body>\n'+SimpleLED.html+
+    '\n  <script>\n'+ SimpleLED.js +'  <\/script>\n\
+  </body>\n\
+</html>\n';
+
+    }, generateCSSDoc() {
+
+      // Hardware.css is generated here 
+      var cssDoc = "";
+      for (var key in this.eComponentSaved) {
+        var compId = key;
+        var compHardElement = this.eComponentSaved[key].componentHardElement;
+        var compHardElementVars = this.eComponentSaved[key].componentHardElementVars;
+        cssDoc = cssDoc +
+'#'+compId+' {\n\
+  hardware: '+compHardElement+' '+compHardElementVars+';\n\
+}\n\
+\n\
+'+compHardElement+' {\n\
+  display: none;\n\
+}\n\
+\n'
+      }
+      return cssDoc;
+
+    }, BuildScreen_downloadAPP() {
 
       var zip = new JSZip();
 
-      zip.file("Hello.txt", "Hello World\n");
-      zip.file("Hello2.txt", "Hello World2\n");
-      var img = zip.folder("images");
-      // img.file("~/assets/logo.png", imgData, {base64: true});
+      // Create app.html file
+      var htmlDoc = this.generateHTMLDoc();
+      zip.file("app.html", htmlDoc);
+
+      // Create hardware.css file
+      var cssDoc = this.generateCSSDoc();
+      console.log("CSS DOC: ", cssDoc);
+      zip.file("hardware.css", cssDoc);
+
+      // Add AmagamNative
+      var amalgam = zip.folder("amalgam");
+      amalgam.file("amalgam.html", require('raw-loader!./amalgamNative/amalgam.html').default);
+      amalgam.file("amalgam.js", require('raw-loader!./amalgamNative/amalgam.js').default);
+      amalgam.file("physical-button.js", require('raw-loader!./amalgamNative/physical-button.js').default);
+      amalgam.file("physical-motorized-pot.js", require('raw-loader!./amalgamNative/physical-motorized-pot.js').default);
+      amalgam.file("physical-pot.js", require('raw-loader!./amalgamNative/physical-pot.js').default);
+      amalgam.file("physical-rgb-led.js", require('raw-loader!./amalgamNative/physical-rgb-led.js').default);
+      amalgam.file("physical-servo-motor.js", require('raw-loader!./amalgamNative/physical-servo-motor.js').default);
+      amalgam.file("physical.css", require('raw-loader!./amalgamNative/physical.css').default);
+      amalgam.file("test-physical-button.js", require('raw-loader!./amalgamNative/test-physical-button.js').default);
+      amalgam.file("test-physical-submit.js", require('raw-loader!./amalgamNative/test-physical-submit.js').default);
+
+      var boards_pinout = amalgam.folder("boards_pinout");
+      boards_pinout.file("raspberrypi_pinout.css", require('raw-loader!./amalgamNative/boards_pinout/raspberrypi_pinout.css').default);
 
       zip.generateAsync({type:"blob"}).then(function(content) {
           // see FileSaver.js
-          FileSaver.saveAs(content, "theexample.zip");
+          FileSaver.saveAs(content, "app.zip");
       });
+
+
+    }, BuildScreen_deployOnline() {
+
+      console.log("Deploy online");
+
+      // Send html and css generated files
+      server.post('generateWebPage', {
+        userName: "testuser",
+        htmlDoc: this.generateHTMLDoc(),
+        cssDoc: this.generateCSSDoc()
+      }).then((response) => {
+        // Should return a link
+        if (response.status != 200) {
+          alert(response.data.error)
+          console.error("Server error when trying to generate web page")
+        } else {
+           console.log(response.data.link); 
+           this.GeneratedLink = response.data.link;
+        }
+      }).catch(error => alert(error.message)); // if network error
 
     }
 
-
-
   },
   created () {
-
-    // window.onmouseover=function(e) {
-    //   // console.log(e.target.tagName);
-    //   // console.log("ID:"+e.target.id);
-    //   // console.log(e.target.type);
-    //   // console.log(e.target.className);
-    //   if ($(e.target).is('html, body')) {
-    //     // console.log("Mose over html or body");
-    //   } else {
-    //     // If target has ID
-    //     if ($(e.target).attr('id')) {
-    //       // console.log("MOUSE IN:"+e.target.outerHTML);
-    //       // Set draggable item to true.
-    //       $('#'+e.target.id).attr('draggable', 'true');
-    //     }
-    //   }
-    //
-    // };
-    //
-    // window.onmouseout=function(e) {
-    //   if ($(e.target).is('html, body')) {
-    //     // console.log("Mose over html or body");
-    //   } else {
-    //     if ($(e.target).attr('id')) {
-    //       // console.log("MOUSE OUT:"+e.target.outerHTML);
-    //     }
-    //   }
-    // }
-    //
-    // window.onmousedown =function(e) {
-    //   if ($(e.target).is('html, body')) {
-    //     // console.log("Mose click on html or body");
-    //   } else {
-    //     if ($(e.target).attr('id')) {
-    //       // console.log("MOUSE CLICK:"+e.target.outerHTML);
-    //     }
-    //
-    //   }
-    // };
 
   }
 };
@@ -1590,8 +1780,10 @@ Build Screen css
   height: 100%;
 }
 
+/* Build Screen */
+
 #buildScreen_mainPane {
-  display: none;
+  display: block;
   height: 94%;
 }
 
@@ -1614,7 +1806,7 @@ Build Screen css
 /* Download Screen */
 
 #buildScreen_downloadPane {
-  display: block;
+  display: none;
   height: 94%;
 }
 
@@ -1763,6 +1955,17 @@ Component Styles
 
 .submit-physical-button:hover {
   /* box-shadow: 0px 0px 0px 2px rgba(255, 255, 0, 0.8); */
+}
+
+/* # Span Style */
+.span-physical-output {
+ display: block;
+ background-color: transparent;
+ background-size: contain;
+ border-style: none;
+ width: 10mm;
+ height: 10mm;
+ background-image: url('~@/assets/output/LED-RED.jpg');
 }
 
 /* # Range Style */

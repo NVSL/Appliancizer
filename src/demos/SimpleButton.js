@@ -2,7 +2,7 @@ export default {
   html:
     '<button id="myButton" onclick="test()">test</button>\n\
 <br>\n\
-<div id="text">OFF</div>\n',
+<div id="text">Counter: 0</div>\n',
   css:
     "button {\n\
   color: blue;\n\
@@ -13,14 +13,12 @@ export default {
 }\n\
 ",
   js:
-    'function test() {\n\
+    'var counter = 0;\n\
+function test() {\n\
   console.log("button click");\n\
   var text = document.getElementById("text");\n\
-  if (text.innerHTML == "OFF") {\n\
-      text.innerHTML = "ON";\n\
-  } else {\n\
-      text.innerHTML = "OFF";\n\
-  }\n\
+  counter++;\n\
+  text.innerHTML = "Counter: " + counter;\n\
 }\n\
 '
 };

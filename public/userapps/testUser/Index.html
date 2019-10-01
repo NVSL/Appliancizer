@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="import" href="amalgam/amalgam.html">
+  <link rel="stylesheet" href="hardware.css">
+  <style>
+  </style>
+  </head>
+  <body>
+<button id="turnON" onclick="turnLEDON()">LED ON</button>
+<button id="turnOFF" onclick="turnLEDOFF()">LED OFF</button>
+<span id="myLED">OFF</span>
+  
+
+  <script>
+function turnLEDON() {
+  var text = document.getElementById("myLED");
+  text.innerHTML = "ON";
+}
+
+function turnLEDOFF() {
+  var text = document.getElementById("myLED");
+  text.innerHTML = "OFF";
+}
+  </script>
+  </body>
+</html>
