@@ -1,10 +1,9 @@
 <!--
 // Tomorrow:
-// - Add generator of code and sd image. 
 // - Integrate this with gadgetron.
-// - Add more components (like an LED and more smd push buttons)
-// - Add Header
-// - Add external components. 
+// - Add smd push buttons
+// - Add Headers
+// - Add external components (resisots / caps). 
 
 -->
 
@@ -138,7 +137,7 @@
 
     <!-- HTML/CSS/Javscript Editor -->
     <v-dialog v-model="HTMLEditor" fullscreen hide-overlay transition="dialog-bottom-transition">
-      <v-card id="dialogHeight">
+      <v-card id="htmlEditorDialogHeight">
         <v-toolbar dark dense color="grey darken-4">
             <v-toolbar-title>Webpage Editor</v-toolbar-title>
             <v-divider class="mx-3" inset vertical></v-divider>
@@ -222,7 +221,7 @@
 
     <!-- Build Screen -->
     <v-dialog v-model="BuildScreen" fullscreen hide-overlay transition="dialog-bottom-transition">
-      <v-card id="dialogHeight">
+      <v-card id="buildScreenDialogHeight">
         <v-toolbar dark dense color="grey darken-4">
             <v-toolbar-title>Build Screen</v-toolbar-title>
             <v-divider class="mx-3" inset vertical></v-divider>
@@ -234,12 +233,116 @@
               </v-btn>
             </v-toolbar-items>
           </v-toolbar>
-          <v-container id="buildScreen_mainPane" fluid>
+          <v-container fluid>
+            <v-card class="mb-12" color="white">
+              <v-toolbar dense flat color="#f2f2f2">
+                <v-toolbar-title>1.- PCB REVIEW</v-toolbar-title>
+              </v-toolbar>
+              <br>
+              <v-layout row wrap id="buildScreen_layoutHeight">
+                <div id="buildScreen_pcbHeightText" class="textVertical text-xs-center">{{ FinalPCB.height }} mm</div>
+                <v-flex id="buildScreen_pcbCanvas" xs6 class="pr-3 flexBoxHeight">
+                  <div id="canvasPCBimage" class="pr-3">
+                    
+                  </div>
+                  <div id="buildScreen_pcbWidthText" class="text-sm-center">{{ FinalPCB.width }} mm</div>  
+                </v-flex>
+                <v-divider id="buildScreen_dividerHeight" class="mx-3" inset vertical></v-divider>
+                <v-flex  xs4 id="buildScreen_info" class="flexBoxHeight">
+                  <h3>PCB Dimensions: {{ FinalPCB.width }} mm х {{ FinalPCB.height }} mm</h3>
+                  <h3>PCB Electrical Components:</h3>
+                  <v-list two-line>
+                    <template v-for="(item, index) in FinalComponents">
+                      
+                      <v-list-tile v-if="item.title" :key="index+'_list'" avatar>
+
+                        <v-list-tile-avatar size="73">
+                          <img :src="item.image">
+                        </v-list-tile-avatar>
+
+                        <v-list-tile-content class="pl-4">
+                          <v-list-tile-title v-html="item.title"></v-list-tile-title>
+                          <v-list-tile-sub-title v-html="item.subtitle"></v-list-tile-sub-title>
+                        </v-list-tile-content>
+
+                      </v-list-tile>
+                      <v-divider v-if="item.title" :key="index+'_divider'" :inset="true"></v-divider>
+
+                    </template>
+                  </v-list>
+                </v-flex>
+              </v-layout>
+              <v-toolbar dense flat color="#f2f2f2">
+                <v-toolbar-title>2.- GENERATE PCB</v-toolbar-title>
+              </v-toolbar>
+              <v-container>
+                <h3>2. Generate PCB Gerber Files for manufacture.</h3>
+                <v-progress-linear :indeterminate="true"></v-progress-linear>
+                <v-btn class="vbtn info" flat @click="BuildScreen_downloadPCBFiles()">
+                  DOWNLOAD PCB FILES
+                </v-btn>
+              </v-container>
+              <v-layout row wrap class="pt-5">
+                <div id="generatedPcbTop"></div>
+                <div id="generatedPcbBottom"></div>
+              </v-layout>
+              <v-toolbar dense flat color="#f2f2f2">
+                <v-toolbar-title>3- APP DEPLOYMENT</v-toolbar-title>
+              </v-toolbar>
+              <v-container>
+                <h3>1. Download the OS image below and flash it to your raspberry pi SD card. We recomend 
+                  <a href="https://www.balena.io/etcher/">Balena Etcher</a>   
+                    for flashing the OS image.
+                </h3>
+                <v-btn class="vbtn info" flat @click="BuildScreen_downloadOSImage()">
+                  DOWNLOAD OS IMAGE
+                </v-btn>
+                <br>
+                <br>
+                <h3>2. Deploy you app with hardware integration either online or locally. </h3>
+                <br>
+                <v-layout row wrap>
+                  <v-flex xs6>
+                    <v-card class="mx-4" color="white" style="height:100%">
+                      <v-toolbar dense flat color="#f2f2f2">
+                        <v-toolbar-title>DEPLOY APP ONLINE</v-toolbar-title>
+                      </v-toolbar>
+                      <br>
+                      <div class="text-xs-center">
+                        Link:
+                        <a :href="GeneratedLink" target="_blank">{{GeneratedLink}}</a>
+                      </div>
+                      <v-card-actions class="justify-center">
+                          <v-btn  class="vbtn info" flat @click="BuildScreen_deployOnline()">
+                            DEPLOY APP ONLINE
+                          </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-flex>
+                  <v-flex xs6>
+                    <v-card class="mx-4" color="white" style="height:100%">
+                      <v-toolbar dense flat color="#f2f2f2">
+                        <v-toolbar-title>DEPLOY APP LOCALLY</v-toolbar-title>
+                      </v-toolbar>
+                      <br>
+                      <v-card-actions class="justify-center">
+                        <v-btn  class="vbtn info" flat @click="BuildScreen_downloadAPP()">
+                          DOWNLOAD APP
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-flex>
+                </v-layout>
+              </v-container>
+              
+            </v-card>
+          </v-container>
+          <!-- <v-container id="buildScreen_mainPane" fluid>
             <v-layout row wrap id="buildScreen_layoutHeight">
               <div id="buildScreen_pcbHeightText" class="textVertical text-xs-center">{{ FinalPCB.height }} mm</div>
               <v-flex id="buildScreen_pcbCanvas" xs6 class="pr-3 flexBoxHeight">
                 <div id="canvasPCBimage" class="pr-3">
-                  <!-- PCB image goes here  -->
+                  
                 </div>
                 <div id="buildScreen_pcbWidthText" class="text-sm-center">{{ FinalPCB.width }} mm</div>  
               </v-flex>
@@ -272,7 +375,6 @@
             <div class="text-sm-center pl-5 ml-4">
               <v-btn class="vbtn info" flat @click="BuildScreen_build()">
                 {{BuildButtonText}}
-                <!-- <v-icon>arrow_forward_ios</v-icon> -->
               </v-btn>
             </div>
           </v-container>
@@ -300,7 +402,6 @@
                 <v-progress-linear :indeterminate="true"></v-progress-linear>
                 <v-btn class="vbtn info" flat @click="BuildScreen_downloadPCBFiles()">
                   DOWNLOAD PCB FILES
-                  <!-- <v-icon>arrow_forward_ios</v-icon> -->
                 </v-btn>
                 <v-layout row wrap class="pt-5">
                   <div id="generatedPcbTop"></div>
@@ -312,10 +413,9 @@
             <div class="text-sm-center pl-5 ml-4">
               <v-btn class="vbtn info" flat @click="BuildScreen_cancelBuild()">
                 {{ CancelBuildButtonText }}
-                <!-- <v-icon>arrow_forward_ios</v-icon> -->
               </v-btn>
             </div>
-           </v-container>
+           </v-container> -->
         </v-card>
     </v-dialog>
 
@@ -1648,7 +1748,7 @@ export default {
 
       // Send html and css generated files
       server.post('generateWebPage', {
-        userName: "testuser",
+        userName: "testUser",
         htmlDoc: this.generateHTMLDoc(),
         cssDoc: this.generateCSSDoc()
       }).then((response) => {
@@ -1861,7 +1961,7 @@ Draggable elements css
 /*
 HTML Editor css
 */
-#dialogHeight {
+#htmlEditorDialogHeight {
   height: 100%;
 }
 
@@ -1891,6 +1991,11 @@ HTML Editor css
 
 #editorMainPanes {
   height: 90%;
+}
+
+#buildScreenDialogHeight {
+  /* height: 100%; */
+  overflow-x: auto;
 }
 
 .output {
