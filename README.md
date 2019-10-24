@@ -23,12 +23,12 @@ cd server
 npm run start
 ```
 
-### Gadgetron related
+# Gadgetron related
 
-// Gadgetron Folder
+### Gadgetron Folder  
 Gadgetron folder is in server/gadgetron
 
-// Where Gadgetron should be executed
+### Where Gadgetron should be executed  
 File: server/src/app.js
 Code:
 ```js
@@ -42,7 +42,7 @@ app.post("/generatePCB", function(req, res) {
 }
 ```
 
-// File pcb input example for gadgetron 
+### File pcb input example for gadgetron   
 ```json
 {
   "pcbHeight": 120,
