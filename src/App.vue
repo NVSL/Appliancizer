@@ -586,8 +586,8 @@ export default {
           "hardElementVars": '(gpio:$gpio)',
           "partImage": "output/LED-RED.jpg",
           "image":"output/red-5mm-LED.2D.svg",
-          "height": "10mm",
-          "width": "10mm"
+          "height": "5mm",
+          "width": "5mm"
         },
         1: {
           "component": "LED-5mm-blue",
@@ -595,8 +595,8 @@ export default {
           "hardElementVars": '(gpio:$gpio)',
           "partImage": "output/LED-BLUE.jpg",
           "image":"output/blue-5mm-LED.2D.svg",
-          "height": "10mm",
-          "width": "10mm"
+          "height": "5mm",
+          "width": "5mm"
         },
         2: {
           "component": "LED-5mm-green",
@@ -604,8 +604,8 @@ export default {
           "hardElementVars": '(gpio:$gpio)',
           "partImage": "output/LED-GREEN.jpg",
           "image":"output/green-5mm-LED.2D.svg",
-          "height": "10mm",
-          "width": "10mm"
+          "height": "5mm",
+          "width": "5mm"
         },
         3: {
           "component": "LED-5mm-white",
@@ -613,8 +613,8 @@ export default {
           "hardElementVars": '(gpio:$gpio)',
           "partImage": "output/LED-WHITE.jpg",
           "image":"output/white-5mm-LED.2D.svg",
-          "height": "10mm",
-          "width": "10mm"
+          "height": "5mm",
+          "width": "5mm"
         }
       },
       "range" : {
@@ -831,9 +831,10 @@ export default {
           if ( (element.tagName == 'BUTTON' || element.type == 'range' )
             || element.tagName == 'SPAN' && $(element).attr('id')) {
     
+            // Green box size (added +1 to prevent overflow of text)
             $(element).wrap(
               `<div id="${element.id}_drag" class="draggable_element" 
-                draggable="true" style="width:${e_width}px;height:${e_height}px;display:inline-block;">
+                draggable="true" style="width:${e_width+1}px;height:${e_height+1}px;display:inline-block;">
                 </div>`);
 
             // Add id to the available components that can be moved
@@ -975,7 +976,7 @@ export default {
       // Change size
       $("#"+compId).css("height", height);
       $("#"+compId).css("width", width);
-      // Save the new component number selected [Here we save the new selected component]
+      //Save the new component number selected [Here we save the new selected component]
       this.eComponentSaved[compId].componentSelected = newNumber;       // Set new component selected
       this.eComponentSaved[compId].componentName = name;                // Set new component name
       this.eComponentSaved[compId].componentHardElement = hardElement;  // Set new component hardElement
@@ -984,7 +985,12 @@ export default {
       this.eComponentSaved[compId].componentImage = image;              // Set new component image path
       this.eComponentSaved[compId].componentWidth = width;              // Set new component width
       this.eComponentSaved[compId].componentHeight = height;            // Set new component height
-    },
+      this.eComponentSaved[compId].gpio = [];                           // Set at the end
+      this.eComponentSaved[compId].i2c = [];                            // Set at the end
+      this.eComponentSaved[compId].spi = [];                            // Set at the end
+      this.eComponentSaved[compId].serial = [];                         // Set at the end
+
+    },  
     drop(event) {
       event.preventDefault();
       // console.log("Drop EVENT", event.target); // this element
@@ -1329,42 +1335,7 @@ export default {
     },
     // Make user webpage elements draggable
     webPageMouseOver(e) {
-        // console.log(e.target.tagName);
-        // console.log("ID:"+e.target.id);
-        // console.log(e.target.type);
-        // console.log(e.target.className);
-        // if ($(e.target).is('html, body')) {
-        //   console.log("Element is html or body");
-        // } else if ($(e.target).children().length > 0) {
-        //   console.log("Element has childrens");
-        // } else {
-        //   // If target has ID
-        //   if ($(e.target).attr('id') && 
-        //     !$(e.target).parent().hasClass('dragy') &&
-        //     !$(e.target).hasClass('dragy')) {
-        //     console.log("MOUSE IN:"+e.target.outerHTML);
-        //     if (this.runStopString == 'RUN') {
-        //         // Only executed once (Execute at init??)
-        //         // Wrapp iframe element, we only need this once
-        //         var e_width = $('#'+e.target.id).outerWidth()+6;
-        //         var e_height = $('#'+e.target.id).outerHeight()+6;        
-        //         $('#'+e.target.id).wrap(
-        //           `<div id="${e.target.id}_drag" class="dragy draggable_element" 
-        //             draggable="true" style="width:${e_width}px;height:${e_height}px;display:inline-block;">
-        //             </div>`);
 
-        //         // Add id to the available components that can ve moved
-        //         this.eAvailableComponents.push(e.target.id);
-
-        //     } else {
-        //       // Set draggable item to true if running demo
-        //       $('#'+e.target.id).attr('draggable', 'false');
-        //       //$('#'+e.target.id).css('pointer-events', 'auto');
-        //       //$('#'+e.target.id).draggable( 'disable' );
-        //     }
-
-        //   }
-        // }
     },
     webPageMouseOut(e) {
       // TODO: implement css layout
@@ -1442,7 +1413,7 @@ export default {
       // Initialize search of soft elements that can be harden. 
       this.searchSoftElements();
     },
-    mapComponentsPins (hardVars) {
+    mapComponentsPins (hardVars, key) {
       // Translate Pins (e.g. (gpio:$gpio) to (gpio:4) )
       do  {
         var occurrences = false;
@@ -1460,6 +1431,10 @@ export default {
               // Replace string with next available Pin
               var pinName = this.raspberryPinMap[ioName][nextPin];
               hardVars = hardVars.replace("$"+ioName, `"${pinName}"`);
+
+              // Add to parts dictionary
+              this.eComponentSaved[key][ioName].push(pinName);
+
               // Add to dictionary
               this.FinalPinMap[ioName].push(this.raspberryPinMap[ioName][nextPin]);
             }
@@ -1476,27 +1451,31 @@ export default {
       this.FinalComponents = [];
 
       // Just for Test, Fill random component
-      // this.eComponentSaved["myButton"] = {
-      //   comopnentTop: null,
-      //   componentCenterLeft: 5,
-      //   componentCenterTop: 5,
-      //   componentHeight: "10mm",
-      //   componentImage: "buttons/red-round-button.2D.svg",
-      //   componentLeft: 0,
-      //   componentName: "physical-button-red",
-      //   componentHardElement : "physical-button",
-      //   componentHardElementVars : '(gpio:$gpio)',
-      //   componentPartImage: "buttons/tactile-button-round-red.jpg",
-      //   componentSelected: 0,
-      //   componentTop: 0,
-      //   componentWidth: "10mm",
-      //   elementId: "element_X",
-      //   height: 25,
-      //   html: '<button id="myButton" onclick="test()">test</button>',
-      //   innerHTML: "test",
-      //   type: "submit",
-      //   width: 26.5781
-      // };
+      this.eComponentSaved["myButton"] = {
+        comopnentTop: null,
+        componentCenterLeft: 5,
+        componentCenterTop: 5,
+        componentHeight: "10mm",
+        componentImage: "buttons/red-round-button.2D.svg",
+        componentLeft: 0,
+        componentName: "physical-button-red",
+        componentHardElement : "physical-button",
+        componentHardElementVars : '(gpio:$gpio)',
+        componentPartImage: "buttons/tactile-button-round-red.jpg",
+        componentSelected: 0,
+        componentTop: 0,
+        componentWidth: "10mm",
+        gpio: [],
+        i2c: [],
+        spi: [],
+        serial: [],
+        elementId: "element_X",
+        height: 25,
+        html: '<button id="myButton" onclick="test()">test</button>',
+        innerHTML: "test",
+        type: "submit",
+        width: 26.5781
+      };
 
       // this.eComponentSaved["fakeid2"] = {
       //   comopnentTop: null,
@@ -1512,6 +1491,10 @@ export default {
       //   componentSelected: 0,
       //   componentTop: 0,
       //   componentWidth: "10mm",
+      //   gpio: [],
+      //   i2c: [],
+      //   spi: [],
+      //   serial: [],
       //   elementId: "element_X",
       //   height: 25,
       //   html: '<button id="myButton" onclick="test()">test</button>',
@@ -1535,14 +1518,14 @@ export default {
         var hardVars = this.eComponentSaved[key].componentHardElementVars;
         console.log("HARDWARE CSS VARS BEFORE:", hardVars);
         try {
-          var hardVars = this.mapComponentsPins(hardVars);
+          var hardVars = this.mapComponentsPins(hardVars, key);
         } catch (error) {
           // TODO manage error
           console.error(error);
         }
         // Save new hardware CSS variables
         console.log("HARDWARE CSS VARS AFTER:", hardVars);
-        this.eComponentSaved[key].componentHardElementVars = hardVars;   
+        this.eComponentSaved[key].componentHardElementVars = hardVars;
       }
 
       // Unselect components before screenshoot
@@ -1623,47 +1606,64 @@ export default {
       }
     },
     BuildScreen_downloadPCBFiles() {
-      this.GeneratedPCBimageTop;
+      console.log("Sending PCB parts to server");
 
-      // Empty images
-      $('#generatedPcbTop').empty();
-      $('#generatedPcbBottom').empty();
+      // Send html and css generated files
+      server.post('generatePCB', {
+        pcbHeight: this.FinalPCB.height,
+        pcbWidth: this.FinalPCB.width,
+        parts: this.eComponentSaved
+      }).then((response) => {
+        // Should return a link
+        if (response.status != 200) {
+          alert(response.data.error)
+          console.error("Server error when trying to generate PCB")
+        } else {
+          console.log(response.data.msg);
+        }
+      }).catch(error => alert(error.message)); // if network error
+
+      // this.GeneratedPCBimageTop;
+
+      // // Empty images
+      // $('#generatedPcbTop').empty();
+      // $('#generatedPcbBottom').empty();
+
+      // // const layers = [
+      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.dri').default, filename: './gerberfiles/Arduino/arduino.dri'},
+      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GBL').default, filename: './gerberfiles/Arduino/arduino.GBL'},
+      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GBP').default, filename: './gerberfiles/Arduino/arduino.GBP'},
+      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GBS').default, filename: './gerberfiles/Arduino/arduino.GBS'},
+      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GML').default, filename: './gerberfiles/Arduino/arduino.GML'},
+      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.gpi').default, filename: './gerberfiles/Arduino/arduino.gpi'},
+      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GTL').default, filename: './gerberfiles/Arduino/arduino.GTL'},
+      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GTO').default, filename: './gerberfiles/Arduino/arduino.GTO'},
+      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GTP').default, filename: './gerberfiles/Arduino/arduino.GTP'},
+      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GTS').default, filename: './gerberfiles/Arduino/arduino.GTS'},
+      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.TXT').default, filename: './gerberfiles/Arduino/arduino.TXT'}
+      // // ]
 
       // const layers = [
-      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.dri').default, filename: './gerberfiles/Arduino/arduino.dri'},
-      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GBL').default, filename: './gerberfiles/Arduino/arduino.GBL'},
-      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GBP').default, filename: './gerberfiles/Arduino/arduino.GBP'},
-      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GBS').default, filename: './gerberfiles/Arduino/arduino.GBS'},
-      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GML').default, filename: './gerberfiles/Arduino/arduino.GML'},
-      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.gpi').default, filename: './gerberfiles/Arduino/arduino.gpi'},
-      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GTL').default, filename: './gerberfiles/Arduino/arduino.GTL'},
-      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GTO').default, filename: './gerberfiles/Arduino/arduino.GTO'},
-      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GTP').default, filename: './gerberfiles/Arduino/arduino.GTP'},
-      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GTS').default, filename: './gerberfiles/Arduino/arduino.GTS'},
-      //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.TXT').default, filename: './gerberfiles/Arduino/arduino.TXT'}
+      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GBL').default, filename: './gerberfiles/artik530/artik530.GBL'},
+      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GBO').default, filename: './gerberfiles/artik530/artik530.GBO'},
+      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GBP').default, filename: './gerberfiles/artik530/artik530.GBP'},
+      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GBS').default, filename: './gerberfiles/artik530/artik530.GBS'},
+      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GML').default, filename: './gerberfiles/artik530/artik530.GML'},
+      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GTL').default, filename: './gerberfiles/artik530/artik530.GTL'},
+      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GTO').default, filename: './gerberfiles/artik530/artik530.GTO'},
+      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GTP').default, filename: './gerberfiles/artik530/artik530.GTP'},
+      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GTS').default, filename: './gerberfiles/artik530/artik530.GTS'},
+      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.TXT').default, filename: './gerberfiles/artik530/artik530.TXT'}
       // ]
 
-      const layers = [
-        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GBL').default, filename: './gerberfiles/artik530/artik530.GBL'},
-        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GBO').default, filename: './gerberfiles/artik530/artik530.GBO'},
-        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GBP').default, filename: './gerberfiles/artik530/artik530.GBP'},
-        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GBS').default, filename: './gerberfiles/artik530/artik530.GBS'},
-        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GML').default, filename: './gerberfiles/artik530/artik530.GML'},
-        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GTL').default, filename: './gerberfiles/artik530/artik530.GTL'},
-        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GTO').default, filename: './gerberfiles/artik530/artik530.GTO'},
-        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GTP').default, filename: './gerberfiles/artik530/artik530.GTP'},
-        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GTS').default, filename: './gerberfiles/artik530/artik530.GTS'},
-        {gerber: require('raw-loader!./gerberfiles/artik530/artik530.TXT').default, filename: './gerberfiles/artik530/artik530.TXT'}
-      ]
+      // console.log(layers);
 
-      console.log(layers);
-
-      pcbStackup(layers).then(stackup => {
-        //console.log(stackup.top.svg) // logs "<svg ... </svg>"
-        //console.log(stackup.bottom.svg) // logs "<svg ... </svg>"
-        $('#generatedPcbTop').append(stackup.top.svg);
-        $('#generatedPcbBottom').append(stackup.bottom.svg);
-      })
+      // pcbStackup(layers).then(stackup => {
+      //   //console.log(stackup.top.svg) // logs "<svg ... </svg>"
+      //   //console.log(stackup.bottom.svg) // logs "<svg ... </svg>"
+      //   $('#generatedPcbTop').append(stackup.top.svg);
+      //   $('#generatedPcbBottom').append(stackup.bottom.svg);
+      // })
 
     }, BuildScreen_downloadOSImage() {
 

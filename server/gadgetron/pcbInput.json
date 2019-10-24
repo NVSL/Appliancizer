@@ -1,49 +1,3 @@
-# Appliancizer Client
-
-## Project setup
-```
-npm install
-```
-
-### Run client (prefered port: 8080)
-```
-npm run serve
-```
-
-# Appliancizer Server
-
-### Project setup
-```
-npm install
-```
-
-### Run server (runs on port 8081)
-```
-cd server
-npm run start
-```
-
-### Gadgetron related
-
-// Gadgetron Folder
-Gadgetron folder is in server/gadgetron
-
-// Where Gadgetron should be executed
-File: server/src/app.js
-Code:
-```js
-// Generate PCB
-app.post("/generatePCB", function(req, res) {
-...
-  // #####
-  // DO SOMETHING WITH GADGETRON HERE!!!
-  // #####
-...
-}
-```
-
-// File pcb input example for gadgetron 
-```json
 {
   "pcbHeight": 120,
   "pcbWidth": 120,
@@ -87,4 +41,3 @@ app.post("/generatePCB", function(req, res) {
     "serial": []
   }
 }
-```    

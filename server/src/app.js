@@ -105,6 +105,7 @@ app.post("/generateWebPage", function(req, res) {
       }
     }
   );
+
   // Create hardware.css file
   fs.writeFile(
     `../public/userapps/${userName}/hardware.css`,
@@ -118,14 +119,75 @@ app.post("/generateWebPage", function(req, res) {
       }
     }
   );
+
   // Copy amalgamNative folder to the user folder
   fs.copySync(
     `../public/amalgamNative`,
     `../public/userapps/${userName}/amalgam`
   );
+
   // If success send the user a link back
   res.send({ link: `${CLIENT_URL}/userapps/${userName}/index.html` });
 });
 
+// Generate PCB
+app.post("/generatePCB", function(req, res) {
+  console.log("\n######\n###### Generate PCB\n######");
+  console.log("PCB Height:", req.body.pcbHeight);
+  console.log("PCB Width :", req.body.pcbWidth);
+  console.log("PCB parts :\n", req.body.parts);
+
+  // Generate new JSON of parts
+  var pcbInput = {}; // Empty object
+  pcbInput["pcbHeight"] = req.body.pcbHeight;
+  pcbInput["pcbWidth"] = req.body.pcbWidth;
+  // Get gpios
+  var partNum = 0;
+  for (var key in req.body.parts) {
+    // Get I/Os
+    var ios = req.body.parts[key].componentHardElementVars;
+    var gpios = ios.replace;
+    pcbInput["part" + partNum] = {
+      componentName: req.body.parts[key].componentName,
+      componentWidth: req.body.parts[key].componentWidth,
+      componentHeight: req.body.parts[key].componentHeight,
+      componentX: req.body.parts[key].componentCenterLeft,
+      componentY: req.body.parts[key].componentCenterTop,
+      gpio: req.body.parts[key].gpio,
+      i2c: req.body.parts[key].i2c,
+      spi: req.body.parts[key].spi,
+      serial: req.body.parts[key].spi
+    };
+    partNum++;
+  }
+  console.log("\n######\n###### Final PCB data\n######");
+  console.log(pcbInput);
+
+  // Create pcbInput.json file
+  fs.writeFile(
+    "./gadgetron/pcbInput.json",
+    JSON.stringify(pcbInput, null, 2),
+    "utf8",
+    function(err) {
+      if (err) {
+        res.status(500).send({
+          error: "Server error when creating psbInput.json File"
+        });
+        throw err;
+      }
+    }
+  );
+
+  // #####
+  // DO SOMETHING WITH GADGETRON HERE!!!
+  // #####
+
+  // Return OK
+  res.status(200).send({
+    msg: "OK"
+  });
+});
+
+// Run Server
 app.listen(process.env.PORT || 8081);
 console.log("Server Running...");
