@@ -25,25 +25,8 @@ npm run start
 
 # Gadgetron related
 
-### Gadgetron Folder  
-Gadgetron folder is in ``` server/gadgetron ```
-
-### Where Gadgetron should be executed  
-File: server/src/app.js
-Code:
-```js
-// Generate PCB
-app.post("/generatePCB", function(req, res) {
-...
-  // #####
-  // DO SOMETHING WITH GADGETRON HERE!!!
-  // #####
-...
-}
-```
-
 ### File pcb input example for gadgetron
-Generated automatically in: ```server/gadgetron/pcbInput.json```
+Generated automatically in: ```server/gadgetron/pcbInput.json``` after clicking (BUILD->DOWNLOAD PCB FILES)
 ```json
 {
   "pcbHeight": 120,
@@ -89,3 +72,21 @@ Generated automatically in: ```server/gadgetron/pcbInput.json```
   }
 }
 ```    
+
+### Where pcbInput.json is generated and where Gadgetron things should be executed?  
+Here: ```server/src/app.js```  
+Where exactly? Here:
+```js
+//app.js
+....
+// Generate PCB
+app.post("/generatePCB", function(req, res) {
+...
+//pcbInput.json is generated
+...
+  // #####
+  // DO SOMETHING WITH GADGETRON HERE!!!
+  // #####
+...
+}
+```
