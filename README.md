@@ -75,9 +75,9 @@ Generated automatically in: ```server/gadgetron/pcbInput.json``` after clicking 
 
 ### Where pcbInput.json is generated and where Gadgetron things should be executed?  
 Here: ```server/src/app.js```  
-Where exactly? Here:
+Where exactly? Here:  
+app.js  
 ```js
-//app.js
 ....
 // Generate PCB
 app.post("/generatePCB", function(req, res) {
