@@ -14,12 +14,12 @@ npm run serve
 
 ### Project setup
 ```
+cd server
 npm install
 ```
 
 ### Run server (runs on port 8081)
 ```
-cd server
 npm run start
 ```
 
