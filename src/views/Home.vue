@@ -1,22 +1,13 @@
 <template>
-  <div class="home">
-
-  </div>
+  <div class="home"></div>
 </template>
 
-
-
 <script>
-
 export default {
-  name: 'home',
-  components: {
-  },
-  mounted() {
-    
-  }
-}
+  name: "home",
+  components: {},
+  mounted() {}
+};
 </script>
 
-<style>
-</style>
+<style></style>

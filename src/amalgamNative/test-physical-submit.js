@@ -1,6 +1,5 @@
 class TEST_PHYSICAL_SUBMIT extends HTMLElement {
-
-  constructor () {
+  constructor() {
     super();
     this.gpio;
     this.click;
@@ -19,8 +18,7 @@ class TEST_PHYSICAL_SUBMIT extends HTMLElement {
 
   readButton(milliseconds) {
     var me = this;
-    this.timerfunc = setTimeout(function () {
-
+    this.timerfunc = setTimeout(function() {
       console.log("Timer");
 
       if (me.gpio == undefined) {
@@ -35,12 +33,12 @@ class TEST_PHYSICAL_SUBMIT extends HTMLElement {
       }
 
       // Trigger submit and onsubmit if available
-      console.log(form.onsubmit())
-      if(form.onsubmit && form.onsubmit() === false) {
+      console.log(form.onsubmit());
+      if (form.onsubmit && form.onsubmit() === false) {
         me.readButton(milliseconds);
         return;
-      } 
-      if (typeof me.click === 'function') {
+      }
+      if (typeof me.click === "function") {
         console.log("click");
         me.click();
         form.submit();
@@ -49,13 +47,12 @@ class TEST_PHYSICAL_SUBMIT extends HTMLElement {
         form.submit();
       }
       me.readButton(milliseconds);
-
     }, milliseconds);
   }
 
   // Monitor the 'name' attribute for changes.
   static get observedAttributes() {
-    return ['gpio']; 
+    return ["gpio"];
   }
 
   connectedCallback() {
@@ -65,12 +62,10 @@ class TEST_PHYSICAL_SUBMIT extends HTMLElement {
 
   // Respond to attribute changes.
   attributeChangedCallback(attr, oldValue, newValue) {
-
-    if (attr == 'gpio') {
+    if (attr == "gpio") {
       this.gpio = parseFloat(newValue);
     }
   }
-
 }
 
-customElements.define('physical-submit', TEST_PHYSICAL_SUBMIT);
+customElements.define("physical-submit", TEST_PHYSICAL_SUBMIT);
