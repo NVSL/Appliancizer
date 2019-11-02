@@ -23,6 +23,10 @@ app.use(fileUpload()); // Allows getting req.files with the file data.
 
 const CLIENT_URL = "http://localhost:8080";
 
+// Run Server
+app.listen(process.env.PORT || 8081);
+console.log("Server Running...");
+
 // Without sequelize
 // Send JSON
 app.get("/status", (req, res) => {
@@ -137,46 +141,46 @@ app.post("/generatePCB", function(req, res) {
   console.log("PCB Width :", req.body.pcbWidth);
   console.log("PCB parts :\n", req.body.parts);
 
-  // Generate new JSON of parts
-  var pcbInput = {}; // Empty object
-  pcbInput["pcbHeight"] = req.body.pcbHeight;
-  pcbInput["pcbWidth"] = req.body.pcbWidth;
-  // Get gpios
-  var partNum = 0;
-  for (var key in req.body.parts) {
-    // Get I/Os
-    var ios = req.body.parts[key].componentHardElementVars;
-    var gpios = ios.replace;
-    pcbInput["part" + partNum] = {
-      componentName: req.body.parts[key].componentName,
-      componentWidth: req.body.parts[key].componentWidth,
-      componentHeight: req.body.parts[key].componentHeight,
-      componentX: req.body.parts[key].componentCenterLeft,
-      componentY: req.body.parts[key].componentCenterTop,
-      gpio: req.body.parts[key].gpio,
-      i2c: req.body.parts[key].i2c,
-      spi: req.body.parts[key].spi,
-      serial: req.body.parts[key].spi
-    };
-    partNum++;
-  }
-  console.log("\n######\n###### Final PCB data\n######");
-  console.log(pcbInput);
+  // // Generate new JSON of parts
+  // var pcbInput = {}; // Empty object
+  // pcbInput["pcbHeight"] = req.body.pcbHeight;
+  // pcbInput["pcbWidth"] = req.body.pcbWidth;
+  // // Get gpios
+  // var partNum = 0;
+  // for (var key in req.body.parts) {
+  //   // Get I/Os
+  //   var ios = req.body.parts[key].componentHardElementVars;
+  //   var gpios = ios.replace;
+  //   pcbInput["part" + partNum] = {
+  //     componentName: req.body.parts[key].componentName,
+  //     componentWidth: req.body.parts[key].componentWidth,
+  //     componentHeight: req.body.parts[key].componentHeight,
+  //     componentX: req.body.parts[key].componentCenterLeft,
+  //     componentY: req.body.parts[key].componentCenterTop,
+  //     gpio: req.body.parts[key].gpio,
+  //     i2c: req.body.parts[key].i2c,
+  //     spi: req.body.parts[key].spi,
+  //     serial: req.body.parts[key].spi
+  //   };
+  //   partNum++;
+  // }
+  // console.log("\n######\n###### Final PCB data\n######");
+  // console.log(pcbInput);
 
-  // Create pcbInput.json file
-  fs.writeFile(
-    "./gadgetron/pcbInput.json",
-    JSON.stringify(pcbInput, null, 2),
-    "utf8",
-    function(err) {
-      if (err) {
-        res.status(500).send({
-          error: "Server error when creating psbInput.json File"
-        });
-        throw err;
-      }
-    }
-  );
+  // // Create pcbInput.json file
+  // fs.writeFile(
+  //   "./gadgetron/pcbInput.json",
+  //   JSON.stringify(pcbInput, null, 2),
+  //   "utf8",
+  //   function(err) {
+  //     if (err) {
+  //       res.status(500).send({
+  //         error: "Server error when creating psbInput.json File"
+  //       });
+  //       throw err;
+  //     }
+  //   }
+  // );
 
   // #####
   // DO SOMETHING WITH GADGETRON HERE!!!
@@ -187,7 +191,3 @@ app.post("/generatePCB", function(req, res) {
     msg: "OK"
   });
 });
-
-// Run Server
-app.listen(process.env.PORT || 8081);
-console.log("Server Running...");

@@ -5,8 +5,8 @@
     "componentName": "physical-button-red",
     "componentWidth": "10mm",
     "componentHeight": "10mm",
-    "componentX": 15,
-    "componentY": 12,
+    "componentX": 14,
+    "componentY": 18,
     "gpio": [
       "4"
     ],
@@ -15,26 +15,13 @@
     "serial": []
   },
   "part1": {
-    "componentName": "LED-5mm-red",
-    "componentWidth": "5mm",
-    "componentHeight": "5mm",
-    "componentX": 13.5,
-    "componentY": 25.5,
-    "gpio": [
-      "17"
-    ],
-    "i2c": [],
-    "spi": [],
-    "serial": []
-  },
-  "part2": {
     "componentName": "physical-button-red",
     "componentWidth": "10mm",
     "componentHeight": "10mm",
     "componentX": 5,
     "componentY": 5,
     "gpio": [
-      "27"
+      "17"
     ],
     "i2c": [],
     "spi": [],

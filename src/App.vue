@@ -31,7 +31,6 @@
             </v-btn>
           </v-tab>
         </v-tabs>
-        <!-- 
         
         <!-- <v-btn class="vbtn" flat @click="testClick()">TEST</v-btn> -->
       </v-toolbar-items>
@@ -129,7 +128,7 @@
     <!-- #Right Click Menu -->
     <v-menu v-model="menu_show" :position-x="menu_x" :position-y="menu_y" absolute offset-y>
       <v-list>
-        <v-list-tile v-for="(item, index) in menu_items" :key="index" @click="">
+        <v-list-tile v-for="(item, index) in menu_items" :key="index">
           <v-list-tile-title @click="menuItemClick(index)">{{ item.title }}</v-list-tile-title>
         </v-list-tile>
       </v-list>
@@ -2052,10 +2051,6 @@ Component Styles
  width: 10mm;
  height: 10mm;
  background-image: url('~@/assets/buttons/1.png');
-}
-
-.submit-physical-button:hover {
-  /* box-shadow: 0px 0px 0px 2px rgba(255, 255, 0, 0.8); */
 }
 
 /* # Span Style */
