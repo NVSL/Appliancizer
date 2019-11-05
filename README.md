@@ -31,12 +31,36 @@ Generated automatically in: ```server/gadgetron/pcbInput.json``` after clicking 
 {
   "pcbHeight": 120,
   "pcbWidth": 120,
+  "availableGpio": [
+    "4",
+    "17",
+    "27",
+    "22",
+    "5",
+    "6",
+    "13",
+    "26",
+    "18",
+    "23",
+    "24",
+    "25",
+    "12"
+  ],
+  "availableI2c": [
+    "/dev/i2c-1"
+  ],
+  "availableSpi": [
+    "/dev/spidev0.0"
+  ],
+  "availableSerial": [
+    "/dev/spidev0.0"
+  ],
   "part0": {
-    "componentName": "physical-button-red",
-    "componentWidth": "10mm",
-    "componentHeight": "10mm",
-    "componentX": 15,
-    "componentY": 12,
+    "componentName": "LED-5mm-red",
+    "componentWidth": "5mm",
+    "componentHeight": "5mm",
+    "componentX": 14.5,
+    "componentY": 12.5,
     "gpio": [
       "4"
     ],
@@ -45,11 +69,11 @@ Generated automatically in: ```server/gadgetron/pcbInput.json``` after clicking 
     "serial": []
   },
   "part1": {
-    "componentName": "LED-5mm-red",
-    "componentWidth": "5mm",
-    "componentHeight": "5mm",
-    "componentX": 13.5,
-    "componentY": 25.5,
+    "componentName": "physical-button-red",
+    "componentWidth": "10mm",
+    "componentHeight": "10mm",
+    "componentX": 15,
+    "componentY": 24,
     "gpio": [
       "17"
     ],

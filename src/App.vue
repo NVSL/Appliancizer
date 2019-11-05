@@ -58,11 +58,7 @@
                   </v-btn>
                 </v-layout>
                 <v-divider class="pb-1"></v-divider>
-                <div
-                  id="webpageContainer"
-                  @mouseover="webPageMouseOver($event)"
-                  @mouseout="webPageMouseOut($event)"
-                >
+                <div id="webpageContainer">
                   <!-- User Web page will be injected here -->
                 </div>
               </span>
@@ -471,85 +467,6 @@
               </v-container>
             </v-card>
           </v-container>
-          <!-- <v-container id="buildScreen_mainPane" fluid>
-            <v-layout row wrap id="buildScreen_layoutHeight">
-              <div id="buildScreen_pcbHeightText" class="textVertical text-xs-center">{{ FinalPCB.height }} mm</div>
-              <v-flex id="buildScreen_pcbCanvas" xs6 class="pr-3 flexBoxHeight">
-                <div id="canvasPCBimage" class="pr-3">
-                  
-                </div>
-                <div id="buildScreen_pcbWidthText" class="text-sm-center">{{ FinalPCB.width }} mm</div>  
-              </v-flex>
-              <v-divider id="buildScreen_dividerHeight" class="mx-3" inset vertical></v-divider>
-              <v-flex  xs4 id="buildScreen_info" class="flexBoxHeight">
-                <h2><strong>PCB Dimensions: </strong>{{ FinalPCB.width }} mm х {{ FinalPCB.height }} mm</h2>
-                <h2><strong>PCB Electrical Components:</strong></h2>
-                <v-list two-line>
-                  <template v-for="(item, index) in FinalComponents">
-                    
-                    <v-list-tile v-if="item.title" :key="index+'_list'" avatar>
-
-                      <v-list-tile-avatar size="73">
-                        <img :src="item.image">
-                      </v-list-tile-avatar>
-
-                      <v-list-tile-content class="pl-4">
-                        <v-list-tile-title v-html="item.title"></v-list-tile-title>
-                        <v-list-tile-sub-title v-html="item.subtitle"></v-list-tile-sub-title>
-                      </v-list-tile-content>
-
-                    </v-list-tile>
-                    <v-divider v-if="item.title" :key="index+'_divider'" :inset="true"></v-divider>
-
-                  </template>
-                </v-list>
-              </v-flex>
-            </v-layout>
-            <v-divider></v-divider>
-            <div class="text-sm-center pl-5 ml-4">
-              <v-btn class="vbtn info" flat @click="BuildScreen_build()">
-                {{BuildButtonText}}
-              </v-btn>
-            </div>
-          </v-container>
-          <v-container id="buildScreen_downloadPane" fluid>
-            <v-layout row wrap id="buildDownload_layoutHeight">
-              <v-flex  xs6>
-                <h3>Build Steps </h3>
-                <h3>1. Download the OS image below and flash it to your raspberry pi SD card. We recomend 
-                  <a href="https://www.balena.io/etcher/">Balena Etcher</a>   
-                    for flashing the OS image.
-                </h3>
-                <v-btn class="vbtn info" flat @click="BuildScreen_downloadOSImage()">
-                  DOWNLOAD OS IMAGE
-                </v-btn>
-                <h3>2. Download the generated app to your raspberry pi or deploy it online. </h3>
-                <v-btn  class="vbtn info" flat @click="BuildScreen_downloadAPP()">
-                  DOWNLOAD APP
-                </v-btn>
-                <v-btn  class="vbtn info" flat @click="BuildScreen_deployOnline()">
-                  DEPLOY APP ONLINE
-                </v-btn>
-                <br>
-                <a :href="GeneratedLink" target="_blank">{{GeneratedLink}}</a>   
-                <h3>3. Generate PCB Gerber Files for mmanufacture.</h3>
-                <v-progress-linear :indeterminate="true"></v-progress-linear>
-                <v-btn class="vbtn info" flat @click="BuildScreen_downloadPCBFiles()">
-                  DOWNLOAD PCB FILES
-                </v-btn>
-                <v-layout row wrap class="pt-5">
-                  <div id="generatedPcbTop"></div>
-                  <div id="generatedPcbBottom"></div>
-                 </v-layout>
-              </v-flex>
-            </v-layout>
-            <v-divider></v-divider>
-            <div class="text-sm-center pl-5 ml-4">
-              <v-btn class="vbtn info" flat @click="BuildScreen_cancelBuild()">
-                {{ CancelBuildButtonText }}
-              </v-btn>
-            </div>
-          </v-container>-->
         </v-card>
       </v-dialog>
     </v-app>
@@ -1845,6 +1762,7 @@ export default {
         .post("generatePCB", {
           pcbHeight: this.FinalPCB.height,
           pcbWidth: this.FinalPCB.width,
+          pinMap: this.raspberryPinMap,
           parts: this.eComponentSaved
         })
         .then(response => {
