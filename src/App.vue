@@ -1,10 +1,13 @@
 <!--
 // Tomorrow:
 // - Integrate this with gadgetron.
-// - Add smd push buttons
-// - Add Headers
-// - Add external components (resisots / caps). 
-
+// - Add RPI sound  header (Note that a device that needs one device more for the connectro is needed)
+// - Get right part sizes (Moderate)
+// - When selecting a new component parent should be set to position 5,5 (Easy)
+// - How to add a notification if max number of I/Os for the connector is reached?
+// - Add rotation (Hard)
+// - Screen rezise should be in the webpage (IMPORTANT)
+// - Add LED resistor and check all component part numbers (ADDD BUY link) (Easy, IMPORTANT)
 -->
 
 <template>
@@ -32,7 +35,7 @@
             </v-tab>
           </v-tabs>
 
-          <!-- <v-btn class="vbtn" flat @click="testClick()">TEST</v-btn> -->
+          <v-btn class="vbtn" flat @click="testClick()">TEST</v-btn>
         </v-toolbar-items>
       </v-toolbar>
 
@@ -52,13 +55,13 @@
                 <v-layout row>
                   <v-toolbar-title class="pt-2 mx-3">Webpage</v-toolbar-title>
                   <v-spacer></v-spacer>
-                  <v-btn class="vbtn" @click="openHTMLEditor()">
+                  <v-btn id="buttonAdd" class="vbtn" @click="openHTMLEditor()">
                     ADD
                     <v-icon>add</v-icon>
                   </v-btn>
                 </v-layout>
                 <v-divider class="pb-1"></v-divider>
-                <div id="webpageContainer">
+                <div id="webpageContainer" style="visibility: visible">
                   <!-- User Web page will be injected here -->
                 </div>
               </span>
@@ -67,7 +70,7 @@
                   <v-layout row>
                     <v-toolbar-title class="pt-2 mx-3">PCB</v-toolbar-title>
                     <v-spacer></v-spacer>
-                    <v-btn class="vbtn" @click="openBuildScreen()">
+                    <v-btn id="buttonBuild" class="vbtn" @click="openBuildScreen()">
                       BUILD
                       <v-icon>build</v-icon>
                     </v-btn>
@@ -92,15 +95,16 @@
                   :style="{ display: componentListDisplay }"
                 >
                   <v-card-title class="subheading py-1">
-                    <strong>Part Number:</strong> |
-                    <strong>Type:</strong>
-                    {{ currentComponentType }} |
-                    <strong>ID:</strong>
-                    {{ currentComponentId }}
+                    <strong>Part Number:&nbsp;</strong> 
+                    <span>{{currentComponentPartNumber.toUpperCase()}}</span>
                     <v-spacer></v-spacer>
-                    <v-btn class="vbtn" light @click="removeComponent()">
+                    <v-btn
+                      class="vbtn"
+                      light 
+                      :disabled="componentRemoveDisable"
+                      @click="removeParentComponent()"
+                    >
                       REMOVE
-                      <v-icon>clear</v-icon>
                     </v-btn>
                   </v-card-title>
                 </v-card>
@@ -119,6 +123,7 @@
                   >
                     <v-img
                       :key="index"
+                      contain
                       @click="componentClick(index)"
                       :src="getComponentsImg(item)"
                       class="componentImages noGlobalTrigger"
@@ -527,8 +532,10 @@ export default {
     runStop: false,
     componentListDisplay: "none",
     mouseoverComponent: true,
+    componentRemoveDisable: false,
     currentComponentId: "None",
     currentComponentType: "None",
+    currentComponentPartNumber: "None",
     uniqueId: 0,
     eComponentList: null,
     eComponentImages: [],
@@ -543,7 +550,7 @@ export default {
     menu_y: 0,
     menu_x: 0,
     iframeOnScreen: false,
-    menu_items: [{ title: "Remove" }],
+    menu_items: [{ title: "Rotate" }],
     HTMLEditor: false,
     EditorIFRAME_head: undefined,
     EditorIFRAME_body: undefined,
@@ -586,7 +593,8 @@ export default {
     CancelBuildButtonCount: 0,
     GeneratedPCBimageTop: "",
     GeneratedPCBimageBottom: "",
-    GeneratedLink: ""
+    GeneratedLink: "",
+    disableButtons: false
   }),
   mounted: function() {
     // Load electrical component List:
@@ -596,28 +604,41 @@ export default {
           component: "physical-button-red",
           hardElement: "physical-button",
           hardElementVars: "(gpio:$gpio)",
+          partImage: "buttons/smd-button.png",
+          image: "buttons/smd-button.svg",
+          height: "5mm",
+          width: "5mm",
+          requires: ["resistor_0630"]
+        },
+        1: {
+          component: "physical-button-red",
+          hardElement: "physical-button",
+          hardElementVars: "(gpio:$gpio)",
           partImage: "buttons/tactile-button-round-red.jpg",
           image: "buttons/red-round-button.2D.svg",
           height: "10mm",
-          width: "10mm"
+          width: "10mm",
+          requires: ["resistor_0630"]
         },
-        1: {
+        2: {
           component: "physical-button-blue",
           hardElement: "physical-button",
           hardElementVars: "(gpio:$gpio)",
           partImage: "buttons/tactile-button-round-blue.jpg",
           image: "buttons/blue-round-button.2D.svg",
           height: "20mm",
-          width: "20mm"
+          width: "20mm",
+          requires: ["resistor_0630"]
         },
-        2: {
+        3: {
           component: "physical-button-green",
           hardElement: "physical-button",
           hardElementVars: "(gpio:$gpio)",
           partImage: "buttons/tactile-button-round-green.jpg",
           image: "buttons/green-round-button.2D.svg",
           height: "30mm",
-          width: "30mm"
+          width: "30mm",
+          requires: ["resistor_0630"]
         }
       },
       span: {
@@ -656,7 +677,25 @@ export default {
           image: "output/white-5mm-LED.2D.svg",
           height: "5mm",
           width: "5mm"
+        },
+        4: {
+          component: "LED-1206",
+          hardElement: "physical-output",
+          hardElementVars: "(gpio:$gpio)",
+          partImage: "output/LED-1206.png",
+          image: "output/LED-1206.svg",
+          height: "5mm",
+          width: "5mm"
         }
+        // 5: {
+        //   component: "LED-603",
+        //   hardElement: "physical-output",
+        //   hardElementVars: "(gpio:$gpio)",
+        //   partImage: "output/LED-603.png",
+        //   image: "output/LED-603.svg",
+        //   height: "5mm",
+        //   width: "5mm"
+        // }
       },
       range: {
         0: {
@@ -666,7 +705,8 @@ export default {
           partImage: "range/motorized-potentiometer.png",
           image: "range/motorizedPot.png",
           height: "9mm",
-          width: "152mm"
+          width: "152mm",
+          requires: ["ads1X15", "at42qt1010"]
         },
         1: {
           component: "physical-static-range",
@@ -677,25 +717,58 @@ export default {
           partImage: "range/pot.png",
           image: "range/potentiometer.png",
           height: "20mm",
-          width: "20mm"
+          width: "20mm",
+          requires: ["ads1X15"]
         }
       },
       screens: {
         0: {
           component: "utronics3-5inch",
-          hardElement: "",
-          image: "",
           partImage: "screens/utronics_3.5inch.png",
+          image: "",
           height: "80mm",
           width: "100mm"
         },
         1: {
           component: "geeekpi5inch",
-          hardElement: "",
-          image: "",
           partImage: "screens/geeekpi_5inch.png",
+          image: "",
           height: "100mm",
           width: "160mm"
+        }
+      },
+      connector: {
+        0: {
+          component: "rpi-40pin-connector",
+          partImage: "connectors/rpi_partimage.jpg",
+          image: "connectors/rpi_connector.png",
+          height: "5mm",
+          width: "51mm"
+          // TODO add requered pinMap
+        }
+      },
+      misc: {
+        // Required Components
+        resistor_0630: {
+          component: "resistor_0630",
+          partImage: "misc/0603-RES.jpg",
+          image: "misc/0603-RES.svg",
+          height: "3mm",
+          width: "5mm"
+        },
+        ads1X15: {
+          component: "ads1X15",
+          partImage: "misc/ads1X15.png",
+          image: "misc/ads1X15.svg",
+          height: "10mm",
+          width: "15mm"
+        },
+        at42qt1010: {
+          component: "at42qt1010",
+          partImage: "misc/at42qt1010.png",
+          image: "misc/at42qt1010.svg",
+          height: "10mm",
+          width: "10mm"
         }
       }
     };
@@ -720,14 +793,6 @@ export default {
       spi: ["/dev/spidev0.0"],
       serial: ["/dev/ttyUSB0"]
     };
-
-    document.addEventListener(
-      "drag",
-      function() {
-        console.log("DRAG");
-      },
-      false
-    );
 
     document.addEventListener(
       "dragstart",
@@ -820,7 +885,7 @@ export default {
             $(event.target).offset().top
           );
           console.log("Coordinates Droped:", dataLeft, dataTop);
-          this.addNewComponent(
+          this.addNewHTMLComponent(
             dataID,
             dataType,
             dataInnerHTML,
@@ -879,6 +944,9 @@ export default {
     this.FinalPCB.width = this.pcbHeight;
   },
   methods: {
+    //##########
+    //########## MAIN SCREEN
+    //##########
     searchSoftElements() {
       // Zero any previeous arrays
       this.eAvailableComponents = [];
@@ -1024,6 +1092,17 @@ export default {
           );
         }
       }, 3000);
+
+      // Add connector to the PCB Screen
+      this.addNewHTMLComponent(
+        "connector", // thisId
+        "connector", // thisType
+        "",          // thisInnerHtml
+        '<div id="connector"></div>', // thisHtml
+        5, // thisLeft
+        5 // thisTop
+      );
+    
     },
     launchSnackbar(text, color, timeout) {
       this.snackbarText = text;
@@ -1031,85 +1110,15 @@ export default {
       this.snackbarTimeout = timeout;
       this.snackbar = true;
     },
-    resize(newRect) {
-      console.log("Resizing!!" + this.panelHeight);
-      this.lwidth = newRect.width;
-      this.height = newRect.height;
-      this.top = newRect.top;
-      this.left = newRect.left;
-    },
-    panelResize(resize) {
-      console.log(resize);
-    },
-    // When a component is clicked from the list.
-    componentClick(selectedNumber) {
-      if (
-        this.currentComponentId != "None" ||
-        this.currentComponentType != "None"
-      ) {
-        this.componentSelected = parseInt(selectedNumber);
-        console.log(this.componentSelected);
-        // this.$refs.component[itemNum].$el.style.border = "1px solid red";
-        console.log(this.currentComponentId, this.currentComponentType);
-        // TODO: Add not defined detection
-
-        this.setNewComponentSelection(
-          this.currentComponentId,
-          this.currentComponentType,
-          selectedNumber
-        );
-      } else {
-        console.log("Component not selected");
-      }
-    },
-    // Changes the comopnent in the PCB and in the directory.
-    setNewComponentSelection(compId, compType, newNumber) {
-      // Get new image path
-      var name = this.eComponentList[compType][newNumber].component;
-      var hardElement = this.eComponentList[compType][newNumber].hardElement;
-      var hardElementVars = this.eComponentList[compType][newNumber]
-        .hardElementVars;
-      var partImage = this.eComponentList[compType][newNumber].partImage;
-      var image = this.eComponentList[compType][newNumber].image;
-      var height = this.eComponentList[compType][newNumber].height;
-      var width = this.eComponentList[compType][newNumber].width;
-
-      if (image != "") {
-        // Change the image
-        $("#" + compId).css(
-          "background-image",
-          "url('" + require("./assets/" + image) + "')"
-        );
-      }
-      // Change size
-      $("#" + compId).css("height", height);
-      $("#" + compId).css("width", width);
-      //Save the new component number selected [Here we save the new selected component]
-      this.eComponentSaved[compId].componentSelected = newNumber; // Set new component selected
-      this.eComponentSaved[compId].componentName = name; // Set new component name
-      this.eComponentSaved[compId].componentHardElement = hardElement; // Set new component hardElement
-      this.eComponentSaved[compId].componentHardElementVars = hardElementVars; // Set new component hardElement
-      this.eComponentSaved[compId].componentPartImage = partImage; // Set new component part Image
-      this.eComponentSaved[compId].componentImage = image; // Set new component image path
-      this.eComponentSaved[compId].componentWidth = width; // Set new component width
-      this.eComponentSaved[compId].componentHeight = height; // Set new component height
-      this.eComponentSaved[compId].gpio = []; // Set at the end
-      this.eComponentSaved[compId].i2c = []; // Set at the end
-      this.eComponentSaved[compId].spi = []; // Set at the end
-      this.eComponentSaved[compId].serial = []; // Set at the end
-    },
-    drop(event) {
-      event.preventDefault();
-      // console.log("Drop EVENT", event.target); // this element
-    },
     getImgUrl(imagePath) {
       return require(imagePath);
     },
     getComponentsImg(item) {
       return require("./assets/" + item);
     },
+    // Sets app to RUN Mode
     setRunMode() {
-      console.log("Running MODE");
+      console.log("Running MODE", this.runStop);
 
       // If already in run mode return
       if (this.runStop == true) return;
@@ -1117,10 +1126,13 @@ export default {
       // Running mode
       this.runStop = true;
       this.runStopString = "EDIT";
+
       // Remove protector from elements in PCB
       $(".protector").css("display", "none");
+
       // Set iframe events to all
       $("iframe").css("pointer-events", "all");
+
       // For all available comopnents, remove their draggable class
       var ele;
       for (ele of this.eAvailableComponents) {
@@ -1128,35 +1140,20 @@ export default {
         $("#" + ele + "_drag").removeClass("draggable_element");
         $("#" + ele + "_drag").attr("draggable", "false");
       }
+
       // For all non available comopnents, remove their class
       for (ele of this.nonAvailableComponents) {
         console.log(ele);
         $("#" + ele + "_nondrag").removeClass("none_draggable_element");
       }
-      // if (this.runStop == false) {
 
-      // } else {
-
-      // }
-
-      // // TEST ADDING DRAGGABEL COMPONENTS
-      // var img = $('<img/>')
-      //   .attr("class", "abutton")
-      //   .attr("src", this.getImgUrl('button.png'))
-      //   .appendTo("#PCB");
-      //   $( ".abutton" ).draggable({ containment: "#PCBBoard", scroll: false });
-
-      // // DONT DELTE: Creating a Component and passing raw html
-      // // Create and append comopnent
-      // var ComponentClass = Vue.extend(ElectronicComponent)
-      // var instance = new ComponentClass({
-      //     propsData: { id: 'newComopnent', msg: 'A message', rawHTML: '<div id="idiot">LAL</div>' }
-      // })
-      // instance.$mount() // pass nothing
-      // this.$refs.pcbcontainer.appendChild(instance.$el);
+      // Disable Add and Build Buttons (had to do it manually since split bug)
+      $("#buttonAdd").addClass("v-btn--disabled");
+      $("#buttonBuild").addClass("v-btn--disabled");
     },
+    // Sets app to EDIT Mode
     setEditMode() {
-      console.log("Edit MODE");
+      console.log("Edit MODE", this.runStop);
 
       // If already in edit mode return
       if (this.runStop == false) return;
@@ -1164,10 +1161,13 @@ export default {
       // Edit mode
       this.runStop = false;
       this.runStopString = "RUN";
+
       // Add protector from elements in PCB
       $(".protector").css("display", "block");
+
       // Set iframe events to none
       $("iframe").css("pointer-events", "all");
+
       // For all available comopnents, add their draggable class
       var ele;
       for (ele of this.eAvailableComponents) {
@@ -1175,27 +1175,71 @@ export default {
         $("#" + ele + "_drag").addClass("draggable_element");
         $("#" + ele + "_drag").attr("draggable", "true");
       }
+
       // For all non available comopnents, add their class
       for (ele of this.nonAvailableComponents) {
         console.log(ele);
         $("#" + ele + "_nondrag").addClass("none_draggable_element");
       }
-    },
-    testClick() {
-      // TEST ADDING A BUTTON
-      this.addNewComponent(
-        "playPause",
-        "submit",
-        '<button onclick="playPause()" id="playPause"></button>'
-      );
 
-      // this.addNewComponent("video-placeholder", "screens",
+      // Disable Add and Build Buttons (had to do it manually since split bug)
+      $("#buttonAdd").removeClass("v-btn--disabled");
+      $("#buttonBuild").removeClass("v-btn--disabled");
+    },
+    //##########
+    //########## HTML COMPONENT MANAGMENT
+    //##########
+    testClick() {
+      // TEST RANGE
+      // this.addNewHTMLComponent(
+      //   "progressBar", // thisId
+      //   "test_range", // thisType
+      //   "", // thisInnerHtml
+      //   '<input type="range" min="0" max="28" step="1" value="0" id="progressBar">', // thisHtml
+      //   5, // thisLeft
+      //   5 // thisTop
+      // );
+
+
+
+      // // TEST ADDING A BUTTON
+      // this.addNewHTMLComponent(
+      //   "playPause", // thisId
+      //   "test_submit", // thisType
+      //   "", // thisInnerHtml
+      //   '<button onclick="playPause()" id="playPause"></button>', // thisHtml
+      //   5, // thisLeft
+      //   5 // thisTop
+      // );
+
+      // // TEST CONNECTOR
+      // this.addNewHTMLComponent(
+      //   "connector", // thisId
+      //   "connector", // thisType
+      //   "",          // thisInnerHtml
+      //   '<div id="connector"></div>', // thisHtml
+      //   5, // thisLeft
+      //   5 // thisTop
+      // );
+
+      // // TEST MISC
+      // this.addNewHTMLComponent(
+      //   "resistor_0630", // thisId
+      //   "misc", // thisType
+      //   "",          // thisInnerHtml
+      //   '<div id="'+"resistor_0630"+'" class="misc"></div>', // thisHtml
+      //   5, // thisLeft
+      //   5 // thisTop
+      // );
+
+      // // TEST SCREEN
+      // this.addNewHTMLComponent("video-placeholder", "screens",
       //       '<iframe id="video-placeholder" frameborder="0" allowfullscreen="1" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" title="YouTube video player" src="https://www.youtube.com/embed/DCLrDnZO_0E?rel=0&amp;color=white&amp;playlist=dQiNVk_u0po%2C%20IvUU8joBb1Q%2CS-m-CHigCY4%2CHpaHvUOk3F0&amp;enablejsapi=1&amp;origin=http%3A%2F%2Flocalhost%3A8080&amp;widgetid=1" draggable="true"></iframe>');
       //var iframeBody = document.getElementById('video-placeholder').contentWindow.document.body.innerHTML; //$('#video-placeholder').contents();
       //console.log(iframeBody);
     },
-    // Adds a new component to the PCB
-    addNewComponent(
+    // Adds a new HTML component to the PCB
+    addNewHTMLComponent(
       thisId,
       thisType,
       thisInnerHtml,
@@ -1203,14 +1247,11 @@ export default {
       thisLeft,
       thisTop
     ) {
-      // // Hide the soft comonent in the user webpage
-      // $('#'+thisId).css("visibility", "hidden");
-      // // Change the id name of the user webpage
-      // $('#'+thisId).attr("id",thisId+"_edit");
+      //console.log(`### ADDING COMPONENT [${thisType}]`);
 
-      // Get element data to save later:
-      var thisWidth = $("#" + thisId).outerWidth();
-      var thisHeight = $("#" + thisId).outerHeight();
+      // Init variables
+      var thisWidth = 0;
+      var thisHeight = 0;
 
       // Generate unique id:
       var elementId = "element_" + this.uniqueId;
@@ -1228,27 +1269,77 @@ export default {
         '<div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div>'
       );
 
-      // Get user web element data // TODO
-      $("#" + thisId)
-        .detach()
-        .appendTo("#" + elementId);
-      console.log("ELEMENT TYPE = ", thisType, thisType == "span");
-      // Add component element style class (TODO: select class accodign to the type)
-      if (thisType == "submit") {
-        $("#" + thisId).addClass("submit-physical-button");
-      } else if (thisType == "span") {
-        $("#" + thisId).addClass("submit-physical-button");
-      } else if (thisType == "range") {
-        $("#" + thisId).addClass("range-physical-slider");
-      } else if (thisType == "screens") {
-        $("#" + thisId).addClass("physical-screen");
-      } else {
-        console.error("FATAL ERROR: Unknown element type");
-        return;
-      }
+      // Create component in the PCB area
+      if (thisType == "connector") {
+        // Is a connector
+        $("#" + elementId).append(thisHtml);
+      } else if (thisType == "misc") {
+        // Is a misc component part of a web element
+        $("#" + elementId).append(thisHtml);
+      } else if (thisType.includes("test_")) {
+        // Test web elements that can be harden
+        thisType = thisType.split("_")[1];
 
-      // Remove any innerHTML
-      $("#" + thisId).empty();
+        // Append component html
+        $("#" + elementId).append(thisHtml);
+
+        // Add component element style class
+        if (thisType == "submit") {
+          $("#" + thisId).addClass("submit-physical-button");
+        } else if (thisType == "span") {
+          $("#" + thisId).addClass("submit-physical-button");
+        } else if (thisType == "range") {
+          $("#" + thisId).addClass("range-physical-slider");
+        } else if (thisType == "screens") {
+          $("#" + thisId).addClass("physical-screen");
+        } else {
+          console.error("FATAL ERROR: Unknown element type");
+          return;
+        }
+      } else {
+        // Is a web element that can be harden
+
+        // Get element data to save later:
+        thisWidth = $("#" + thisId).outerWidth();
+        thisHeight = $("#" + thisId).outerHeight();
+
+        // Detach component and add it to the PCB
+        $("#" + thisId)
+          .detach()
+          .appendTo("#" + elementId);
+        // Add component element style class
+        if (thisType == "submit") {
+          $("#" + thisId).addClass("submit-physical-button");
+        } else if (thisType == "span") {
+          $("#" + thisId).addClass("submit-physical-button");
+        } else if (thisType == "range") {
+          $("#" + thisId).addClass("range-physical-slider");
+        } else if (thisType == "screens") {
+          $("#" + thisId).addClass("physical-screen");
+        } else {
+          console.error("FATAL ERROR: Unknown element type");
+          return;
+        }
+
+        // Remove any innerHTML
+        $("#" + thisId).empty();
+
+        // Get element width and height for centering it;
+        var eleId_center_x = $("#" + elementId).outerWidth() / 2;
+        var eleId_center_y = $("#" + elementId).outerHeight() / 2;
+        var mouse_center_x = thisLeft - eleId_center_x;
+        var mouse_center_y = thisTop - eleId_center_y;
+
+        // Move element to its dropped coordinated
+        $("#" + elementId).css(
+          "left",
+          mouse_center_x > 0 ? mouse_center_x : thisLeft + "px"
+        );
+        $("#" + elementId).css(
+          "top",
+          mouse_center_y > 0 ? mouse_center_y : thisTop + "px"
+        );
+      }
 
       // Make it draggable
       $("#" + elementId).draggable({
@@ -1264,60 +1355,73 @@ export default {
         }
       });
 
-      // Get element width and height for centering it;
-      var eleId_center_x = $("#" + elementId).outerWidth() / 2;
-      var eleId_center_y = $("#" + elementId).outerHeight() / 2;
-      var mouse_center_x = thisLeft - eleId_center_x;
-      var mouse_center_y = thisTop - eleId_center_y;
-
-      // Move element to its dropped coordinated
-      $("#" + elementId).css(
-        "left",
-        mouse_center_x > 0 ? mouse_center_x : thisLeft + "px"
-      );
-      $("#" + elementId).css(
-        "top",
-        mouse_center_y > 0 ? mouse_center_y : thisTop + "px"
-      );
-
       // When the component in the PCB is clicked do:
       $("#" + elementId).mousedown(element => {
         if (this.runStop == false) {
-          console.log(this.mouseoverComponent);
+          // Get element clicked
           var ele = $(element.target).next()[0];
+          if (ele == undefined) return;
+          if (ele.id.includes("element_")) return;
+
+          console.log("### CLICK ON COMPONENT");
           // Get current ID
           this.currentComponentId = ele.id;
           // Get current Type
-          console.log("Ele TAGNAME", ele.tagName);
-          if (ele.type == undefined && ele.tagName != "SPAN") {
+          if (this.currentComponentId == "connector") {
+            this.currentComponentType = "connector";
+            this.componentRemoveDisable = true;
+          } else if (ele.classList.contains("misc")) {
+            this.currentComponentType = "misc";
+            this.componentRemoveDisable = true;
+          } else if (ele.type == undefined && ele.tagName != "SPAN") {
             // If type is not detected then is a screen
             this.currentComponentType = "screens";
+            this.componentRemoveDisable = false;
           } else {
             if (ele.tagName == "SPAN") this.currentComponentType = "span";
             else this.currentComponentType = ele.type;
+            this.componentRemoveDisable = false;
           }
 
-          console.log("Eleemnt TYPE:" + this.currentComponentType);
+          // Get current component Part Number
+          this.currentComponentPartNumber = this.eComponentSaved[this.currentComponentId].componentName;
+
+          console.log("elementClicked:", ele);
+          console.log("currentComponentID:" + this.currentComponentId);
+          console.log("currentComponentType:" + this.currentComponentType);
+          console.log("currentComponentPartNumber:" + this.currentComponentPartNumber);
+          console.log(
+            "IsComponentRemoveDisabled:" + this.componentRemoveDisable
+          );
 
           // Pupulate Component List Images
           this.eComponentImages = []; // Clear list
           var type = this.eComponentSaved[this.currentComponentId].type; // Get component type
-          var elements = this.eComponentList[type]; // Get all components of the selected type
-          for (var i in elements) {
-            console.log("PART IMAGE:", elements[i].partImage);
-            var partImage = elements[i].partImage;
-            this.eComponentImages.push(partImage);
+          if (type == "misc") {
+            // Just populate the misc image part
+            var compId = this.currentComponentId;
+            var part = compId.substr(0, compId.lastIndexOf("_"));
+            console.log(
+              "partImage:",
+              this.eComponentList["misc"][part].partImage
+            );
+            this.eComponentImages.push(
+              this.eComponentList["misc"][part].partImage
+            );
+          } else {
+            // Populate all available web elements for that type
+            // (button, range, span, screen, connector)
+            var elements = this.eComponentList[type]; // Get all components of the selected type
+            for (var i in elements) {
+              console.log("partImage:", elements[i].partImage);
+              this.eComponentImages.push(elements[i].partImage);
+            }
           }
 
           // Update component selected for this element
           var selectedNumber = this.eComponentSaved[this.currentComponentId]
             .componentSelected; // Get component selected
           this.componentSelected = selectedNumber;
-
-          // Debug
-          console.log(ele.id);
-          console.log(ele.type);
-          //console.log(ele.tagName.toLowerCase());
 
           // Add this element border and unselect others
           for (var key in this.eComponentSaved) {
@@ -1339,6 +1443,8 @@ export default {
           // Show Component Selection List
           this.componentListDisplay = "";
           this.pcbPanelHeight = "74%";
+
+          console.log("### END");
         }
       });
 
@@ -1356,6 +1462,8 @@ export default {
         componentImage: null, // Set in the next function
         componentWidth: null, // Set in the next function
         componentHeight: null, // Set in the next function
+        componentRequires: null, // Set in the next function
+        componentChildIDs: [], // Set at the end
         componentLeft: null, // Set in get position
         comopnentTop: null, // Set in get position
         componentCenterLeft: null, // Set in get position
@@ -1370,8 +1478,30 @@ export default {
       // Apply style settings for new component (TODO: get Id and type)
       this.setNewComponentSelection(thisId, thisType, selectedNumber);
 
-      // Set component position
-      this.setComponentPosition(thisId);
+      //console.log("### END");
+    },
+    addChildComponents(parentId, childComponentsList) {
+      // Reset child components List
+      this.eComponentSaved[parentId].componentChildIDs = [];
+
+      // Add childs
+      for (var i in childComponentsList) {
+        // Set misc comopnent ID (e.g, 0603-RES_1)
+        var miscId = childComponentsList[i] + "_" + this.uniqueId;
+
+        // Save child generated IDs
+        this.eComponentSaved[parentId].componentChildIDs.push(miscId);
+
+        // Add extra required misc components:
+        this.addNewHTMLComponent(
+          miscId, // thisId
+          "misc", // thisType
+          "", // thisInnerHtml
+          '<div id="' + miscId + '" class="misc"></div>', // thisHtml
+          5, // thisLeft
+          5 // thisTop
+        );
+      }
     },
     setComponentPosition(thisId) {
       // Get component data
@@ -1399,24 +1529,145 @@ export default {
       var centerTop = topmm + componentHeight / 2;
       this.eComponentSaved[thisId].componentCenterLeft = centerLeft;
       this.eComponentSaved[thisId].componentCenterTop = centerTop;
+    },
+    // When a component is clicked from the list.
+    componentClick(selectedNumber) {
+      console.log("### ITEM CLICK");
+      if (
+        this.currentComponentId != "None" ||
+        this.currentComponentType != "None"
+      ) {
+        this.componentSelected = parseInt(selectedNumber);
+        // this.$refs.component[itemNum].$el.style.border = "1px solid red";
+        console.log("currentComonentId:" + this.currentComponentId);
+        console.log("currentComponentType:" + this.currentComponentType);
 
-      console.log("CENTER LEFT: " + centerLeft + "mm");
-      console.log("CENTER TOP: " + centerTop + "mm");
+        if (this.currentComponentType == "misc") {
+          // If misc, nothing to do, no need to change device
+          console.log("Nothing to do");
+          console.log("### ITEM CLICK END");
+          return;
+        }
+
+        // Drop new parent componentinto the PCB
+        this.setNewComponentSelection(
+          this.currentComponentId,
+          this.currentComponentType,
+          selectedNumber
+        );
+
+      } else {
+        console.log("Component not selected");
+      }
+      console.log("### ITEM CLICK END");
+    },
+    // Changes the comopnent in the PCB and in the directory.
+    setNewComponentSelection(compId, compType, newNumber) {
+      // Select between a component list or just one misc component
+      var selectedNumber = null;
+      if (compType == "misc") {
+        // Is just one child component (e.g., resisotor_0630_1)
+        selectedNumber = compId.substr(0, compId.lastIndexOf("_"));
+        console.log(`### ADDING CHILD COMPONENT [${compType}]`);
+      } else {
+        // Its a parent component
+        selectedNumber = newNumber;
+        console.log(`### ADDING PARENT COMPONENT [${compType}]`);
+
+        // Set new current component part number name 
+        this.currentComponentPartNumber = this.eComponentList[compType][selectedNumber].component;
+      }
+      console.log("selectedNumber:", selectedNumber);
+
+      // Get new image path
+      var name = this.eComponentList[compType][selectedNumber].component;
+      var hardElement = this.eComponentList[compType][selectedNumber]
+        .hardElement;
+      var hardElementVars = this.eComponentList[compType][selectedNumber]
+        .hardElementVars;
+      var partImage = this.eComponentList[compType][selectedNumber].partImage;
+      var image = this.eComponentList[compType][selectedNumber].image;
+      var height = this.eComponentList[compType][selectedNumber].height;
+      var width = this.eComponentList[compType][selectedNumber].width;
+      var requires = this.eComponentList[compType][selectedNumber].requires;
+
+      if (image != "") {
+        // Change the image
+        $("#" + compId).css(
+          "background-image",
+          "url('" + require("./assets/" + image) + "')"
+        );
+      }
+      // Change size
+      $("#" + compId).css("height", height);
+      $("#" + compId).css("width", width);
+
+      //Save the new component number selected [Here we save the new selected component]
+      this.eComponentSaved[compId].componentSelected = newNumber; // Set new component selected
+      this.eComponentSaved[compId].componentName = name; // Set new component part number name
+      this.eComponentSaved[compId].componentHardElement = hardElement; // Set new component hardElement
+      this.eComponentSaved[compId].componentHardElementVars = hardElementVars; // Set new component hardElement
+      this.eComponentSaved[compId].componentPartImage = partImage; // Set new component part Image
+      this.eComponentSaved[compId].componentImage = image; // Set new component image path
+      this.eComponentSaved[compId].componentWidth = width; // Set new component width
+      this.eComponentSaved[compId].componentHeight = height; // Set new component height
+      this.eComponentSaved[compId].componentRequires = requires; // Set new component height
+      this.eComponentSaved[compId].gpio = []; // Set at the end
+      this.eComponentSaved[compId].i2c = []; // Set at the end
+      this.eComponentSaved[compId].spi = []; // Set at the end
+      this.eComponentSaved[compId].serial = []; // Set at the end
+
+      // Set component position
+      this.setComponentPosition(compId);
+
+      console.log("ID:" + compId);
+      console.log("TYPE:" + compType);
+      console.log(
+        "CENTER LEFT: " + this.eComponentSaved[compId].componentCenterLeft
+      );
+      console.log(
+        "CENTER TOP: " + this.eComponentSaved[compId].componentCenterTop
+      );
+      console.log(
+        "REQUIRES CHILDS: " + this.eComponentSaved[compId].componentRequires
+      );
+
+      // If component has childs add them
+      var childComponentsList = this.eComponentSaved[compId].componentRequires;
+      if (childComponentsList != undefined) {
+        // If parent component has already been added, delete its childs
+        var childIDList = this.eComponentSaved[compId].componentChildIDs;
+        if (childIDList != null) {
+          this.removeChildComponents(childIDList);
+        }
+
+        // Add child components of selected parent
+        this.addChildComponents(compId, childComponentsList);
+        console.log(
+          "PARENT CHILD IDs:",
+          this.eComponentSaved[compId].componentChildIDs
+        );
+
+        console.log("### ADDING PARENT COMPONENT END");
+      } else {
+        console.log("### ADDING CHILD COMPONENT END");
+      }
     },
     menuItemClick(item) {
       console.log("Item Cliked" + item);
-      this.removeComponent();
+      // Rotate component
+      var elementId = this.eComponentSaved[this.currentComponentId].elementId;
+      $("#" + elementId).css({ transform: "rotate(90deg)" });
     },
-    removeComponent() {
+    removeParentComponent() {
+      console.log("### REMOVE");
+
       // Get data
       var elementId = this.eComponentSaved[this.currentComponentId].elementId;
       var e_type = this.eComponentSaved[this.currentComponentId].type;
       // var e_width = this.eComponentSaved[this.currentComponentId].width;
       // var e_height = this.eComponentSaved[this.currentComponentId].height;
       var e_innerHTML = this.eComponentSaved[this.currentComponentId].innerHTML;
-
-      // Delete component id key from dictionary
-      delete this.eComponentSaved[this.currentComponentId];
 
       // Restore user soft component id and visibility
       $("#" + this.currentComponentId)
@@ -1446,8 +1697,37 @@ export default {
       this.componentListDisplay = "none";
       this.pcbPanelHeight = "100%";
 
-      // Remove rest of the comoponent
+      // Remove rest of comoponent from PCB
       $("#" + elementId).remove();
+      console.log("Parent eId Removed: ", elementId);
+      console.log("Parent Id Removed: ", this.currentComponentId);
+
+      // Remove all childs asociated with the component
+      var childIDList = this.eComponentSaved[this.currentComponentId]
+        .componentChildIDs;
+      this.removeChildComponents(childIDList);
+
+      // Delete parent component id key from dictionary
+      delete this.eComponentSaved[this.currentComponentId];
+
+      console.log("### REMOVE END");
+    },
+    removeChildComponents(childIDList) {
+      for (var i in childIDList) {
+        // Get child component Id
+        var id = childIDList[i];
+
+        // Get childElementID
+        var childElementID = this.eComponentSaved[id].elementId;
+
+        // Remove component from PCB
+        $("#" + childElementID).remove();
+        console.log("Child eId Removed: ", childElementID);
+        console.log("Child Id Removed: ", id);
+
+        // Delete child from directory
+        delete this.eComponentSaved[id];
+      }
     },
     onGlobalClick(e) {
       //console.log("Global: ", $(e.target.parentElement).hasClass('noGlobalTrigger'));
@@ -1472,6 +1752,9 @@ export default {
       this.componentListDisplay = "none";
       this.pcbPanelHeight = "100%";
     },
+    //##########
+    //########## HTML EDITOR
+    //##########
     openHTMLEditor() {
       this.HTMLEditor = true;
     },
@@ -1534,7 +1817,6 @@ export default {
       );
     },
     HTMLEditor_injectWebPage() {
-      console.log("Injecting to Appliancizer");
       this.HTMLEditor = false;
 
       // Inject HTML to webpageContainer
@@ -1551,6 +1833,9 @@ export default {
       // Initialize search of soft elements that can be harden.
       this.searchSoftElements();
     },
+    //##########
+    //########## BUILD SCREEN
+    //##########
     mapComponentsPins(hardVars, key) {
       // Translate Pins (e.g. (gpio:$gpio) to (gpio:4) )
       do {
@@ -1592,7 +1877,7 @@ export default {
 
       // Just for Test, Fill random component
       this.eComponentSaved["myButton"] = {
-        comopnentTop: null,
+        componentTop: 0,
         componentCenterLeft: 5,
         componentCenterTop: 5,
         componentHeight: "10mm",
@@ -1603,7 +1888,6 @@ export default {
         componentHardElementVars: "(gpio:$gpio)",
         componentPartImage: "buttons/tactile-button-round-red.jpg",
         componentSelected: 0,
-        componentTop: 0,
         componentWidth: "10mm",
         gpio: [],
         i2c: [],
@@ -1652,10 +1936,16 @@ export default {
       };
 
       // Map Component pins
+      console.log("### PIN ASSIGNMENT");
       for (var key in this.eComponentSaved) {
         // Get hardware CSS variables
         var hardVars = this.eComponentSaved[key].componentHardElementVars;
-        console.log("HARDWARE CSS VARS BEFORE:", hardVars);
+        if (hardVars == undefined) {
+          console.log("SKIPPED:" + key);
+          continue;
+        }
+        console.log("TRANSFOMING:" + key);
+        console.log("BEFORE:", hardVars);
         try {
           hardVars = this.mapComponentsPins(hardVars, key);
         } catch (error) {
@@ -1663,26 +1953,33 @@ export default {
           console.error(error);
         }
         // Save new hardware CSS variables
-        console.log("HARDWARE CSS VARS AFTER:", hardVars);
+        console.log("AFTER:", hardVars);
         this.eComponentSaved[key].componentHardElementVars = hardVars;
       }
+      console.log("### PIN ASSIGNMENT END");
 
       // Unselect components before screenshoot
       this.unselectComponents();
 
       // Output all component data:
+      console.log("### ADD TO LIST");
       for (key in this.eComponentSaved) {
-        console.log("COMPONENT ADDED:", this.eComponentSaved[key]);
+        console.log("ADDED:", this.eComponentSaved[key]);
+
+        // Check if component is a main module element
+        var hardElement = this.eComponentSaved[key].componentHardElement;
+        if (hardElement == undefined) {
+          hardElement = "";
+        } else {
+          hardElement = " &lt" + hardElement + "&gt";
+        }
+
         // Push to list
         this.FinalComponents.push({
           image: this.getComponentsImg(
             this.eComponentSaved[key].componentPartImage
           ),
-          title:
-            this.eComponentSaved[key].componentName +
-            " &lt" +
-            this.eComponentSaved[key].componentHardElement +
-            "&gt",
+          title: this.eComponentSaved[key].componentName + " " + hardElement,
           subtitle: `Width: ${this.eComponentSaved[key].componentWidth} 
                      Height: ${this.eComponentSaved[key].componentHeight} |
                      CenterLeft: ${
@@ -1693,35 +1990,38 @@ export default {
                      }mm`
         });
       }
+      console.log("### ADD TO LIST END");
 
       // Take a picture of the PCB and add it to the left
       $("#canvasPCBimage").empty(); // Delete previous image
-      html2canvas(document.querySelector("#PCB")).then(function(canvas) {
-        // Add canvas pcb image
-        document.querySelector("#canvasPCBimage").appendChild(canvas);
+      html2canvas(document.querySelector("#PCB"), { logging: false }).then(
+        function(canvas) {
+          // Add canvas pcb image
+          document.querySelector("#canvasPCBimage").appendChild(canvas);
 
-        // Adjust horizontal pcb width Text
-        var widthFlexBox = $("#buildScreen_pcbCanvas").width();
-        var widthCanvas = canvas.width;
-        var widthFinal = 0;
-        if (widthCanvas > widthFlexBox) {
-          widthFinal = widthFlexBox;
-        } else {
-          widthFinal = widthCanvas;
-        }
-        $("#buildScreen_pcbWidthText").css("width", widthFinal + "px");
+          // Adjust horizontal pcb width Text
+          var widthFlexBox = $("#buildScreen_pcbCanvas").width();
+          var widthCanvas = canvas.width;
+          var widthFinal = 0;
+          if (widthCanvas > widthFlexBox) {
+            widthFinal = widthFlexBox;
+          } else {
+            widthFinal = widthCanvas;
+          }
+          $("#buildScreen_pcbWidthText").css("width", widthFinal + "px");
 
-        // Adjust vertical pcb Text
-        var heightFlexBox = $("#buildScreen_pcbCanvas").height();
-        var heightCanvas = canvas.height;
-        var heightFinal = 0;
-        if (heightCanvas > heightFlexBox) {
-          heightFinal = heightFlexBox;
-        } else {
-          heightFinal = heightCanvas;
+          // Adjust vertical pcb Text
+          var heightFlexBox = $("#buildScreen_pcbCanvas").height();
+          var heightCanvas = canvas.height;
+          var heightFinal = 0;
+          if (heightCanvas > heightFlexBox) {
+            heightFinal = heightFlexBox;
+          } else {
+            heightFinal = heightCanvas;
+          }
+          $("#buildScreen_pcbHeightText").css("height", heightFinal + "px");
         }
-        $("#buildScreen_pcbHeightText").css("height", heightFinal + "px");
-      });
+      );
     },
     BuildScreen_pcbresize(pcb) {
       this.FinalPCB.height = pcb.height;
@@ -1833,22 +2133,29 @@ export default {
   <meta name="viewport" content="width=device-width,initial-scale=1.0">\n\
   <link rel="import" href="amalgam/amalgam.html">\n\
   <link rel="stylesheet" href="hardware.css">\n\
-  <style>\n'+SimpleLED.css+'  </style>\n\
+  <style>\n'+this.EditorCSSText+'  </style>\n\
   </head>\n\
-  <body>\n'+SimpleLED.html+
-    '\n  <script>\n'+ SimpleLED.js +'  <\/script>\n\
+  <body>\n'+this.EditorHTMLText+
+    '\n  <script>\n'+ this.EditorJSText +'  <\/script>\n\
   </body>\n\
 </html>\n');
     },
     /*eslint-enable */
 
     generateCSSDoc() {
+      console.log("### GENERATE CSS");
       // Hardware.css is generated here
       // prettier-ignore
       var cssDoc = "";
       for (var key in this.eComponentSaved) {
         var compId = key;
         var compHardElement = this.eComponentSaved[key].componentHardElement;
+        if (compHardElement == undefined) {
+          // Skip screen, connector, and misc components
+          console.log("SKIPPED:" + key);
+          continue;
+        }
+        console.log("ADDING:" + key);
         var compHardElementVars = this.eComponentSaved[key]
           .componentHardElementVars;
 
@@ -1863,6 +2170,8 @@ export default {
 }\n\
 \n'
       }
+      console.log("FINAL CSS:\n", cssDoc);
+      console.log("### END");
       return cssDoc;
     },
     BuildScreen_downloadAPP() {
@@ -1874,7 +2183,6 @@ export default {
 
       // Create hardware.css file
       var cssDoc = this.generateCSSDoc();
-      console.log("CSS DOC: ", cssDoc);
       zip.file("hardware.css", cssDoc);
 
       // Add AmagamNative
@@ -2271,5 +2579,27 @@ Component Styles
   display: block;
   border: 10px solid rgb(17, 17, 17);
   border-radius: 15px;
+}
+
+/* # Connector Type CSS */
+#connector {
+  display: block;
+  background-color: transparent;
+  background-size: contain;
+  border-style: none;
+  width: 51mm;
+  height: 5mm;
+  background-image: url("~@/assets/connectors/rpi_connector.png");
+}
+
+/* # Misc component Type CSS */
+.misc {
+  display: block;
+  background-color: transparent;
+  background-size: contain;
+  border-style: none;
+  width: 5mm;
+  height: 5mm;
+  background-image: url("~@/assets/misc/0603-RES.svg");
 }
 </style>

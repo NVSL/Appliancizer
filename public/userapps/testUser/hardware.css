@@ -1,40 +1,8 @@
-#playPause {
+#myButton {
   hardware: physical-button (gpio:"4");
 }
 
 physical-button {
-  display: none;
-}
-
-#progressBar {
-  hardware: physical-motorized-pot (i2c-port:url("/dev/i2c-1"), i2c-addr:0x40);
-}
-
-physical-motorized-pot {
-  display: none;
-}
-
-#prev {
-  hardware: physical-button (gpio:"17");
-}
-
-physical-button {
-  display: none;
-}
-
-#next {
-  hardware: physical-button (gpio:"27");
-}
-
-physical-button {
-  display: none;
-}
-
-#video-placeholder {
-  hardware:  undefined;
-}
-
- {
   display: none;
 }
 

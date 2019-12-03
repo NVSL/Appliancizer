@@ -18,7 +18,6 @@ export default {
 \n\
 body {\n\
   margin: 0;\n\
-  background-color: black;\n\
 }\n",
   js:
     '\n\
@@ -38,7 +37,7 @@ function onYouTubeIframeAPIReady() {\n\
     playerVars: {\n\
       rel: 0,\n\
       color: "white",\n\
-      playlist: "ln2BVxSR6gk, dQiNVk_u0po, IvUU8joBb1Q,S-m-CHigCY4,HpaHvUOk3F0",\n\
+      playlist: "dQiNVk_u0po, IvUU8joBb1Q,S-m-CHigCY4,HpaHvUOk3F0",\n\
     },\n\
     events: {\n\
       onReady: youtubeInit\n\

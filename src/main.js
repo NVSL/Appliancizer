@@ -3,7 +3,7 @@ import Vuetify from "vuetify";
 import App from "./App.vue";
 import router from "./router";
 import "material-design-icons-iconfont/dist/material-design-icons.css";
-import "vuetify/dist/vuetify.css"; // Ensure you are using css-loader
+import "../src/styles/vuetify.css"; // Ensure you are using css-loader
 
 // Global jquery setup
 // window.$ = require('jquery')
