@@ -2,12 +2,11 @@
 // Tomorrow:
 // - Integrate this with gadgetron.
 // - Add RPI sound  header (Note that a device that needs one device more for the connectro is needed)
-// - Get right part sizes (Moderate)
-// - When selecting a new component parent should be set to position 5,5 (Easy)
-// - How to add a notification if max number of I/Os for the connector is reached?
+// - Get right part sizes (Missing colored Tactile buttons and motorized pot correct size)
+// - How to add a notification if max number of I/Os for the connector is reached? (hard)
 // - Add rotation (Hard)
 // - Screen rezise should be in the webpage (IMPORTANT)
-// - Add LED resistor and check all component part numbers (ADDD BUY link) (Easy, IMPORTANT)
+// - (Add missing BUY link and if possible short to Quantities) (Easy, IMPORTANT)
 -->
 
 <template>
@@ -95,7 +94,7 @@
                   :style="{ display: componentListDisplay }"
                 >
                   <v-card-title class="subheading py-1">
-                    <strong>Part Number:&nbsp;</strong> 
+                    <strong>Part Description:&nbsp;</strong> 
                     <span>{{currentComponentPartNumber.toUpperCase()}}</span>
                     <v-spacer></v-spacer>
                     <v-btn
@@ -355,10 +354,6 @@
                   vertical
                 ></v-divider>
                 <v-flex xs4 id="buildScreen_info" class="flexBoxHeight">
-                  <h3>
-                    PCB Dimensions: {{ FinalPCB.width }} mm х
-                    {{ FinalPCB.height }} mm
-                  </h3>
                   <h3>PCB Electrical Components:</h3>
                   <v-list two-line>
                     <template v-for="(item, index) in FinalComponents">
@@ -367,7 +362,7 @@
                         :key="index + '_list'"
                         avatar
                       >
-                        <v-list-tile-avatar size="73">
+                        <v-list-tile-avatar size="62">
                           <img :src="item.image" />
                         </v-list-tile-avatar>
 
@@ -601,115 +596,122 @@ export default {
     this.eComponentList = {
       submit: {
         0: {
-          component: "physical-button-red",
+          component: "Tactile Push Button smd",
+          buyLink: "https://www.digikey.com/product-detail/en/c-k/PTS645SL50SMTR92-LFS/CKN9088CT-ND/1146811",
           hardElement: "physical-button",
           hardElementVars: "(gpio:$gpio)",
           partImage: "buttons/smd-button.png",
           image: "buttons/smd-button.svg",
-          height: "5mm",
-          width: "5mm",
-          requires: ["resistor_0630"]
+          height: "6mm",
+          width: "6mm",
+          requires: ["resistor_1206_10k"]
         },
         1: {
-          component: "physical-button-red",
+          component: "Tactile Push Button Red",
+          buyLink: "https://www.digikey.com/product-detail/en/sparkfun-electronics/COM-10302/1568-1332-ND/5775291",
           hardElement: "physical-button",
           hardElementVars: "(gpio:$gpio)",
           partImage: "buttons/tactile-button-round-red.jpg",
           image: "buttons/red-round-button.2D.svg",
           height: "10mm",
           width: "10mm",
-          requires: ["resistor_0630"]
+          requires: ["resistor_1206_10k"]
         },
         2: {
-          component: "physical-button-blue",
+          component: "Tactile Push Button Blue",
+          buyLink: "https://www.digikey.com/product-detail/en/sparkfun-electronics/COM-10302/1568-1332-ND/5775291",
           hardElement: "physical-button",
           hardElementVars: "(gpio:$gpio)",
           partImage: "buttons/tactile-button-round-blue.jpg",
           image: "buttons/blue-round-button.2D.svg",
-          height: "20mm",
-          width: "20mm",
-          requires: ["resistor_0630"]
+          height: "10mm",
+          width: "10mm",
+          requires: ["resistor_1206_10k"]
         },
         3: {
-          component: "physical-button-green",
+          component: "Tactile Push Button Green",
+          buyLink: "https://www.digikey.com/product-detail/en/sparkfun-electronics/COM-10302/1568-1332-ND/5775291",
           hardElement: "physical-button",
           hardElementVars: "(gpio:$gpio)",
           partImage: "buttons/tactile-button-round-green.jpg",
           image: "buttons/green-round-button.2D.svg",
-          height: "30mm",
-          width: "30mm",
-          requires: ["resistor_0630"]
+          height: "10mm",
+          width: "10mm",
+          requires: ["resistor_1206_10k"]
         }
       },
       span: {
         0: {
-          component: "LED-5mm-red",
+          component: "LED 5mm red",
+          buyLink: "https://www.digikey.com/product-detail/en/cree-inc/C503B-RAN-CZ0C0AA1/C503B-RAN-CZ0C0AA1-ND/6561758",
           hardElement: "physical-output",
           hardElementVars: "(gpio:$gpio)",
           partImage: "output/LED-RED.jpg",
           image: "output/red-5mm-LED.2D.svg",
           height: "5mm",
-          width: "5mm"
+          width: "5mm",
+          requires: ["resistor_1206_330ohm"]
         },
         1: {
-          component: "LED-5mm-blue",
+          component: "LED 5mm blue",
+          buyLink: "https://www.digikey.com/product-detail/en/cree-inc/C503B-BCN-CV0Z0461/C503B-BCN-CV0Z0461-ND/1922945",
           hardElement: "physical-output",
           hardElementVars: "(gpio:$gpio)",
           partImage: "output/LED-BLUE.jpg",
           image: "output/blue-5mm-LED.2D.svg",
           height: "5mm",
-          width: "5mm"
+          width: "5mm",
+          requires: ["resistor_1206_330ohm"]
         },
         2: {
-          component: "LED-5mm-green",
+          component: "LED 5mm green",
+          buyLink: "https://www.digikey.com/product-detail/en/cree-inc/C503B-GAN-CB0F0791/C503B-GAN-CB0F0791-ND/1922938",
           hardElement: "physical-output",
           hardElementVars: "(gpio:$gpio)",
           partImage: "output/LED-GREEN.jpg",
           image: "output/green-5mm-LED.2D.svg",
           height: "5mm",
-          width: "5mm"
+          width: "5mm",
+          requires: ["resistor_1206_330ohm"]
         },
         3: {
-          component: "LED-5mm-white",
+          component: "LED 5mm white",
+          buyLink: "https://www.digikey.com/product-detail/en/cree-inc/C503B-WAN-CBBDB231/C503B-WAN-CBBDB231-ND/5824156",
           hardElement: "physical-output",
           hardElementVars: "(gpio:$gpio)",
           partImage: "output/LED-WHITE.jpg",
           image: "output/white-5mm-LED.2D.svg",
           height: "5mm",
-          width: "5mm"
+          width: "5mm",
+          requires: ["resistor_1206_330ohm"]
         },
         4: {
-          component: "LED-1206",
+          component: "SMD LED GREEN 1206",
+          buyLink: "https://www.digikey.com/product-detail/en/lite-on-inc/LTST-C150GKT/160-1169-1-ND/269241",
           hardElement: "physical-output",
           hardElementVars: "(gpio:$gpio)",
           partImage: "output/LED-1206.png",
           image: "output/LED-1206.svg",
-          height: "5mm",
-          width: "5mm"
+          height: "1.6mm",
+          width: "3.2mm",
+          requires: ["resistor_1206_330ohm"]
         }
-        // 5: {
-        //   component: "LED-603",
-        //   hardElement: "physical-output",
-        //   hardElementVars: "(gpio:$gpio)",
-        //   partImage: "output/LED-603.png",
-        //   image: "output/LED-603.svg",
-        //   height: "5mm",
-        //   width: "5mm"
-        // }
       },
       range: {
         0: {
-          component: "physical-dynamic-range",
+          component: "Motorized Potentiometer 10K",
+          buyLink: "https://www.digikey.com/product-detail/en/bourns-inc/PSM60-082A-103B2/PSM60-082A-103B2-ND/5825442",
           hardElement: "physical-motorized-pot",
           hardElementVars: "(i2c-port:url($i2c), i2c-addr:0x40)",
           partImage: "range/motorized-potentiometer.png",
           image: "range/motorizedPot.png",
           height: "9mm",
           width: "152mm",
-          requires: ["ads1X15", "at42qt1010"]
+          requires: ["ads1015", "at42qt1010", "tb6612fng"]
         },
         1: {
-          component: "physical-static-range",
+          component: "Potentiometer 100K",
+          buyLink: "https://www.digikey.com/product-detail/en/bourns-inc/PDB181-E420K-104B/PDB181-E420K-104B-ND/3780677",
           hardElement: "physical-pot",
           hardElementVars:
             "(motora:$gpio, motorb:$gpio, \
@@ -717,13 +719,14 @@ export default {
           partImage: "range/pot.png",
           image: "range/potentiometer.png",
           height: "20mm",
-          width: "20mm",
-          requires: ["ads1X15"]
+          width: "17mm",
+          requires: ["ads1015"]
         }
       },
       screens: {
         0: {
           component: "utronics3-5inch",
+          buyLink: "",
           partImage: "screens/utronics_3.5inch.png",
           image: "",
           height: "80mm",
@@ -731,6 +734,7 @@ export default {
         },
         1: {
           component: "geeekpi5inch",
+          buyLink: "",
           partImage: "screens/geeekpi_5inch.png",
           image: "",
           height: "100mm",
@@ -740,6 +744,7 @@ export default {
       connector: {
         0: {
           component: "rpi-40pin-connector",
+          buyLink: "https://www.digikey.com/product-detail/en/adafruit-industries-llc/2222/1528-1785-ND/6238005",
           partImage: "connectors/rpi_partimage.jpg",
           image: "connectors/rpi_connector.png",
           height: "5mm",
@@ -749,27 +754,46 @@ export default {
       },
       misc: {
         // Required Components
-        resistor_0630: {
-          component: "resistor_0630",
+        resistor_1206_10k: {
+          component: "10k resistor smd 1206 ",
+          buyLink: "",
           partImage: "misc/0603-RES.jpg",
           image: "misc/0603-RES.svg",
-          height: "3mm",
-          width: "5mm"
+          height: "1.6mm",
+          width: "3.2mm"
         },
-        ads1X15: {
-          component: "ads1X15",
+        resistor_1206_330ohm: {
+          component: "330 Ohm resistor smd 1206 ",
+          buyLink: "",
+          partImage: "misc/0603-RES.jpg",
+          image: "misc/0603-RES.svg",
+          height: "1.6mm",
+          width: "3.2mm"
+        },
+        ads1015: {
+          component: "ads1015 12-bit Channel ADC",
+          buyLink: "https://www.digikey.com/products/en?mpart=1083&v=1528",
           partImage: "misc/ads1X15.png",
           image: "misc/ads1X15.svg",
-          height: "10mm",
-          width: "15mm"
+          height: "18mm",
+          width: "29mm"
         },
         at42qt1010: {
-          component: "at42qt1010",
+          component: "at42qt1010 Capacitive Touch Sensor",
+          buyLink: "https://www.digikey.com/product-detail/en/adafruit-industries-llc/1374/1528-1782-ND/6238002",
           partImage: "misc/at42qt1010.png",
           image: "misc/at42qt1010.svg",
-          height: "10mm",
-          width: "10mm"
-        }
+          height: "29mm",
+          width: "20mm"
+        },
+        tb6612fng: {
+          component: "TB6612FNG Motor Dirver",
+          buyLink: "https://www.digikey.com/product-detail/en/sparkfun-electronics/ROB-14450/1568-1755-ND/7915576",
+          partImage: "misc/TB6612FNG.png",
+          image: "misc/TB6612FNG.svg",
+          height: "21mm",
+          width: "21mm"
+        },
       }
     };
 
@@ -1200,17 +1224,15 @@ export default {
       //   5 // thisTop
       // );
 
-
-
       // // TEST ADDING A BUTTON
-      // this.addNewHTMLComponent(
-      //   "playPause", // thisId
-      //   "test_submit", // thisType
-      //   "", // thisInnerHtml
-      //   '<button onclick="playPause()" id="playPause"></button>', // thisHtml
-      //   5, // thisLeft
-      //   5 // thisTop
-      // );
+      this.addNewHTMLComponent(
+        "playPause", // thisId
+        "test_submit", // thisType
+        "", // thisInnerHtml
+        '<button onclick="playPause()" id="playPause"></button>', // thisHtml
+        5, // thisLeft
+        5 // thisTop
+      );
 
       // // TEST CONNECTOR
       // this.addNewHTMLComponent(
@@ -1224,10 +1246,10 @@ export default {
 
       // // TEST MISC
       // this.addNewHTMLComponent(
-      //   "resistor_0630", // thisId
+      //   "resistor_1206_10k", // thisId
       //   "misc", // thisType
       //   "",          // thisInnerHtml
-      //   '<div id="'+"resistor_0630"+'" class="misc"></div>', // thisHtml
+      //   '<div id="'+"resistor_1206_10k"+'" class="misc"></div>', // thisHtml
       //   5, // thisLeft
       //   5 // thisTop
       // );
@@ -1323,22 +1345,6 @@ export default {
 
         // Remove any innerHTML
         $("#" + thisId).empty();
-
-        // Get element width and height for centering it;
-        var eleId_center_x = $("#" + elementId).outerWidth() / 2;
-        var eleId_center_y = $("#" + elementId).outerHeight() / 2;
-        var mouse_center_x = thisLeft - eleId_center_x;
-        var mouse_center_y = thisTop - eleId_center_y;
-
-        // Move element to its dropped coordinated
-        $("#" + elementId).css(
-          "left",
-          mouse_center_x > 0 ? mouse_center_x : thisLeft + "px"
-        );
-        $("#" + elementId).css(
-          "top",
-          mouse_center_y > 0 ? mouse_center_y : thisTop + "px"
-        );
       }
 
       // Make it draggable
@@ -1346,10 +1352,10 @@ export default {
         containment: "#PCB",
         scroll: false,
         stop: () => {
-          // Set new component position
+          // Save new component position
           for (var key in this.eComponentSaved) {
             if (this.eComponentSaved[key].elementId == elementId) {
-              this.setComponentPosition(key);
+              this.saveComponentPosition(key);
             }
           }
         }
@@ -1456,6 +1462,7 @@ export default {
         // Physical component values
         componentSelected: selectedNumber,
         componentName: null, // Set in the next function
+        componentBuyLink: null, // Set in the next function
         componentHardElement: null, // Set in the next function
         componentHardElementVars: null, // Set in the next function
         componentPartImage: null, // Set in the next function
@@ -1478,7 +1485,10 @@ export default {
       // Apply style settings for new component (TODO: get Id and type)
       this.setNewComponentSelection(thisId, thisType, selectedNumber);
 
-      //console.log("### END");
+      // Move element to left, top coordinates
+      this.moveComponentToPosition(thisId, thisLeft, thisTop);
+
+      console.log(`### ADDING COMPONENT [${thisType}] END`);
     },
     addChildComponents(parentId, childComponentsList) {
       // Reset child components List
@@ -1503,7 +1513,37 @@ export default {
         );
       }
     },
-    setComponentPosition(thisId) {
+    moveComponentToPosition(compId, left, top) {
+      // Get element Id
+      var elementId = this.eComponentSaved[compId].elementId;
+
+      // Get element width and height for centering it;
+      var eleId_center_x = $("#" + elementId).outerWidth() / 2;
+      var eleId_center_y = $("#" + elementId).outerHeight() / 2;
+      var mouse_center_x = left - eleId_center_x;
+      var mouse_center_y = top - eleId_center_y;
+
+      // Move element to its dropped coordinated
+      $("#" + elementId).css(
+        "left",
+        mouse_center_x > 0 ? mouse_center_x : left + "px"
+      );
+      $("#" + elementId).css(
+        "top",
+        mouse_center_y > 0 ? mouse_center_y : top + "px"
+      );
+
+      // Save component position
+      this.saveComponentPosition(compId);
+
+      console.log(
+        `<${compId}> LEFT: ` + this.eComponentSaved[compId].componentCenterLeft
+      );
+      console.log(
+        `<${compId}> TOP: ` + this.eComponentSaved[compId].componentCenterTop
+      );
+    },
+    saveComponentPosition(thisId) {
       // Get component data
       var elementId = this.eComponentSaved[thisId].elementId;
       var componentWidth = parseFloat(
@@ -1556,6 +1596,9 @@ export default {
           selectedNumber
         );
 
+        // Reset parent position
+        this.moveComponentToPosition(this.currentComponentId, 5, 5);
+
       } else {
         console.log("Component not selected");
       }
@@ -1581,6 +1624,7 @@ export default {
 
       // Get new image path
       var name = this.eComponentList[compType][selectedNumber].component;
+      var buyLink = this.eComponentList[compType][selectedNumber].buyLink;
       var hardElement = this.eComponentList[compType][selectedNumber]
         .hardElement;
       var hardElementVars = this.eComponentList[compType][selectedNumber]
@@ -1605,6 +1649,7 @@ export default {
       //Save the new component number selected [Here we save the new selected component]
       this.eComponentSaved[compId].componentSelected = newNumber; // Set new component selected
       this.eComponentSaved[compId].componentName = name; // Set new component part number name
+      this.eComponentSaved[compId].componentBuyLink = buyLink; // Set new component buy Link
       this.eComponentSaved[compId].componentHardElement = hardElement; // Set new component hardElement
       this.eComponentSaved[compId].componentHardElementVars = hardElementVars; // Set new component hardElement
       this.eComponentSaved[compId].componentPartImage = partImage; // Set new component part Image
@@ -1617,17 +1662,8 @@ export default {
       this.eComponentSaved[compId].spi = []; // Set at the end
       this.eComponentSaved[compId].serial = []; // Set at the end
 
-      // Set component position
-      this.setComponentPosition(compId);
-
       console.log("ID:" + compId);
       console.log("TYPE:" + compType);
-      console.log(
-        "CENTER LEFT: " + this.eComponentSaved[compId].componentCenterLeft
-      );
-      console.log(
-        "CENTER TOP: " + this.eComponentSaved[compId].componentCenterTop
-      );
       console.log(
         "REQUIRES CHILDS: " + this.eComponentSaved[compId].componentRequires
       );
@@ -1647,10 +1683,6 @@ export default {
           "PARENT CHILD IDs:",
           this.eComponentSaved[compId].componentChildIDs
         );
-
-        console.log("### ADDING PARENT COMPONENT END");
-      } else {
-        console.log("### ADDING CHILD COMPONENT END");
       }
     },
     menuItemClick(item) {
@@ -1968,18 +2000,24 @@ export default {
 
         // Check if component is a main module element
         var hardElement = this.eComponentSaved[key].componentHardElement;
+        var subtitleText = "";
         if (hardElement == undefined) {
           hardElement = "";
+          subtitleText = `Buy at: <a href="${this.eComponentSaved[key].componentBuyLink}" target="_blank">Link</a>`;
         } else {
           hardElement = " &lt" + hardElement + "&gt";
+          subtitleText = `Buy at: <a href="${this.eComponentSaved[key].componentBuyLink}" target="_blank">Link</a> | Hard HTML Tag: ${hardElement}`
         }
 
         // Push to list
+
         this.FinalComponents.push({
           image: this.getComponentsImg(
             this.eComponentSaved[key].componentPartImage
           ),
-          title: this.eComponentSaved[key].componentName + " " + hardElement,
+          title: `<strong>Part:</strong> ${this.eComponentSaved[key].componentName}`,
+          subtitle: subtitleText
+          /*
           subtitle: `Width: ${this.eComponentSaved[key].componentWidth} 
                      Height: ${this.eComponentSaved[key].componentHeight} |
                      CenterLeft: ${
@@ -1988,6 +2026,7 @@ export default {
                      CenterTop: ${
                        this.eComponentSaved[key].componentCenterTop
                      }mm`
+          */
         });
       }
       console.log("### ADD TO LIST END");
