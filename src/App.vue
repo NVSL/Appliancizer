@@ -6,7 +6,8 @@
 // - How to add a notification if max number of I/Os for the connector is reached? (hard)
 // - Add rotation (Hard)
 // - Screen rezise should be in the webpage (IMPORTANT)
-// - ***(Add missing BUY link and if possible short to Quantities) (Easy, IMPORTANT)
+// - 2.- ***(Add missing BUY link and if possible short to Quantities) (Easy, IMPORTANT)
+// - 1.- Add componentDescription, do schematics for each module and get de correct componentName from sch module.  
 -->
 
 <template>
@@ -716,7 +717,9 @@ export default {
           buyLink:
             "https://www.digikey.com/product-detail/en/bourns-inc/PSM60-082A-103B2/PSM60-082A-103B2-ND/5825442",
           hardElement: "physical-motorized-pot",
-          hardElementVars: "(i2c-port:url($i2c), i2c-addr:0x40)",
+          hardElementVars:
+            "(motora:$gpio, motorb:$gpio, \
+                touch:$gpio, i2c-addr:0x48, i2c-port:url($i2c))",
           partImage: "range/motorized-potentiometer.png",
           image: "range/motorizedPot.png",
           height: "9mm",
@@ -728,9 +731,7 @@ export default {
           buyLink:
             "https://www.digikey.com/product-detail/en/bourns-inc/PDB181-E420K-104B/PDB181-E420K-104B-ND/3780677",
           hardElement: "physical-pot",
-          hardElementVars:
-            "(motora:$gpio, motorb:$gpio, \
-                touch:$gpio, i2c-addr:0x48, i2c-port:url($i2c))",
+          hardElementVars: "(i2c-port:url($i2c), i2c-addr:0x40)",
           partImage: "range/pot.png",
           image: "range/potentiometer.png",
           height: "20mm",
@@ -834,6 +835,7 @@ export default {
       i2c: {
         0: {
           device: "/dev/i2c-1",
+          type: "i2c",
           SDA: "2",
           SCL: "3"
         }
@@ -841,6 +843,7 @@ export default {
       spi: {
         0: {
           device: "/dev/spidev0.0",
+          type: "spi",
           MOSI: "10",
           MISO: "9",
           SCLK: "11",
@@ -850,6 +853,7 @@ export default {
       serial: {
         0: {
           device: "/dev/ttyUSB0",
+          type: "serial",
           TXD: "14",
           RXD: "15"
         }
@@ -1512,6 +1516,7 @@ export default {
         componentHeight: null, // Set in the next function
         componentRequires: null, // Set in the next function
         componentChildIDs: [], // Set at the end
+        componentIfaces: {},
         componentLeft: null, // Set in get position
         componentTop: null, // Set in get position
         componentCenterLeft: null, // Set in get position
@@ -1699,10 +1704,7 @@ export default {
       this.eComponentSaved[compId].componentWidth = width; // Set new component width
       this.eComponentSaved[compId].componentHeight = height; // Set new component height
       this.eComponentSaved[compId].componentRequires = requires; // Set new component height
-      this.eComponentSaved[compId].gpio = []; // Set at the end
-      this.eComponentSaved[compId].i2c = []; // Set at the end
-      this.eComponentSaved[compId].spi = []; // Set at the end
-      this.eComponentSaved[compId].serial = []; // Set at the end
+      this.eComponentSaved[compId].componentIfaces = {}; // Set in Build Screen
 
       console.log("ID:" + compId);
       console.log("TYPE:" + compType);
@@ -1912,18 +1914,25 @@ export default {
     //##########
     mapComponentsPins(hardVars, key) {
       // Translate Pins (e.g. (gpio:$gpio) to (gpio:4) )
-      const IOs = ["$gpio", "$i2c", "$spi", "$serial"];
+
+      console.log(this.eComponentSaved[key].componentIfaces);
       var hardVarsDic = [];
-      var allTags = hardVars.replace(/[ ]/g, '').slice(1,-1).split(",");
+      var interfaceCounter = 0;
+      var allTags = hardVars
+        .replace(/[ ]/g, "")
+        .slice(1, -1)
+        .split(",");
       for (var i in allTags) {
         console.log(allTags[i]);
         var hardTag = allTags[i].split(":");
         var net = hardTag[0];
         var variable = hardTag[1];
-        
+
         var ioName = null;
         ["gpio", "i2c", "spi", "serial"].forEach(io => {
-          if (variable.includes(io)) {ioName = io;}
+          if (variable.includes(io)) {
+            ioName = io;
+          }
         });
         if (ioName == null) {
           hardVarsDic.push(allTags[i]);
@@ -1939,35 +1948,40 @@ export default {
           throw `Error: Max num of ${ioName} pins avilable reached`;
         } else {
           // Replace string with next available Pin
+          var ifaceName = "iface_" + interfaceCounter;
           var pinName;
           if (ioName == "i2c" || ioName == "spi" || ioName == "serial") {
             // I2C, SPI, Serial e.g. url($i2c)
-            pinName = this.raspberryPinMap[ioName][nextPin].device;
-            pinName = variable.replace("$" + ioName, `"${pinName}"`);
-            hardVarsDic.push(net+":"+pinName);
+            var device = this.raspberryPinMap[ioName][nextPin];
+            pinName = variable.replace("$" + ioName, `"${device.device}"`);
+            hardVarsDic.push(net + ":" + pinName);
+
+            // Add inetrface to component Dictionary
+            this.eComponentSaved[key]["componentIfaces"][ifaceName] = device;
           } else {
             // GPIO
             pinName = this.raspberryPinMap[ioName][nextPin];
-            hardVarsDic.push(net+":"+`"${pinName}"`);
+            hardVarsDic.push(net + ":" + `"${pinName}"`);
+
+            // Add inetrface to component Dictionary
+            this.eComponentSaved[key]["componentIfaces"][ifaceName] = {};
+            this.eComponentSaved[key]["componentIfaces"][ifaceName][
+              net.toUpperCase()
+            ] = pinName;
+            this.eComponentSaved[key]["componentIfaces"][ifaceName]["type"] =
+              "gpio";
           }
 
-          // TODO Create interface list here.
-          //this.eComponentSaved[key][ioName].push(pinName);
-
           // Add to dictionary
-          this.FinalPinMap[ioName].push(
-            this.raspberryPinMap[ioName][nextPin]
-          );
+          this.FinalPinMap[ioName].push(this.raspberryPinMap[ioName][nextPin]);
         }
-
-        
+        interfaceCounter++;
       }
 
-      var finalhardVar = "("+ hardVarsDic.toString() + ")";
+      var finalhardVar = "(" + hardVarsDic.toString() + ")";
       //console.log("AFTER: "+finalhardVar);
+      console.log(this.eComponentSaved[key]["componentIfaces"]);
       return finalhardVar;
-      
-
 
       // do {
       //   var occurrences = false;
@@ -2015,62 +2029,64 @@ export default {
       this.FinalComponents = [];
 
       // Just for Test, Fill random component
-      this.eComponentSaved["myButton"] = {
-        componentBuyLink:
-          "https://www.digikey.com/product-detail/en/c-k/PTS645SL50SMTR92-LFS/CKN9088CT-ND/1146811",
-        componentCenterLeft: 4,
-        componentCenterTop: 4,
-        componentChildIDs: ["resistor_1206_10k_Test"],
-        componentHardElement: "physical-button",
-        //componentHardElementVars: '(gpio:"4")',
-        componentHardElementVars:
-          "(motora:$gpio, motorb:$gpio, touch:$gpio, i2c-addr:0x48, i2c-port:url($i2c))",
-        componentHeight: "6mm",
-        componentImage: "buttons/smd-button.svg",
-        componentLeft: 1,
-        componentName: "Tactile Push Button smd",
-        componentPartImage: "buttons/smd-button.png",
-        componentRequires: ["resistor_1206_10k"],
-        componentSelected: 0,
-        componentTop: 1,
-        componentWidth: "6mm",
-        elementId: "element_0",
-        gpio: ["4"],
-        height: 0,
-        html: '<button onclick="playPause()" id="playPause"></button>',
-        i2c: [],
-        innerHTML: "",
-        serial: [],
-        spi: []
-      };
+      // this.eComponentSaved["myButton"] = {
+      //   componentBuyLink:
+      //     "https://www.digikey.com/product-detail/en/c-k/PTS645SL50SMTR92-LFS/CKN9088CT-ND/1146811",
+      //   componentCenterLeft: 4,
+      //   componentCenterTop: 4,
+      //   componentChildIDs: ["resistor_1206_10k_Test"],
+      //   componentIfaces: {},
+      //   componentHardElement: "physical-button",
+      //   //componentHardElementVars: '(gpio:"4")',
+      //   componentHardElementVars:
+      //     "(motora:$gpio, motorb:$gpio, touch:$gpio, i2c-addr:0x48, i2c-port:url($i2c))",
+      //   componentHeight: "6mm",
+      //   componentImage: "buttons/smd-button.svg",
+      //   componentLeft: 1,
+      //   componentName: "Tactile Push Button smd",
+      //   componentPartImage: "buttons/smd-button.png",
+      //   componentRequires: ["resistor_1206_10k"],
+      //   componentSelected: 0,
+      //   componentTop: 1,
+      //   componentWidth: "6mm",
+      //   elementId: "element_0",
+      //   gpio: ["4"],
+      //   height: 0,
+      //   html: '<button onclick="playPause()" id="playPause"></button>',
+      //   i2c: [],
+      //   innerHTML: "",
+      //   serial: [],
+      //   spi: []
+      // };
 
-      this.eComponentSaved["resistor_1206_10k_Test"] = {
-        componentBuyLink: "",
-        componentCenterLeft: 2.6,
-        componentCenterTop: 1.8,
-        componentChildIDs: [],
-        componentHardElement: undefined,
-        componentHardElementVars: undefined,
-        componentHeight: "1.6mm",
-        componentImage: "misc/0603-RES.svg",
-        componentLeft: 1,
-        componentName: "10k resistor smd 1206 ",
-        componentPartImage: "misc/0603-RES.jpg",
-        componentRequires: undefined,
-        componentSelected: 0,
-        componentTop: 1,
-        componentWidth: "3.2mm",
-        elementId: "element_1",
-        gpio: [],
-        height: 0,
-        html: '<div id="resistor_1206_10k_1" class="misc"></div>',
-        i2c: [],
-        innerHTML: "",
-        serial: [],
-        spi: [],
-        type: "misc",
-        width: 0
-      };
+      // this.eComponentSaved["resistor_1206_10k_Test"] = {
+      //   componentBuyLink: "",
+      //   componentCenterLeft: 2.6,
+      //   componentCenterTop: 1.8,
+      //   componentChildIDs: [],
+      //   componentIfaces: {},
+      //   componentHardElement: undefined,
+      //   componentHardElementVars: undefined,
+      //   componentHeight: "1.6mm",
+      //   componentImage: "misc/0603-RES.svg",
+      //   componentLeft: 1,
+      //   componentName: "10k resistor smd 1206 ",
+      //   componentPartImage: "misc/0603-RES.jpg",
+      //   componentRequires: undefined,
+      //   componentSelected: 0,
+      //   componentTop: 1,
+      //   componentWidth: "3.2mm",
+      //   elementId: "element_1",
+      //   gpio: [],
+      //   height: 0,
+      //   html: '<div id="resistor_1206_10k_1" class="misc"></div>',
+      //   i2c: [],
+      //   innerHTML: "",
+      //   serial: [],
+      //   spi: [],
+      //   type: "misc",
+      //   width: 0
+      // };
 
       // Reset Final Pin Mmap
       this.FinalPinMap = {
@@ -2256,9 +2272,10 @@ export default {
           console.log(this.eComponentSaved[key].componentChildIDs);
 
           // Add module interfaces
-          pcbInput[moduleName]["interfaces"] = {
-            all: this.eComponentSaved[key].componentHardElementVars
-          };
+          pcbInput[moduleName]["interfaces"] = this.eComponentSaved[
+            key
+          ].componentIfaces;
+
           // Add partent part
           var partNum = 0;
           var partName = "part_" + partNum;

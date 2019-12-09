@@ -26,15 +26,41 @@
     "/dev/spidev0.0"
   ],
   "part0": {
+    "componentName": "LED-5mm-red",
+    "componentWidth": "5mm",
+    "componentHeight": "5mm",
+    "componentX": 14.5,
+    "componentY": 12.5,
+    "gpio": [
+      "4"
+    ],
+    "i2c": [],
+    "spi": [],
+    "serial": []
+  },
+  "part1": {
+    "componentName": "physical-button-red",
+    "componentWidth": "10mm",
+    "componentHeight": "10mm",
+    "componentX": 15,
+    "componentY": 24,
+    "gpio": [
+      "17"
+    ],
+    "i2c": [],
+    "spi": [],
+    "serial": []
+  },
+  "part2": {
     "componentName": "physical-button-red",
     "componentWidth": "10mm",
     "componentHeight": "10mm",
     "componentX": 5,
     "componentY": 5,
     "gpio": [
-      "4"
+      "4", "17", "27"
     ],
-    "i2c": [],
+    "i2c": ["/dev/i2c-1"],
     "spi": [],
     "serial": []
   }
