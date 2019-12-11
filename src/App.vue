@@ -100,7 +100,7 @@
                 >
                   <v-card-title class="subheading py-1">
                     <strong>Part Description:&nbsp;</strong>
-                    <span>{{ currentComponentPartNumber.toUpperCase() }}</span>
+                    <span>{{ currentComponentDescription.toUpperCase() }}</span>
                     <v-spacer></v-spacer>
                     <v-btn
                       class="vbtn"
@@ -535,7 +535,7 @@ export default {
     componentRemoveDisable: false,
     currentComponentId: "None",
     currentComponentType: "None",
-    currentComponentPartNumber: "None",
+    currentComponentDescription: "None",
     uniqueId: 0,
     eComponentList: null,
     eComponentImages: [],
@@ -580,7 +580,7 @@ export default {
         // image, title, subtitle
       }
     ],
-    raspberryPinMap: {},
+    raspberryNetMap: {},
     FinalPinMap: {
       gpio: [],
       i2c: [],
@@ -597,226 +597,38 @@ export default {
     disableButtons: false
   }),
   mounted: function() {
-    // Load electrical component List:
-    this.eComponentList = {
-      submit: {
-        0: {
-          component: "Tactile Push Button smd",
-          buyLink:
-            "https://www.digikey.com/product-detail/en/c-k/PTS645SL50SMTR92-LFS/CKN9088CT-ND/1146811",
-          hardElement: "physical-button",
-          hardElementVars: "(gpio:$gpio)",
-          partImage: "buttons/smd-button.png",
-          image: "buttons/smd-button.svg",
-          height: "6mm",
-          width: "6mm",
-          requires: ["resistor_1206_10k"]
-        },
-        1: {
-          component: "Tactile Push Button Red",
-          buyLink:
-            "https://www.digikey.com/product-detail/en/sparkfun-electronics/COM-10302/1568-1332-ND/5775291",
-          hardElement: "physical-button",
-          hardElementVars: "(gpio:$gpio)",
-          partImage: "buttons/tactile-button-round-red.jpg",
-          image: "buttons/red-round-button.2D.svg",
-          height: "10mm",
-          width: "10mm",
-          requires: ["resistor_1206_10k"]
-        },
-        2: {
-          component: "Tactile Push Button Blue",
-          buyLink:
-            "https://www.digikey.com/product-detail/en/sparkfun-electronics/COM-10302/1568-1332-ND/5775291",
-          hardElement: "physical-button",
-          hardElementVars: "(gpio:$gpio)",
-          partImage: "buttons/tactile-button-round-blue.jpg",
-          image: "buttons/blue-round-button.2D.svg",
-          height: "10mm",
-          width: "10mm",
-          requires: ["resistor_1206_10k"]
-        },
-        3: {
-          component: "Tactile Push Button Green",
-          buyLink:
-            "https://www.digikey.com/product-detail/en/sparkfun-electronics/COM-10302/1568-1332-ND/5775291",
-          hardElement: "physical-button",
-          hardElementVars: "(gpio:$gpio)",
-          partImage: "buttons/tactile-button-round-green.jpg",
-          image: "buttons/green-round-button.2D.svg",
-          height: "10mm",
-          width: "10mm",
-          requires: ["resistor_1206_10k"]
-        }
-      },
-      span: {
-        0: {
-          component: "LED 5mm red",
-          buyLink:
-            "https://www.digikey.com/product-detail/en/cree-inc/C503B-RAN-CZ0C0AA1/C503B-RAN-CZ0C0AA1-ND/6561758",
-          hardElement: "physical-output",
-          hardElementVars: "(gpio:$gpio)",
-          partImage: "output/LED-RED.jpg",
-          image: "output/red-5mm-LED.2D.svg",
-          height: "5mm",
-          width: "5mm",
-          requires: ["resistor_1206_330ohm"]
-        },
-        1: {
-          component: "LED 5mm blue",
-          buyLink:
-            "https://www.digikey.com/product-detail/en/cree-inc/C503B-BCN-CV0Z0461/C503B-BCN-CV0Z0461-ND/1922945",
-          hardElement: "physical-output",
-          hardElementVars: "(gpio:$gpio)",
-          partImage: "output/LED-BLUE.jpg",
-          image: "output/blue-5mm-LED.2D.svg",
-          height: "5mm",
-          width: "5mm",
-          requires: ["resistor_1206_330ohm"]
-        },
-        2: {
-          component: "LED 5mm green",
-          buyLink:
-            "https://www.digikey.com/product-detail/en/cree-inc/C503B-GAN-CB0F0791/C503B-GAN-CB0F0791-ND/1922938",
-          hardElement: "physical-output",
-          hardElementVars: "(gpio:$gpio)",
-          partImage: "output/LED-GREEN.jpg",
-          image: "output/green-5mm-LED.2D.svg",
-          height: "5mm",
-          width: "5mm",
-          requires: ["resistor_1206_330ohm"]
-        },
-        3: {
-          component: "LED 5mm white",
-          buyLink:
-            "https://www.digikey.com/product-detail/en/cree-inc/C503B-WAN-CBBDB231/C503B-WAN-CBBDB231-ND/5824156",
-          hardElement: "physical-output",
-          hardElementVars: "(gpio:$gpio)",
-          partImage: "output/LED-WHITE.jpg",
-          image: "output/white-5mm-LED.2D.svg",
-          height: "5mm",
-          width: "5mm",
-          requires: ["resistor_1206_330ohm"]
-        },
-        4: {
-          component: "SMD LED GREEN 1206",
-          buyLink:
-            "https://www.digikey.com/product-detail/en/lite-on-inc/LTST-C150GKT/160-1169-1-ND/269241",
-          hardElement: "physical-output",
-          hardElementVars: "(gpio:$gpio)",
-          partImage: "output/LED-1206.png",
-          image: "output/LED-1206.svg",
-          height: "1.6mm",
-          width: "3.2mm",
-          requires: ["resistor_1206_330ohm"]
-        }
-      },
-      range: {
-        0: {
-          component: "Motorized Potentiometer 10K",
-          buyLink:
-            "https://www.digikey.com/product-detail/en/bourns-inc/PSM60-082A-103B2/PSM60-082A-103B2-ND/5825442",
-          hardElement: "physical-motorized-pot",
-          hardElementVars:
-            "(motora:$gpio, motorb:$gpio, \
-                touch:$gpio, i2c-addr:0x48, i2c-port:url($i2c))",
-          partImage: "range/motorized-potentiometer.png",
-          image: "range/motorizedPot.png",
-          height: "9mm",
-          width: "152mm",
-          requires: ["ads1015", "at42qt1010", "tb6612fng"]
-        },
-        1: {
-          component: "Potentiometer 100K",
-          buyLink:
-            "https://www.digikey.com/product-detail/en/bourns-inc/PDB181-E420K-104B/PDB181-E420K-104B-ND/3780677",
-          hardElement: "physical-pot",
-          hardElementVars: "(i2c-port:url($i2c), i2c-addr:0x40)",
-          partImage: "range/pot.png",
-          image: "range/potentiometer.png",
-          height: "20mm",
-          width: "17mm",
-          requires: ["ads1015"]
-        }
-      },
-      screens: {
-        0: {
-          component: "utronics3-5inch",
-          buyLink: "",
-          partImage: "screens/utronics_3.5inch.png",
-          image: "",
-          height: "80mm",
-          width: "100mm"
-        },
-        1: {
-          component: "geeekpi5inch",
-          buyLink: "",
-          partImage: "screens/geeekpi_5inch.png",
-          image: "",
-          height: "100mm",
-          width: "160mm"
-        }
-      },
-      connector: {
-        0: {
-          component: "rpi-40pin-connector",
-          buyLink:
-            "https://www.digikey.com/product-detail/en/adafruit-industries-llc/2222/1528-1785-ND/6238005",
-          partImage: "connectors/rpi_partimage.jpg",
-          image: "connectors/rpi_connector.png",
-          height: "5mm",
-          width: "51mm"
-          // TODO add requered pinMap
-        }
-      },
-      misc: {
-        // Required Components
-        resistor_1206_10k: {
-          component: "10k resistor smd 1206 ",
-          buyLink: "",
-          partImage: "misc/0603-RES.jpg",
-          image: "misc/0603-RES.svg",
-          height: "1.6mm",
-          width: "3.2mm"
-        },
-        resistor_1206_330ohm: {
-          component: "330 Ohm resistor smd 1206 ",
-          buyLink: "",
-          partImage: "misc/0603-RES.jpg",
-          image: "misc/0603-RES.svg",
-          height: "1.6mm",
-          width: "3.2mm"
-        },
-        ads1015: {
-          component: "ads1015 12-bit Channel ADC",
-          buyLink: "https://www.digikey.com/products/en?mpart=1083&v=1528",
-          partImage: "misc/ads1X15.png",
-          image: "misc/ads1X15.svg",
-          height: "18mm",
-          width: "29mm"
-        },
-        at42qt1010: {
-          component: "at42qt1010 Capacitive Touch Sensor",
-          buyLink:
-            "https://www.digikey.com/product-detail/en/adafruit-industries-llc/1374/1528-1782-ND/6238002",
-          partImage: "misc/at42qt1010.png",
-          image: "misc/at42qt1010.svg",
-          height: "29mm",
-          width: "20mm"
-        },
-        tb6612fng: {
-          component: "TB6612FNG Motor Dirver",
-          buyLink:
-            "https://www.digikey.com/product-detail/en/sparkfun-electronics/ROB-14450/1568-1755-ND/7915576",
-          partImage: "misc/TB6612FNG.png",
-          image: "misc/TB6612FNG.svg",
-          height: "21mm",
-          width: "21mm"
-        }
-      }
-    };
 
-    this.raspberryPinMap = {
+    // TODO add this inside component list
+    this.raspberryNetMap = {
+      allNets: [
+        "4",
+        "17",
+        "27",
+        "22",
+        "5",
+        "6",
+        "13",
+        "26",
+        "18",
+        "23",
+        "24",
+        "25",
+        "12",
+        "16",
+        "19",
+        "20",
+        "21",
+        "2",
+        "3",
+        "9",
+        "10",
+        "11",
+        "8",
+        "14",
+        "15",
+        "3.3V",
+        "5V"
+      ],
       gpio: [
         "4",
         "17",
@@ -830,7 +642,11 @@ export default {
         "23",
         "24",
         "25",
-        "12"
+        "12",
+        "16",
+        "19",
+        "20",
+        "21"
       ],
       i2c: {
         0: {
@@ -856,6 +672,256 @@ export default {
           type: "serial",
           TXD: "14",
           RXD: "15"
+        }
+      }
+    };
+
+    // Load electrical component List:
+    this.eComponentList = {
+      submit: {
+        0: {
+          component: "PTS645SL50SMTR92LFS",
+          description: "Tactile Push Button smd",
+          schematic: "tactile_push_button_smd",
+          buyLink:
+            "https://www.digikey.com/product-detail/en/c-k/PTS645SL50SMTR92-LFS/CKN9088CT-ND/1146811",
+          hardElement: "physical-button",
+          hardElementVars: "(gpio:$gpio)",
+          partImage: "buttons/smd-button.png",
+          image: "buttons/smd-button.svg",
+          height: "6mm",
+          width: "6mm",
+          requires: ["resistor_1206_10k"]
+        },
+        1: {
+          component: "MOMENTARY-SWITCH-SPST",
+          description: "Tactile Push Button Red",
+          schematic: "tactile_push_button_thruhole",
+          buyLink:
+            "https://www.digikey.com/product-detail/en/sparkfun-electronics/COM-10302/1568-1332-ND/5775291",
+          hardElement: "physical-button",
+          hardElementVars: "(gpio:$gpio)",
+          partImage: "buttons/tactile-button-round-red.jpg",
+          image: "buttons/red-round-button.2D.svg",
+          height: "10mm",
+          width: "10mm",
+          requires: ["resistor_1206_10k"]
+        },
+        2: {
+          component: "MOMENTARY-SWITCH-SPST",
+          description: "Tactile Push Button Blue",
+          schematic: "tactile_push_button_thruhole",
+          buyLink:
+            "https://www.digikey.com/product-detail/en/sparkfun-electronics/COM-10302/1568-1332-ND/5775291",
+          hardElement: "physical-button",
+          hardElementVars: "(gpio:$gpio)",
+          partImage: "buttons/tactile-button-round-blue.jpg",
+          image: "buttons/blue-round-button.2D.svg",
+          height: "10mm",
+          width: "10mm",
+          requires: ["resistor_1206_10k"]
+        },
+        3: {
+          component: "MOMENTARY-SWITCH-SPST",
+          description: "Tactile Push Button Green",
+          schematic: "tactile_push_button_thruhole",
+          buyLink:
+            "https://www.digikey.com/product-detail/en/sparkfun-electronics/COM-10302/1568-1332-ND/5775291",
+          hardElement: "physical-button",
+          hardElementVars: "(gpio:$gpio)",
+          partImage: "buttons/tactile-button-round-green.jpg",
+          image: "buttons/green-round-button.2D.svg",
+          height: "10mm",
+          width: "10mm",
+          requires: ["resistor_1206_10k"]
+        }
+      },
+      span: {
+        0: {
+          component: "C503B-RAN-CZ0C0AA1",
+          description: "LED 5mm red",
+          schematic: "led_thruhole",
+          buyLink:
+            "https://www.digikey.com/product-detail/en/cree-inc/C503B-RAN-CZ0C0AA1/C503B-RAN-CZ0C0AA1-ND/6561758",
+          hardElement: "physical-output",
+          hardElementVars: "(gpio:$gpio)",
+          partImage: "output/LED-RED.jpg",
+          image: "output/red-5mm-LED.2D.svg",
+          height: "5mm",
+          width: "5mm",
+          requires: ["resistor_1206_330ohm"]
+        },
+        1: {
+          component: "C503B-RAN-CZ0C0AA1",
+          description: "LED 5mm blue",
+          schematic: "led_thruhole",
+          buyLink:
+            "https://www.digikey.com/product-detail/en/cree-inc/C503B-BCN-CV0Z0461/C503B-BCN-CV0Z0461-ND/1922945",
+          hardElement: "physical-output",
+          hardElementVars: "(gpio:$gpio)",
+          partImage: "output/LED-BLUE.jpg",
+          image: "output/blue-5mm-LED.2D.svg",
+          height: "5mm",
+          width: "5mm",
+          requires: ["resistor_1206_330ohm"]
+        },
+        2: {
+          component: "C503B-RAN-CZ0C0AA1",
+          description: "LED 5mm green",
+          schematic: "led_thruhole",
+          buyLink:
+            "https://www.digikey.com/product-detail/en/cree-inc/C503B-GAN-CB0F0791/C503B-GAN-CB0F0791-ND/1922938",
+          hardElement: "physical-output",
+          hardElementVars: "(gpio:$gpio)",
+          partImage: "output/LED-GREEN.jpg",
+          image: "output/green-5mm-LED.2D.svg",
+          height: "5mm",
+          width: "5mm",
+          requires: ["resistor_1206_330ohm"]
+        },
+        3: {
+          component: "C503B-RAN-CZ0C0AA1",
+          description: "LED 5mm white",
+          schematic: "led_thruhole",
+          buyLink:
+            "https://www.digikey.com/product-detail/en/cree-inc/C503B-WAN-CBBDB231/C503B-WAN-CBBDB231-ND/5824156",
+          hardElement: "physical-output",
+          hardElementVars: "(gpio:$gpio)",
+          partImage: "output/LED-WHITE.jpg",
+          image: "output/white-5mm-LED.2D.svg",
+          height: "5mm",
+          width: "5mm",
+          requires: ["resistor_1206_330ohm"]
+        },
+        4: {
+          component: "LED",
+          description: "LED smd 1206 Green",
+          schematic: "led_smd",
+          buyLink:
+            "https://www.digikey.com/product-detail/en/lite-on-inc/LTST-C150GKT/160-1169-1-ND/269241",
+          hardElement: "physical-output",
+          hardElementVars: "(gpio:$gpio)",
+          partImage: "output/LED-1206.png",
+          image: "output/LED-1206.svg",
+          height: "1.6mm",
+          width: "3.2mm",
+          requires: ["resistor_1206_330ohm"]
+        }
+      },
+      range: {
+        0: {
+          component: "MOTORIZEDPOT",
+          description: "Motorized Potentiometer 10K",
+          schematic: "motorized_potentiometer",
+          buyLink:
+            "https://www.digikey.com/product-detail/en/bourns-inc/PSM60-082A-103B2/PSM60-082A-103B2-ND/5825442",
+          hardElement: "physical-motorized-pot",
+          hardElementVars:
+            "(motora:$gpio, motorb:$gpio, \
+                touch:$gpio, i2c-addr:0x48, i2c-port:url($i2c))",
+          partImage: "range/motorized-potentiometer.png",
+          image: "range/motorizedPot.png",
+          height: "9mm",
+          width: "152mm",
+          requires: ["ads1015", "at42qt1010", "tb6612fng"]
+        },
+        1: {
+          component: "POTTODO", // TODO add device and schematic
+          description: "Potentiometer 100K",
+          schematic: "",
+          buyLink:
+            "https://www.digikey.com/product-detail/en/bourns-inc/PDB181-E420K-104B/PDB181-E420K-104B-ND/3780677",
+          hardElement: "physical-pot",
+          hardElementVars: "(i2c-port:url($i2c), i2c-addr:0x40)",
+          partImage: "range/pot.png",
+          image: "range/potentiometer.png",
+          height: "20mm",
+          width: "17mm",
+          requires: ["ads1015"]
+        }
+      },
+      screens: {
+        0: {
+          component: "utronics3-5inch",
+          description: "5-inch touch screen",
+          buyLink: "",
+          partImage: "screens/utronics_3.5inch.png",
+          image: "",
+          height: "80mm",
+          width: "100mm"
+        },
+        1: {
+          component: "geeekpi5inch",
+          description: "5-inch touch screen",
+          buyLink: "",
+          partImage: "screens/geeekpi_5inch.png",
+          image: "",
+          height: "100mm",
+          width: "160mm"
+        }
+      },
+      connector: {
+        0: {
+          component: "rpi-40pin-connector",
+          description: "Raspberry Pi Connector",
+          schematic: "connector_raspberrypi",
+          connectorNetMap: this.raspberryNetMap,
+          buyLink:
+            "https://www.digikey.com/product-detail/en/adafruit-industries-llc/2222/1528-1785-ND/6238005",
+          partImage: "connectors/rpi_partimage.jpg",
+          image: "connectors/rpi_connector.png",
+          height: "5mm",
+          width: "51mm",
+        }
+      },
+      misc: {
+        // Required Components
+        resistor_1206_10k: {
+          component: "RESISTOR",
+          description: "10k resistor smd 1206",
+          buyLink: "",
+          partImage: "misc/0603-RES.jpg",
+          image: "misc/0603-RES.svg",
+          height: "1.6mm",
+          width: "3.2mm"
+        },
+        resistor_1206_330ohm: {
+          component: "RESISTOR",
+          description: "330 Ohm resistor smd 1206",
+          buyLink: "",
+          partImage: "misc/0603-RES.jpg",
+          image: "misc/0603-RES.svg",
+          height: "1.6mm",
+          width: "3.2mm"
+        },
+        ads1015: {
+          component: "ADS1X15",
+          description: "ads1015 12-bit Channel ADC",
+          buyLink: "https://www.digikey.com/products/en?mpart=1083&v=1528",
+          partImage: "misc/ads1X15.png",
+          image: "misc/ads1X15.svg",
+          height: "18mm",
+          width: "29mm"
+        },
+        at42qt1010: {
+          component: "AT42QT1010",
+          description: "at42qt1010 Capacitive Touch Sensor",
+          buyLink:
+            "https://www.digikey.com/product-detail/en/adafruit-industries-llc/1374/1528-1782-ND/6238002",
+          partImage: "misc/at42qt1010.png",
+          image: "misc/at42qt1010.svg",
+          height: "29mm",
+          width: "20mm"
+        },
+        tb6612fng: {
+          component: "TB6612FNG",
+          description: "TB6612FNG Motor Dirver",
+          buyLink:
+            "https://www.digikey.com/product-detail/en/sparkfun-electronics/ROB-14450/1568-1755-ND/7915576",
+          partImage: "misc/TB6612FNG.png",
+          image: "misc/TB6612FNG.svg",
+          height: "21mm",
+          width: "21mm"
         }
       }
     };
@@ -1276,14 +1342,14 @@ export default {
       );
 
       // // TEST CONNECTOR
-      // this.addNewHTMLComponent(
-      //   "connector", // thisId
-      //   "connector", // thisType
-      //   "",          // thisInnerHtml
-      //   '<div id="connector"></div>', // thisHtml
-      //   5, // thisLeft
-      //   5 // thisTop
-      // );
+      this.addNewHTMLComponent(
+        "connector", // thisId
+        "connector", // thisType
+        "",          // thisInnerHtml
+        '<div id="connector"></div>', // thisHtml
+        5, // thisLeft
+        5 // thisTop
+      );
 
       // // TEST MISC
       // this.addNewHTMLComponent(
@@ -1431,15 +1497,15 @@ export default {
           }
 
           // Get current component Part Number
-          this.currentComponentPartNumber = this.eComponentSaved[
+          this.currentComponentDescription = this.eComponentSaved[
             this.currentComponentId
-          ].componentName;
+          ].componentDescription;
 
           console.log("elementClicked:", ele);
           console.log("currentComponentID:" + this.currentComponentId);
           console.log("currentComponentType:" + this.currentComponentType);
           console.log(
-            "currentComponentPartNumber:" + this.currentComponentPartNumber
+            "currentComponentDescription:" + this.currentComponentDescription
           );
           console.log(
             "IsComponentRemoveDisabled:" + this.componentRemoveDisable
@@ -1507,6 +1573,9 @@ export default {
         // Physical component values
         componentSelected: selectedNumber,
         componentName: null, // Set in the next function
+        componentDescription: null, // Set in the next function
+        componentSchematic: null, // Set in the next function
+        componentConnectorNetMap: null,   // Set in next function (connector only)
         componentBuyLink: null, // Set in the next function
         componentHardElement: null, // Set in the next function
         componentHardElementVars: null, // Set in the next function
@@ -1663,15 +1732,18 @@ export default {
         console.log(`### ADDING PARENT COMPONENT [${compType}]`);
 
         // Set new current component part number name
-        this.currentComponentPartNumber = this.eComponentList[compType][
+        this.currentComponentDescription = this.eComponentList[compType][
           selectedNumber
-        ].component;
+        ].description;
       }
       console.log("selectedNumber:", selectedNumber);
 
       // Get new image path
       var name = this.eComponentList[compType][selectedNumber].component;
+      var description = this.eComponentList[compType][selectedNumber].description;
+      var schematic = this.eComponentList[compType][selectedNumber].schematic;
       var buyLink = this.eComponentList[compType][selectedNumber].buyLink;
+      var connectorNetMap = this.eComponentList[compType][selectedNumber].connectorNetMap;
       var hardElement = this.eComponentList[compType][selectedNumber]
         .hardElement;
       var hardElementVars = this.eComponentList[compType][selectedNumber]
@@ -1696,6 +1768,9 @@ export default {
       //Save the new component number selected [Here we save the new selected component]
       this.eComponentSaved[compId].componentSelected = newNumber; // Set new component selected
       this.eComponentSaved[compId].componentName = name; // Set new component part number name
+      this.eComponentSaved[compId].componentDescription = description; // Set new component part number name
+      this.eComponentSaved[compId].componentSchematic = schematic; // Sets schematic file name
+      this.eComponentSaved[compId].componentConnectorNetMap = connectorNetMap; // Sets connector Pin map
       this.eComponentSaved[compId].componentBuyLink = buyLink; // Set new component buy Link
       this.eComponentSaved[compId].componentHardElement = hardElement; // Set new component hardElement
       this.eComponentSaved[compId].componentHardElementVars = hardElementVars; // Set new component hardElement
@@ -1928,20 +2003,24 @@ export default {
         var net = hardTag[0];
         var variable = hardTag[1];
 
+        // Get ioName without $ (e.g., ioName=gpio from variable=$gpio)
         var ioName = null;
         ["gpio", "i2c", "spi", "serial"].forEach(io => {
           if (variable.includes(io)) {
             ioName = io;
           }
         });
+
+        // If ioName == null then its for example an i2c address.
+        // Add it to dictionary and skip.
         if (ioName == null) {
           hardVarsDic.push(allTags[i]);
           continue;
         }
-        console.log("ioName:", ioName);
 
+        // Select next pin form the available connector pins
         var nextPin = this.FinalPinMap[ioName].length;
-        var availablePins = this.raspberryPinMap[ioName].length;
+        var availablePins = this.raspberryNetMap[ioName].length;
         if (nextPin >= availablePins) {
           // No more gpio pins avaliable
           console.log(`Error: Max num of ${ioName} pins avilable reached`);
@@ -1952,7 +2031,7 @@ export default {
           var pinName;
           if (ioName == "i2c" || ioName == "spi" || ioName == "serial") {
             // I2C, SPI, Serial e.g. url($i2c)
-            var device = this.raspberryPinMap[ioName][nextPin];
+            var device = this.raspberryNetMap[ioName][nextPin];
             pinName = variable.replace("$" + ioName, `"${device.device}"`);
             hardVarsDic.push(net + ":" + pinName);
 
@@ -1960,7 +2039,7 @@ export default {
             this.eComponentSaved[key]["componentIfaces"][ifaceName] = device;
           } else {
             // GPIO
-            pinName = this.raspberryPinMap[ioName][nextPin];
+            pinName = this.raspberryNetMap[ioName][nextPin];
             hardVarsDic.push(net + ":" + `"${pinName}"`);
 
             // Add inetrface to component Dictionary
@@ -1973,54 +2052,15 @@ export default {
           }
 
           // Add to dictionary
-          this.FinalPinMap[ioName].push(this.raspberryPinMap[ioName][nextPin]);
+          this.FinalPinMap[ioName].push(this.raspberryNetMap[ioName][nextPin]);
         }
         interfaceCounter++;
       }
 
       var finalhardVar = "(" + hardVarsDic.toString() + ")";
       //console.log("AFTER: "+finalhardVar);
-      console.log(this.eComponentSaved[key]["componentIfaces"]);
+      //console.log(this.eComponentSaved[key]["componentIfaces"]);
       return finalhardVar;
-
-      // do {
-      //   var occurrences = false;
-      //   // Check for gpio, i2c, spi and serial occurences
-      //   ["gpio", "i2c", "spi", "serial"].forEach(ioName => {
-      //     if (hardVars.includes("$" + ioName)) {
-      //       occurrences = true;
-      //       var nextPin = this.FinalPinMap[ioName].length;
-      //       var availablePins = this.raspberryPinMap[ioName].length;
-      //       if (nextPin >= availablePins) {
-      //         // No more gpio pins avaliable
-      //         console.log(`Error: Max num of ${ioName} pins avilable reached`);
-      //         throw `Error: Max num of ${ioName} pins avilable reached`;
-      //       } else {
-      //         // Replace string with next available Pin
-      //         var pinName;
-      //         if (ioName == "i2c" || ioName == "spi" || ioName == "serial") {
-      //           // I2C, SPI, Serial
-      //           pinName = this.raspberryPinMap[ioName][nextPin].device;
-      //         } else {
-      //           // GPIO
-      //           pinName = this.raspberryPinMap[ioName][nextPin];
-      //         }
-
-      //         hardVars = hardVars.replace("$" + ioName, `"${pinName}"`);
-
-      //         // Add to parts dictionary
-      //         //this.eComponentSaved[key][ioName].push(pinName);
-
-      //         // Add to dictionary
-      //         this.FinalPinMap[ioName].push(
-      //           this.raspberryPinMap[ioName][nextPin]
-      //         );
-      //       }
-      //     }
-      //   });
-      // } while (occurrences == true);
-
-      // return hardVars;
     },
     openBuildScreen() {
       // Just to test Build screen
@@ -2149,7 +2189,7 @@ export default {
             this.eComponentSaved[key].componentPartImage
           ),
           title: `<strong>Part:</strong> ${
-            this.eComponentSaved[key].componentName
+            this.eComponentSaved[key].componentDescription
           }`,
           subtitle: subtitleText
           /*
@@ -2236,7 +2276,7 @@ export default {
       //   .post("generatePCB", {
       //     pcbHeight: this.FinalPCB.height,
       //     pcbWidth: this.FinalPCB.width,
-      //     pinMap: this.raspberryPinMap,
+      //     pinMap: this.raspberryNetMap,
       //     parts: this.eComponentSaved
       //   })
       //   .then(response => {
@@ -2251,35 +2291,46 @@ export default {
       //   .catch(error => alert(error.message)); // if network error
 
       var pcbInput = {}; // Empty object
+      // Add pcb Width and Height
       pcbInput["pcbHeight"] = this.FinalPCB.height;
       pcbInput["pcbWidth"] = this.FinalPCB.width;
-      pcbInput["availableGpio"] = this.raspberryPinMap.gpio;
-      pcbInput["availableI2c"] = this.raspberryPinMap.i2c;
-      pcbInput["availableSpi"] = this.raspberryPinMap.spi;
-      pcbInput["availableSerial"] = this.raspberryPinMap.serial;
-      // Get gpios
+      // Add connector
+      if (this.eComponentSaved["connector"] == undefined) {
+        console.error("You are trying to build a PCB without connector")
+      } else {
+        pcbInput["connector"] = {
+          schematicName: this.eComponentSaved["connector"].componentSchematic,
+          interfacesAvailabe: this.eComponentSaved["connector"].componentConnectorNetMap["allNets"],
+          partsPosition: {
+            componentName: this.eComponentSaved["connector"].componentName,
+            componentX: this.eComponentSaved["connector"].componentCenterLeft,
+            componentY: this.eComponentSaved["connector"].componentCenterTop
+          }
+        }
+      }
+      // Add modules
       var moduleNum = 0;
+      pcbInput["modules"] = {};
       for (var key in this.eComponentSaved) {
         // Get I/Os
         if (this.eComponentSaved[key].componentHardElement != undefined) {
           // Its a parent comopnent
           var moduleName = "module_" + moduleNum;
-          pcbInput[moduleName] = {
-            schematicName: this.eComponentSaved[key].componentHardElement,
+          pcbInput["modules"][moduleName] = {
+            schematicName: this.eComponentSaved[key].componentSchematic,
             interfaces: {},
-            parts: {}
+            partsPosition: {}
           };
-          console.log(this.eComponentSaved[key].componentChildIDs);
 
           // Add module interfaces
-          pcbInput[moduleName]["interfaces"] = this.eComponentSaved[
+          pcbInput["modules"][moduleName]["interfaces"] = this.eComponentSaved[
             key
           ].componentIfaces;
 
           // Add partent part
           var partNum = 0;
           var partName = "part_" + partNum;
-          pcbInput[moduleName]["parts"][partName] = {
+          pcbInput["modules"][moduleName]["partsPosition"][partName] = {
             componentName: this.eComponentSaved[key].componentName,
             componentX: this.eComponentSaved[key].componentCenterLeft,
             componentY: this.eComponentSaved[key].componentCenterTop
@@ -2289,11 +2340,9 @@ export default {
           partNum++;
           partName = "part_" + partNum;
           var childParts = this.eComponentSaved[key].componentChildIDs;
-          console.log(childParts.length);
           for (var i in childParts) {
             var childID = childParts[i];
-            console.log(partName, childID);
-            pcbInput[moduleName]["parts"][partName] = {
+            pcbInput["modules"][moduleName]["partsPosition"][partName] = {
               componentName: this.eComponentSaved[childID].componentName,
               componentX: this.eComponentSaved[key].componentCenterLeft,
               componentY: this.eComponentSaved[key].componentCenterTop
