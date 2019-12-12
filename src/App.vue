@@ -597,7 +597,6 @@ export default {
     disableButtons: false
   }),
   mounted: function() {
-
     // TODO add this inside component list
     this.raspberryNetMap = {
       allNets: [
@@ -680,7 +679,7 @@ export default {
     this.eComponentList = {
       submit: {
         0: {
-          component: "PTS645SL50SMTR92LFS",
+          component: "S1",
           description: "Tactile Push Button smd",
           schematic: "tactile_push_button_smd",
           buyLink:
@@ -694,7 +693,7 @@ export default {
           requires: ["resistor_1206_10k"]
         },
         1: {
-          component: "MOMENTARY-SWITCH-SPST",
+          component: "S1",
           description: "Tactile Push Button Red",
           schematic: "tactile_push_button_thruhole",
           buyLink:
@@ -708,7 +707,7 @@ export default {
           requires: ["resistor_1206_10k"]
         },
         2: {
-          component: "MOMENTARY-SWITCH-SPST",
+          component: "S1",
           description: "Tactile Push Button Blue",
           schematic: "tactile_push_button_thruhole",
           buyLink:
@@ -722,7 +721,7 @@ export default {
           requires: ["resistor_1206_10k"]
         },
         3: {
-          component: "MOMENTARY-SWITCH-SPST",
+          component: "S1",
           description: "Tactile Push Button Green",
           schematic: "tactile_push_button_thruhole",
           buyLink:
@@ -738,7 +737,7 @@ export default {
       },
       span: {
         0: {
-          component: "C503B-RAN-CZ0C0AA1",
+          component: "LED1",
           description: "LED 5mm red",
           schematic: "led_thruhole",
           buyLink:
@@ -752,7 +751,7 @@ export default {
           requires: ["resistor_1206_330ohm"]
         },
         1: {
-          component: "C503B-RAN-CZ0C0AA1",
+          component: "LED1",
           description: "LED 5mm blue",
           schematic: "led_thruhole",
           buyLink:
@@ -766,7 +765,7 @@ export default {
           requires: ["resistor_1206_330ohm"]
         },
         2: {
-          component: "C503B-RAN-CZ0C0AA1",
+          component: "LED1",
           description: "LED 5mm green",
           schematic: "led_thruhole",
           buyLink:
@@ -780,7 +779,7 @@ export default {
           requires: ["resistor_1206_330ohm"]
         },
         3: {
-          component: "C503B-RAN-CZ0C0AA1",
+          component: "LED1",
           description: "LED 5mm white",
           schematic: "led_thruhole",
           buyLink:
@@ -794,7 +793,7 @@ export default {
           requires: ["resistor_1206_330ohm"]
         },
         4: {
-          component: "LED",
+          component: "D1",
           description: "LED smd 1206 Green",
           schematic: "led_smd",
           buyLink:
@@ -810,7 +809,7 @@ export default {
       },
       range: {
         0: {
-          component: "MOTORIZEDPOT",
+          component: "U1",
           description: "Motorized Potentiometer 10K",
           schematic: "motorized_potentiometer",
           buyLink:
@@ -862,7 +861,7 @@ export default {
       },
       connector: {
         0: {
-          component: "rpi-40pin-connector",
+          component: "J1",
           description: "Raspberry Pi Connector",
           schematic: "connector_raspberrypi",
           connectorNetMap: this.raspberryNetMap,
@@ -871,13 +870,13 @@ export default {
           partImage: "connectors/rpi_partimage.jpg",
           image: "connectors/rpi_connector.png",
           height: "5mm",
-          width: "51mm",
+          width: "51mm"
         }
       },
       misc: {
         // Required Components
         resistor_1206_10k: {
-          component: "RESISTOR",
+          component: "R1",
           description: "10k resistor smd 1206",
           buyLink: "",
           partImage: "misc/0603-RES.jpg",
@@ -886,7 +885,7 @@ export default {
           width: "3.2mm"
         },
         resistor_1206_330ohm: {
-          component: "RESISTOR",
+          component: "R1",
           description: "330 Ohm resistor smd 1206",
           buyLink: "",
           partImage: "misc/0603-RES.jpg",
@@ -895,7 +894,7 @@ export default {
           width: "3.2mm"
         },
         ads1015: {
-          component: "ADS1X15",
+          component: "U2",
           description: "ads1015 12-bit Channel ADC",
           buyLink: "https://www.digikey.com/products/en?mpart=1083&v=1528",
           partImage: "misc/ads1X15.png",
@@ -904,7 +903,7 @@ export default {
           width: "29mm"
         },
         at42qt1010: {
-          component: "AT42QT1010",
+          component: "U3",
           description: "at42qt1010 Capacitive Touch Sensor",
           buyLink:
             "https://www.digikey.com/product-detail/en/adafruit-industries-llc/1374/1528-1782-ND/6238002",
@@ -914,7 +913,7 @@ export default {
           width: "20mm"
         },
         tb6612fng: {
-          component: "TB6612FNG",
+          component: "U4",
           description: "TB6612FNG Motor Dirver",
           buyLink:
             "https://www.digikey.com/product-detail/en/sparkfun-electronics/ROB-14450/1568-1755-ND/7915576",
@@ -1345,7 +1344,7 @@ export default {
       this.addNewHTMLComponent(
         "connector", // thisId
         "connector", // thisType
-        "",          // thisInnerHtml
+        "", // thisInnerHtml
         '<div id="connector"></div>', // thisHtml
         5, // thisLeft
         5 // thisTop
@@ -1575,7 +1574,7 @@ export default {
         componentName: null, // Set in the next function
         componentDescription: null, // Set in the next function
         componentSchematic: null, // Set in the next function
-        componentConnectorNetMap: null,   // Set in next function (connector only)
+        componentConnectorNetMap: null, // Set in next function (connector only)
         componentBuyLink: null, // Set in the next function
         componentHardElement: null, // Set in the next function
         componentHardElementVars: null, // Set in the next function
@@ -1740,10 +1739,12 @@ export default {
 
       // Get new image path
       var name = this.eComponentList[compType][selectedNumber].component;
-      var description = this.eComponentList[compType][selectedNumber].description;
+      var description = this.eComponentList[compType][selectedNumber]
+        .description;
       var schematic = this.eComponentList[compType][selectedNumber].schematic;
       var buyLink = this.eComponentList[compType][selectedNumber].buyLink;
-      var connectorNetMap = this.eComponentList[compType][selectedNumber].connectorNetMap;
+      var connectorNetMap = this.eComponentList[compType][selectedNumber]
+        .connectorNetMap;
       var hardElement = this.eComponentList[compType][selectedNumber]
         .hardElement;
       var hardElementVars = this.eComponentList[compType][selectedNumber]
@@ -2296,17 +2297,18 @@ export default {
       pcbInput["pcbWidth"] = this.FinalPCB.width;
       // Add connector
       if (this.eComponentSaved["connector"] == undefined) {
-        console.error("You are trying to build a PCB without connector")
+        console.error("You are trying to build a PCB without connector");
       } else {
         pcbInput["connector"] = {
           schematicName: this.eComponentSaved["connector"].componentSchematic,
-          interfacesAvailabe: this.eComponentSaved["connector"].componentConnectorNetMap["allNets"],
+          netsAvailabe: this.eComponentSaved["connector"]
+            .componentConnectorNetMap["allNets"],
           partsPosition: {
             componentName: this.eComponentSaved["connector"].componentName,
             componentX: this.eComponentSaved["connector"].componentCenterLeft,
             componentY: this.eComponentSaved["connector"].componentCenterTop
           }
-        }
+        };
       }
       // Add modules
       var moduleNum = 0;
@@ -2340,14 +2342,16 @@ export default {
           partNum++;
           partName = "part_" + partNum;
           var childParts = this.eComponentSaved[key].componentChildIDs;
+          //console.log("CHILDS", childParts);
           for (var i in childParts) {
             var childID = childParts[i];
             pcbInput["modules"][moduleName]["partsPosition"][partName] = {
               componentName: this.eComponentSaved[childID].componentName,
-              componentX: this.eComponentSaved[key].componentCenterLeft,
-              componentY: this.eComponentSaved[key].componentCenterTop
+              componentX: this.eComponentSaved[childID].componentCenterLeft,
+              componentY: this.eComponentSaved[childID].componentCenterTop
             };
             partNum++;
+            partName = "part_" + partNum;
           }
           moduleNum++;
         }
