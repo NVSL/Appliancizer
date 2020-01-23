@@ -1,5 +1,13 @@
-#myButton {
-  hardware: physical-button (gpio:"4");
+#myLED {
+  hardware: physical-output (gpio:"4");
+}
+
+physical-output {
+  display: none;
+}
+
+#turnON {
+  hardware: physical-button (gpio:"17");
 }
 
 physical-button {

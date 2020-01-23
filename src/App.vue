@@ -2,12 +2,16 @@
 // Tomorrow:
 // - Integrate this with gadgetron.
 // - ***Add RPI sound  header (Note that a device that needs one device more for the connectro is needed)
-// - ***Get right part sizes (Missing colored Tactile buttons and motorized pot correct size)
 // - How to add a notification if max number of I/Os for the connector is reached? (hard)
 // - Add rotation (Hard)
-// - Screen rezise should be in the webpage (IMPORTANT)
-// - 2.- ***(Add missing BUY link and if possible short to Quantities) (Easy, IMPORTANT)
-// - 1.- Add componentDescription, do schematics for each module and get de correct componentName from sch module.  
+// - Screen rezise should be in the webpage (IMPORTANT) 
+// - 1.- Add missing buy links and correct compnent dimensions/sizes. ***Get right part sizes (Missing both colored Tactile buttons and motorized pot correct size)
+// - 2.- Check all schematc_names..
+// - 3.- Check image and UI for raspberry PI.
+// - 4.- Maybe add users
+// - 5.- Make package file so the user just do npm install
+// - 7.- Definetly add GPIO numbers in the decription of components
+// - 6.- Try to remove jquery.min from injector (not necessary)
 -->
 
 <template>
@@ -651,6 +655,8 @@ export default {
         0: {
           device: "/dev/i2c-1",
           type: "i2c",
+          sdaNet: "SDA",
+          sclNet: "SCL",
           SDA: "2",
           SCL: "3"
         }
@@ -659,6 +665,10 @@ export default {
         0: {
           device: "/dev/spidev0.0",
           type: "spi",
+          mosiNet: "MOSI",
+          misoNet: "MISO",
+          sclkNet: "SCLK",
+          ce0Net: "CE0",
           MOSI: "10",
           MISO: "9",
           SCLK: "11",
@@ -669,6 +679,8 @@ export default {
         0: {
           device: "/dev/ttyUSB0",
           type: "serial",
+          txdNet: "TXD",
+          rxdNet: "RXD",
           TXD: "14",
           RXD: "15"
         }
@@ -2045,11 +2057,14 @@ export default {
 
             // Add inetrface to component Dictionary
             this.eComponentSaved[key]["componentIfaces"][ifaceName] = {};
-            this.eComponentSaved[key]["componentIfaces"][ifaceName][
-              net.toUpperCase()
-            ] = pinName;
             this.eComponentSaved[key]["componentIfaces"][ifaceName]["type"] =
               "gpio";
+            this.eComponentSaved[key]["componentIfaces"][ifaceName][
+              "gpioNet"
+            ] = net.toUpperCase();
+            this.eComponentSaved[key]["componentIfaces"][ifaceName][
+              "GPIO"
+            ] = pinName;
           }
 
           // Add to dictionary
@@ -2163,38 +2178,74 @@ export default {
       // Unselect components before screenshoot
       this.unselectComponents();
 
-      // Output all component data:
+      // Output all component data to display list with quantities:
       console.log("### ADD TO LIST");
+      var finalDisplayList = {};
       for (key in this.eComponentSaved) {
+        // List added components
         console.log("ADDED:", this.eComponentSaved[key]);
+        // Use component Description as key
+        var displayKey = this.eComponentSaved[key].componentDescription;
+        if (displayKey in finalDisplayList) {
+          // Key exists, add Qunatity + 1.
+          finalDisplayList[displayKey].qty =
+            finalDisplayList[displayKey].qty + 1;
+        } else {
+          // Add key to final display List
+          finalDisplayList[displayKey] = {
+            component: this.eComponentSaved[key],
+            qty: 1
+          };
+        }
+      }
 
+      for (key in finalDisplayList) {
         // Check if component is a main module element
-        var hardElement = this.eComponentSaved[key].componentHardElement;
+        var componentSaved = finalDisplayList[key].component;
+        var componentQty = finalDisplayList[key].qty;
+        var hardElement = componentSaved.componentHardElement;
         var subtitleText = "";
+
         if (hardElement == undefined) {
+          // Generate subititle elemetn for a non Hard element
           hardElement = "";
           subtitleText = `Buy at: <a href="${
-            this.eComponentSaved[key].componentBuyLink
-          }" target="_blank">Link</a>`;
+            componentSaved.componentBuyLink
+          }" target="_blank">Link</a> | Qty: ${componentQty}`;
         } else {
+          // Get all interfaces in a summary
+          var interfaces = finalDisplayList[key].component.componentIfaces;
+          var ifacesSummary = "";
+          for (var ifacekey in interfaces) {
+            var type = interfaces[ifacekey].type;
+            if (type == "gpio") {
+              var gpioNum = interfaces[ifacekey].GPIO;
+              ifacesSummary =
+                ifacesSummary + type.toUpperCase() + ":" + gpioNum + ", ";
+            } else {
+              ifacesSummary = ifacesSummary + type.toUpperCase() + ", ";
+            }
+          }
+          // Remove two last characters
+          ifacesSummary = ifacesSummary.substring(0, ifacesSummary.length - 2);
+
+          // Generate subtitle Text for Hard element
           hardElement = " &lt" + hardElement + "&gt";
           subtitleText = `Buy at: <a href="${
-            this.eComponentSaved[key].componentBuyLink
-          }" target="_blank">Link</a> | Hard HTML Tag: ${hardElement}`;
+            componentSaved.componentBuyLink
+          }?quantity=${componentQty}" target="_blank">Link</a> 
+          | Qty: ${componentQty} | Hard HTML Tag: ${hardElement} (${ifacesSummary})`;
         }
 
-        // Push to list
-
+        // Push to visual list
         this.FinalComponents.push({
-          image: this.getComponentsImg(
-            this.eComponentSaved[key].componentPartImage
-          ),
+          image: this.getComponentsImg(componentSaved.componentPartImage),
           title: `<strong>Part:</strong> ${
-            this.eComponentSaved[key].componentDescription
+            componentSaved.componentDescription
           }`,
           subtitle: subtitleText
           /*
-          subtitle: `Width: ${this.eComponentSaved[key].componentWidth} 
+          subtitle: `Width: ${this.eComponentSaved[key].componentWidth}
                      Height: ${this.eComponentSaved[key].componentHeight} |
                      CenterLeft: ${
                        this.eComponentSaved[key].componentCenterLeft
@@ -2475,6 +2526,22 @@ export default {
       // Create hardware.css file
       var cssDoc = this.generateCSSDoc();
       zip.file("hardware.css", cssDoc);
+
+      // Create package.json
+      var pckgJson = `{
+  "name": "user-appliancizer-app",
+  "description": "User Applianzicer App",
+  "version": "1.0.0",
+  "dependencies": {
+    "css": "^2.2.4",
+    "jquery": "^3.4.1",
+    "linuxduino": "^0.2.0"
+  },
+  "scripts": {
+    "app": "sudo DISPLAY=:0 electron . --no-sandbox"
+  }
+}`;
+      zip.file("package.json", pckgJson);
 
       // Add AmagamNative
       var amalgam = zip.folder("amalgam");

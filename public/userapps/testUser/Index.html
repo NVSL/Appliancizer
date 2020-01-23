@@ -7,11 +7,24 @@
   <link rel="import" href="amalgam/amalgam.html">
   <link rel="stylesheet" href="hardware.css">
   <style>
-undefined  </style>
+  </style>
   </head>
   <body>
-undefined
+<button id="turnON" onclick="turnLEDON()">LED ON</button>
+<button id="turnOFF" onclick="turnLEDOFF()">LED OFF</button>
+<span id="myLED">OFF</span>
+  
+
   <script>
-undefined  </script>
+function turnLEDON() {
+  var text = document.getElementById("myLED");
+  text.innerHTML = "ON";
+}
+
+function turnLEDOFF() {
+  var text = document.getElementById("myLED");
+  text.innerHTML = "OFF";
+}
+  </script>
   </body>
 </html>
