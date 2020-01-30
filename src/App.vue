@@ -5,12 +5,12 @@
 // - How to add a notification if max number of I/Os for the connector is reached? (hard)
 // - Add rotation (Hard)
 // - Screen rezise should be in the webpage (IMPORTANT) 
+// - 0.- Take amalgam files from server because babel is changing the files :S and thest MyHardwareApp again.
 // - 1.- Add missing buy links and correct compnent dimensions/sizes. ***Get right part sizes (Missing both colored Tactile buttons and motorized pot correct size)
 // - 2.- Check all schematc_names..
 // - 3.- Check image and UI for raspberry PI.
 // - 4.- Maybe add users
 // - 5.- Make package file so the user just do npm install
-// - 7.- Definetly add GPIO numbers in the decription of components
 // - 6.- Try to remove jquery.min from injector (not necessary)
 -->
 
@@ -2532,6 +2532,7 @@ export default {
   "name": "user-appliancizer-app",
   "description": "User Applianzicer App",
   "version": "1.0.0",
+  "main": "main.js",
   "dependencies": {
     "css": "^2.2.4",
     "jquery": "^3.4.1",
@@ -2539,9 +2540,27 @@ export default {
   },
   "scripts": {
     "app": "sudo DISPLAY=:0 electron . --no-sandbox"
-  }
+  },
+  "private": true
 }`;
       zip.file("package.json", pckgJson);
+
+      // Create main.js
+      var electronMainjs = `const { app, BrowserWindow } = require('electron')
+function createWindow () {
+  let win = new BrowserWindow({
+    width: 800,
+    height: 600,
+    frame: false,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  })
+  win.loadFile('app.html')
+  win.maximize()
+}
+app.on('ready', createWindow)`;
+      zip.file("main.js", electronMainjs);
 
       // Add AmagamNative
       var amalgam = zip.folder("amalgam");
@@ -2557,6 +2576,12 @@ export default {
         "physical-button.js",
         require("raw-loader!./amalgamNative/physical-button.js").default
       );
+
+      console.log(
+        "BUTTON",
+        require("raw-loader!./amalgamNative/physical-button.js").default
+      );
+
       amalgam.file(
         "physical-motorized-pot.js",
         require("raw-loader!./amalgamNative/physical-motorized-pot.js").default
@@ -2593,10 +2618,10 @@ export default {
           .default
       );
 
-      zip.generateAsync({ type: "blob" }).then(function(content) {
-        // see FileSaver.js
-        FileSaver.saveAs(content, "app.zip");
-      });
+      // zip.generateAsync({ type: "blob" }).then(function(content) {
+      //   // see FileSaver.js
+      //   FileSaver.saveAs(content, "MyHardwareApp.zip");
+      // });
     },
     BuildScreen_deployOnline() {
       console.log("Deploy online");

@@ -89,6 +89,23 @@ app.post("/register", function(req, res) {
   });
 });
 
+// ####
+// In Production QUERIES
+// ####
+
+app.get("/amalgamFiles", (req, res) => {
+  var amalgamHTML = fs.readFileSync(
+    "../public/amalgamNative/amalgam.html",
+    "utf8"
+  );
+  console.log("Lal");
+  console.log(amalgamHTML);
+
+  res.send({
+    message: `Goood`
+  });
+});
+
 // Generate web page
 app.post("/generateWebPage", function(req, res) {
   console.log("\n USER NAME: ", req.body.userName);
