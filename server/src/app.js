@@ -94,15 +94,103 @@ app.post("/register", function(req, res) {
 // ####
 
 app.get("/amalgamFiles", (req, res) => {
+  // Read amalgam.html
   var amalgamHTML = fs.readFileSync(
     "../public/amalgamNative/amalgam.html",
     "utf8"
   );
-  console.log("Lal");
-  console.log(amalgamHTML);
+
+  // Read amalgam.js
+  var amalgamJS = fs.readFileSync("../public/amalgamNative/amalgam.js", "utf8");
+
+  // Read physical-button.js
+  var physicalButtonJS = fs.readFileSync(
+    "../public/amalgamNative/physical-button.js",
+    "utf8"
+  );
+
+  // Read physical-motorized-pot.js
+  var physicalMotorizedPotJS = fs.readFileSync(
+    "../public/amalgamNative/physical-motorized-pot.js",
+    "utf8"
+  );
+
+  // Read physical-pot.js
+  var physicalPotJS = fs.readFileSync(
+    "../public/amalgamNative/physical-pot.js",
+    "utf8"
+  );
+
+  // Read physical-rgb-led.js
+  var physicalRgbLedJS = fs.readFileSync(
+    "../public/amalgamNative/physical-rgb-led.js",
+    "utf8"
+  );
+
+  // Read physical-servo-motor.js
+  var physicalServoMotorJS = fs.readFileSync(
+    "../public/amalgamNative/physical-servo-motor.js",
+    "utf8"
+  );
+
+  // Read physical-output.js
+  var physicalOutputJS = fs.readFileSync(
+    "../public/amalgamNative/physical-output.js",
+    "utf8"
+  );
+
+  // Read test-physical-button.js
+  var testPhysicalButtonJS = fs.readFileSync(
+    "../public/amalgamNative/test-physical-button.js",
+    "utf8"
+  );
+
+  // Read test-physical-submit.js
+  var testPhysicalSubmitJS = fs.readFileSync(
+    "../public/amalgamNative/test-physical-submit.js",
+    "utf8"
+  );
+
+  // Read board pinouts / raspberrypi_pinout.css
+  var raspberryPinoutCSS = fs.readFileSync(
+    "../public/amalgamNative/boards_pinout/raspberrypi_pinout.css",
+    "utf8"
+  );
 
   res.send({
-    message: `Goood`
+    message: [
+      { filename: "amalgam.html", data: amalgamHTML, folder: "" },
+      { filename: "amalgam.js", data: amalgamJS, folder: "" },
+      { filename: "physical-button.js", data: physicalButtonJS, folder: "" },
+      {
+        filename: "physical-motorized-pot.js",
+        data: physicalMotorizedPotJS,
+        folder: ""
+      },
+      { filename: "physical-pot.js", data: physicalPotJS, folder: "" },
+      { filename: "physical-rgb-led.js", data: physicalRgbLedJS, folder: "" },
+      {
+        filename: "physical-servo-motor.js",
+        data: physicalServoMotorJS,
+        folder: ""
+      },
+      { filename: "physical-output.js", data: physicalOutputJS, folder: "" },
+      {
+        filename: "test-physical-button.js",
+        data: testPhysicalButtonJS,
+        folder: ""
+      },
+      {
+        filename: "test-physical-submit.js",
+        data: testPhysicalSubmitJS,
+        folder: ""
+      },
+      {
+        filename: "raspberrypi_pinout.css",
+        data: raspberryPinoutCSS,
+        folder: "boards_pinout"
+      }
+    ]
   });
 });
 

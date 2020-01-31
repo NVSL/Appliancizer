@@ -2513,22 +2513,32 @@ export default {
 \n'
       }
       console.log("FINAL CSS:\n", cssDoc);
-      console.log("### END");
+      console.log("### GENERATE END");
       return cssDoc;
     },
     BuildScreen_downloadAPP() {
-      var zip = new JSZip();
+      // Send html and css generated files
+      server
+        .get("amalgamFiles")
+        .then(response => {
+          // Should return a link
+          if (response.status != 200) {
+            alert(response.data.error);
+            console.error("Server error when trying to communicate to server");
+          } else {
+            // Generate App zip file
+            var zip = new JSZip();
 
-      // Create app.html file
-      var htmlDoc = this.generateHTMLDoc();
-      zip.file("app.html", htmlDoc);
+            // Create app.html file
+            var htmlDoc = this.generateHTMLDoc();
+            zip.file("app.html", htmlDoc);
 
-      // Create hardware.css file
-      var cssDoc = this.generateCSSDoc();
-      zip.file("hardware.css", cssDoc);
+            // Create hardware.css file
+            var cssDoc = this.generateCSSDoc();
+            zip.file("hardware.css", cssDoc);
 
-      // Create package.json
-      var pckgJson = `{
+            // Create package.json
+            var pckgJson = `{
   "name": "user-appliancizer-app",
   "description": "User Applianzicer App",
   "version": "1.0.0",
@@ -2543,10 +2553,10 @@ export default {
   },
   "private": true
 }`;
-      zip.file("package.json", pckgJson);
+            zip.file("package.json", pckgJson);
 
-      // Create main.js
-      var electronMainjs = `const { app, BrowserWindow } = require('electron')
+            // Create main.js
+            var electronMainjs = `const { app, BrowserWindow } = require('electron')
 function createWindow () {
   let win = new BrowserWindow({
     width: 800,
@@ -2560,68 +2570,33 @@ function createWindow () {
   win.maximize()
 }
 app.on('ready', createWindow)`;
-      zip.file("main.js", electronMainjs);
+            zip.file("main.js", electronMainjs);
 
-      // Add AmagamNative
-      var amalgam = zip.folder("amalgam");
-      amalgam.file(
-        "amalgam.html",
-        require("raw-loader!./amalgamNative/amalgam.html").default
-      );
-      amalgam.file(
-        "amalgam.js",
-        require("raw-loader!./amalgamNative/amalgam.js").default
-      );
-      amalgam.file(
-        "physical-button.js",
-        require("raw-loader!./amalgamNative/physical-button.js").default
-      );
+            // Get Amalgam native Files
+            var amalgam = zip.folder("amalgam");
+            var amalgamFiles = response.data.message;
+            for (var key in amalgamFiles) {
+              if (amalgamFiles[key].folder != "") {
+                // Add file into folder
+                amalgam
+                  .folder(amalgamFiles[key].folder)
+                  .file(amalgamFiles[key].filename, amalgamFiles[key].data);
+              } else {
+                // Add file in root of folder
+                amalgam.file(
+                  amalgamFiles[key].filename,
+                  amalgamFiles[key].data
+                );
+              }
+            }
 
-      console.log(
-        "BUTTON",
-        require("raw-loader!./amalgamNative/physical-button.js").default
-      );
-
-      amalgam.file(
-        "physical-motorized-pot.js",
-        require("raw-loader!./amalgamNative/physical-motorized-pot.js").default
-      );
-      amalgam.file(
-        "physical-pot.js",
-        require("raw-loader!./amalgamNative/physical-pot.js").default
-      );
-      amalgam.file(
-        "physical-rgb-led.js",
-        require("raw-loader!./amalgamNative/physical-rgb-led.js").default
-      );
-      amalgam.file(
-        "physical-servo-motor.js",
-        require("raw-loader!./amalgamNative/physical-servo-motor.js").default
-      );
-      amalgam.file(
-        "physical.css",
-        require("raw-loader!./amalgamNative/physical.css").default
-      );
-      amalgam.file(
-        "test-physical-button.js",
-        require("raw-loader!./amalgamNative/test-physical-button.js").default
-      );
-      amalgam.file(
-        "test-physical-submit.js",
-        require("raw-loader!./amalgamNative/test-physical-submit.js").default
-      );
-
-      var boards_pinout = amalgam.folder("boards_pinout");
-      boards_pinout.file(
-        "raspberrypi_pinout.css",
-        require("raw-loader!./amalgamNative/boards_pinout/raspberrypi_pinout.css")
-          .default
-      );
-
-      // zip.generateAsync({ type: "blob" }).then(function(content) {
-      //   // see FileSaver.js
-      //   FileSaver.saveAs(content, "MyHardwareApp.zip");
-      // });
+            zip.generateAsync({ type: "blob" }).then(function(content) {
+              // see FileSaver.js
+              FileSaver.saveAs(content, "MyHardwareApp.zip");
+            });
+          }
+        })
+        .catch(error => alert(error.message)); // if network error
     },
     BuildScreen_deployOnline() {
       console.log("Deploy online");
