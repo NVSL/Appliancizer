@@ -7,6 +7,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 const fileUpload = require("express-fileupload");
 const fs = require("fs-extra");
+const path = require("path");
 
 // Get requests shouldn't change any data (Ony for getting info)
 // - Variables are embedded in the URL
@@ -92,6 +93,14 @@ app.post("/register", function(req, res) {
 // ####
 // In Production QUERIES
 // ####
+
+// Download files (GET, /download/{filename})
+app.get("/download/:file(*)", (req, res) => {
+  var file = req.params.file;
+  var fileLocation = path.join("./files", file);
+  console.log(fileLocation);
+  res.download(fileLocation, file);
+});
 
 app.get("/amalgamFiles", (req, res) => {
   // Read amalgam.html

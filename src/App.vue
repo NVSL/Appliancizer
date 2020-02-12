@@ -415,19 +415,64 @@
               </v-toolbar>
               <v-container>
                 <h3>
-                  1. Download the OS image below and flash it to your raspberry
+                  3. Download the OS image below and flash it to your raspberry
                   pi SD card. We recomend
-                  <a href="https://www.balena.io/etcher/">Balena Etcher</a>
+                  <a href="https://www.balena.io/etcher/" target="_blank"
+                    >Balena Etcher</a
+                  >
                   for flashing the OS image.
                 </h3>
                 <v-btn
                   class="vbtn info"
                   flat
-                  @click="BuildScreen_downloadOSImage()"
+                  href="http://localhost:8081/download/Appliancizer-rpi-image.zip"
                   >DOWNLOAD OS IMAGE</v-btn
                 >
                 <br />
+                <h3>
+                  4. Click "Deploy app online" to host your hardware app on the
+                  on the web. A web link will be generated with the address to
+                  your hardware app.
+                </h3>
+                <div class="text-xs-center">
+                  <v-btn
+                    class="vbtn info"
+                    flat
+                    @click="BuildScreen_deployOnline()"
+                    >DEPLOY APP ONLINE</v-btn
+                  >
+                  <br />
+                  <v-chip
+                    class="ma-2"
+                    color="rgb(174, 213, 129)"
+                    label
+                    text-color="white"
+                  >
+                    <pre>Link:  </pre>
+                    <a :href="GeneratedLink" target="_blank">
+                      {{ GeneratedLink }}
+                    </a>
+                  </v-chip>
+                </div>
                 <br />
+                <h3>
+                  5. Turn on your raspberry pi with the flashed SD card. A
+                  screen like the one shown below shlould show up. Configure the
+                  Wifi and enter the generated link in the hardware app URL text
+                  field.
+                </h3>
+                <v-img
+                  :src="require('./assets/_app/HardwareAppBrowser.png')"
+                  contain
+                  height="300px"
+                ></v-img>
+                <h3>
+                  6. Click "Go!". Great!, now your hardware app should be
+                  running. To return click or touch the screen 4 times.
+                </h3>
+
+                <!-- UNCOMENT THIS IF IMPLEMENTING LOCAL APP -->
+                <!-- 
                 <h3>
                   2. Deploy you app with hardware integration either online or
                   locally.
@@ -440,20 +485,49 @@
                         <v-toolbar-title>DEPLOY APP ONLINE</v-toolbar-title>
                       </v-toolbar>
                       <br />
-                      <div class="text-xs-center">
-                        Link:
-                        <a :href="GeneratedLink" target="_blank">
-                          {{ GeneratedLink }}
-                        </a>
-                      </div>
-                      <v-card-actions class="justify-center">
-                        <v-btn
-                          class="vbtn info"
-                          flat
-                          @click="BuildScreen_deployOnline()"
-                          >DEPLOY APP ONLINE</v-btn
-                        >
-                      </v-card-actions>
+                      <v-container>
+                        <h3>
+                          3. Click "Deploy app online" to host your hardware app
+                          on the web. A web link will be generated with the
+                          address to your hardware app.
+                        </h3>
+                        <div class="text-xs-center">
+                          <v-btn
+                            class="vbtn info"
+                            flat
+                            @click="BuildScreen_deployOnline()"
+                            >DEPLOY APP ONLINE</v-btn
+                          >
+                          <br />
+                          <v-chip
+                            class="ma-2"
+                            color="rgb(174, 213, 129)"
+                            label
+                            text-color="white"
+                          >
+                            <pre>Link:  </pre>
+                            <a :href="GeneratedLink" target="_blank">
+                              {{ GeneratedLink }}
+                            </a>
+                          </v-chip>
+                        </div>
+                        <br />
+                        <h3>
+                          4. Turn on your raspberry pi with the flashed SD card.
+                          Configure the Wifi and enter the generated link in the
+                          hardware app URL text field.
+                        </h3>
+                        <v-img
+                          :src="require('./assets/_app/HardwareAppBrowser.png')"
+                          contain
+                          height="300px"
+                        ></v-img>
+                        <h3>
+                          5. Click "Go!". Great!, now your hardware app should
+                          be running. To return click or touch the screen 4
+                          times.
+                        </h3>
+                      </v-container>
                     </v-card>
                   </v-flex>
                   <v-flex xs6>
@@ -462,17 +536,60 @@
                         <v-toolbar-title>DEPLOY APP LOCALLY</v-toolbar-title>
                       </v-toolbar>
                       <br />
-                      <v-card-actions class="justify-center">
-                        <v-btn
-                          class="vbtn info"
-                          flat
-                          @click="BuildScreen_downloadAPP()"
-                          >DOWNLOAD APP</v-btn
-                        >
-                      </v-card-actions>
+                      <v-container>
+                        <h3>
+                          3. Downlaod and unzip the application file.
+                        </h3>
+                        <br />
+                        <div class="text-xs-center">
+                          <v-btn
+                            class="vbtn info"
+                            flat
+                            @click="BuildScreen_downloadAPP()"
+                            >DOWNLOAD APP</v-btn
+                          >
+                        </div>
+                        <br />
+                        <h3>
+                          4. Either remove the Raspberry Pi SD card and copy the
+                          files into <kbd>/home/pi/MyHardwareApp</kbd> or
+                          connect the Raspberry pi to your computer using a USB
+                          to Ethernet cable and copy the files using the scp
+                          command (Image default ip = 10.42.0.100), example:
+                        </h3>
+                        <kbd style="width:100%">
+                          <br />
+                          <span> $ cd MyHardwareApp</span>
+                          <br /> -->
+                <!-- eslint-disable-next-line -->
+                          <!-- <span> $ scp -r ./* pi@10.42.0.100:/home/pi/MyHardwareApp</span>
+                          <br />
+                        </kbd>
+                        <br />
+                        <h3>
+                          4. ssh to your raspberry pi using an USB to Ethernet
+                          and run the application using the following commands:
+                        </h3>
+                        <kbd style="width:100%">
+                          <br />
+                          <span> $ ssh pi@10.42.0.100</span>
+                          <br />
+                          <span> // Password: raspberry</span>
+                          <br />
+                          <span> $ cd MyHardwareApp</span>
+                          <br />
+                          <span> $ npm install</span>
+                          <br />
+                          <span> $ startgui </span>
+                          <br />
+                          <span> $ startapp </span>
+                          <br />
+                        </kbd>
+                      </v-container>
                     </v-card>
-                  </v-flex>
-                </v-layout>
+                  </v-flex> 
+                </v-layout> -->
+                <!-- LOCAL AND ONLINE APP FINISH -->
               </v-container>
             </v-card>
           </v-container>
@@ -1251,9 +1368,6 @@ export default {
       this.snackbarColor = color;
       this.snackbarTimeout = timeout;
       this.snackbar = true;
-    },
-    getImgUrl(imagePath) {
-      return require(imagePath);
     },
     getComponentsImg(item) {
       return require("./assets/" + item);

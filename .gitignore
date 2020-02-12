@@ -2,6 +2,9 @@
 node_modules
 /dist
 
+# Raspberry images 
+/server/files
+
 # local env files
 .env.local
 .env.*.local
