@@ -22,17 +22,31 @@ app.use(bodyParser.json()); // Allows getting req.body.{jsonparam} in POST
 app.use(cors());
 app.use(fileUpload()); // Allows getting req.files with the file data.
 
-const CLIENT_URL = "http://localhost:8080";
+var DOMAIN_URL;
+var DOMAIN_PORT;
+if (process.env.NODE_ENV === "production") {
+  // Set Production variables
+  DOMAIN_URL = "34.94.125.143";
+  DOMAIN_PORT = "80";
+} else {
+  // Set Develpmnet variables
+  DOMAIN_URL = "localhost";
+  DOMAIN_PORT = "8088";
+}
 
 // Run Server
-app.listen(process.env.PORT || 8081);
-console.log("Server Running...");
+const SERVER_PORT = 3000; // Configured to 8080 with ngnix
+app.listen(SERVER_PORT);
+console.log(`Server Running on port ${SERVER_PORT} ...`);
+console.log(
+  `Open http://${DOMAIN_URL}:${SERVER_PORT}/status for a quick check`
+);
 
 // Without sequelize
 // Send JSON
 app.get("/status", (req, res) => {
   res.send({
-    message: "hello world!"
+    message: "Server Running Fine :D"
   });
 });
 
@@ -245,7 +259,15 @@ app.post("/generateWebPage", function(req, res) {
   );
 
   // If success send the user a link back
-  res.send({ link: `${CLIENT_URL}/userapps/${userName}/index.html` });
+  if (process.env.NODE_ENV === "production") {
+    res.send({
+      link: `http://${DOMAIN_URL}/userapps/${userName}/index.html`
+    });
+  } else {
+    res.send({
+      link: `http://${DOMAIN_URL}:${DOMAIN_PORT}/userapps/${userName}/index.html`
+    });
+  }
 });
 
 // Generate PCB

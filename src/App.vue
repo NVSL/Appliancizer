@@ -363,7 +363,10 @@
                   vertical
                 ></v-divider>
                 <v-flex xs6 id="buildScreen_info" class="flexBoxHeight">
-                  <h3>PCB Electrical Components:</h3>
+                  <h3>
+                    1. PCB electrical components list. Buy components using the
+                    "Buy Link" in each component:
+                  </h3>
                   <v-list two-line>
                     <template v-for="(item, index) in FinalComponents">
                       <v-list-tile
@@ -397,7 +400,16 @@
                 <v-toolbar-title>2.- GENERATE PCB</v-toolbar-title>
               </v-toolbar>
               <v-container>
-                <h3>2. Generate PCB Gerber Files for manufacture.</h3>
+                <h3>
+                  2. Generate PCB Gerber Files and send your PCB to manufacture.
+                  We recomedend
+                  <a
+                    href="https://jlcpcb.com/quote#/?orderType=1&stencilLayer=2"
+                    target="_blank"
+                    >JLCPCB</a
+                  >
+                  for manufacturing your PCB.
+                </h3>
                 <v-progress-linear :indeterminate="true"></v-progress-linear>
                 <v-btn
                   class="vbtn info"
@@ -405,6 +417,7 @@
                   @click="BuildScreen_downloadPCBFiles()"
                   >DOWNLOAD PCB FILES</v-btn
                 >
+                <br />
               </v-container>
               <v-layout row wrap class="pt-5">
                 <div id="generatedPcbTop"></div>
@@ -457,9 +470,9 @@
                 <br />
                 <h3>
                   5. Turn on your raspberry pi with the flashed SD card. A
-                  screen like the one shown below shlould show up. Configure the
-                  Wifi and enter the generated link in the hardware app URL text
-                  field.
+                  screen like the one shown below should show up. Configure the
+                  Wifi and enter the generated web link in the hardware app URL
+                  text field.
                 </h3>
                 <v-img
                   :src="require('./assets/_app/HardwareAppBrowser.png')"
@@ -620,9 +633,20 @@ import VideoPlayer from "./demos/VideoPlayer";
 import SimpleButton from "./demos/SimpleButton";
 import SimpleLED from "./demos/SimpleLED";
 
+var SERVER_URL;
+if (process.env.NODE_ENV === "production") {
+  // Set Production variables
+  SERVER_URL = "http://34.94.125.143:8080/";
+} else {
+  // Set Develpmnet variables
+  SERVER_URL = "http://localhost:3000/";
+}
+
+console.log("SERVER_URL:", SERVER_URL);
+
 // Server URL
 const server = axios.create({
-  baseURL: `http://localhost:8081/`
+  baseURL: SERVER_URL
 });
 
 // App
@@ -2325,7 +2349,7 @@ export default {
           hardElement = "";
           subtitleText = `Buy at: <a href="${
             componentSaved.componentBuyLink
-          }" target="_blank">Link</a> | Qty: ${componentQty}`;
+          }" target="_blank">Buy Link</a> | Qty: ${componentQty}`;
         } else {
           // Get all interfaces in a summary
           var interfaces = finalDisplayList[key].component.componentIfaces;
