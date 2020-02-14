@@ -22,25 +22,32 @@ app.use(bodyParser.json()); // Allows getting req.body.{jsonparam} in POST
 app.use(cors());
 app.use(fileUpload()); // Allows getting req.files with the file data.
 
+// Run Server
+const SERVER_PORT = 3000; // Configured to 8080 with ngnix
+app.listen(SERVER_PORT);
+console.log(`Server Running on http://localhost:${SERVER_PORT} ...`);
+
 var DOMAIN_URL;
 var DOMAIN_PORT;
+var PUBLIC_PATH;
 if (process.env.NODE_ENV === "production") {
   // Set Production variables
   DOMAIN_URL = "34.94.125.143";
   DOMAIN_PORT = "80";
+  let SERVER_PROXY_PORT = "8080";
+  console.log(
+    `Open proxy http://${DOMAIN_URL}:${SERVER_PROXY_PORT}/status for a quick check`
+  );
+  PUBLIC_PATH = "dist"; // HTML files
 } else {
   // Set Develpmnet variables
   DOMAIN_URL = "localhost";
   DOMAIN_PORT = "8088";
+  console.log(
+    `Open http://${DOMAIN_URL}:${SERVER_PORT}/status for a quick check`
+  );
+  PUBLIC_PATH = "public"; // HTML files
 }
-
-// Run Server
-const SERVER_PORT = 3000; // Configured to 8080 with ngnix
-app.listen(SERVER_PORT);
-console.log(`Server Running on port ${SERVER_PORT} ...`);
-console.log(
-  `Open http://${DOMAIN_URL}:${SERVER_PORT}/status for a quick check`
-);
 
 // Without sequelize
 // Send JSON
@@ -119,64 +126,67 @@ app.get("/download/:file(*)", (req, res) => {
 app.get("/amalgamFiles", (req, res) => {
   // Read amalgam.html
   var amalgamHTML = fs.readFileSync(
-    "../public/amalgamNative/amalgam.html",
+    `../${PUBLIC_PATH}/amalgamNative/amalgam.html`,
     "utf8"
   );
 
   // Read amalgam.js
-  var amalgamJS = fs.readFileSync("../public/amalgamNative/amalgam.js", "utf8");
+  var amalgamJS = fs.readFileSync(
+    `../${PUBLIC_PATH}/amalgamNative/amalgam.js`,
+    "utf8"
+  );
 
   // Read physical-button.js
   var physicalButtonJS = fs.readFileSync(
-    "../public/amalgamNative/physical-button.js",
+    `../${PUBLIC_PATH}/amalgamNative/physical-button.js`,
     "utf8"
   );
 
   // Read physical-motorized-pot.js
   var physicalMotorizedPotJS = fs.readFileSync(
-    "../public/amalgamNative/physical-motorized-pot.js",
+    `../${PUBLIC_PATH}/amalgamNative/physical-motorized-pot.js`,
     "utf8"
   );
 
   // Read physical-pot.js
   var physicalPotJS = fs.readFileSync(
-    "../public/amalgamNative/physical-pot.js",
+    `../${PUBLIC_PATH}/amalgamNative/physical-pot.js`,
     "utf8"
   );
 
   // Read physical-rgb-led.js
   var physicalRgbLedJS = fs.readFileSync(
-    "../public/amalgamNative/physical-rgb-led.js",
+    `../${PUBLIC_PATH}/amalgamNative/physical-rgb-led.js`,
     "utf8"
   );
 
   // Read physical-servo-motor.js
   var physicalServoMotorJS = fs.readFileSync(
-    "../public/amalgamNative/physical-servo-motor.js",
+    `../${PUBLIC_PATH}/amalgamNative/physical-servo-motor.js`,
     "utf8"
   );
 
   // Read physical-output.js
   var physicalOutputJS = fs.readFileSync(
-    "../public/amalgamNative/physical-output.js",
+    `../${PUBLIC_PATH}/amalgamNative/physical-output.js`,
     "utf8"
   );
 
   // Read test-physical-button.js
   var testPhysicalButtonJS = fs.readFileSync(
-    "../public/amalgamNative/test-physical-button.js",
+    `../${PUBLIC_PATH}/amalgamNative/test-physical-button.js`,
     "utf8"
   );
 
   // Read test-physical-submit.js
   var testPhysicalSubmitJS = fs.readFileSync(
-    "../public/amalgamNative/test-physical-submit.js",
+    `../${PUBLIC_PATH}/amalgamNative/test-physical-submit.js`,
     "utf8"
   );
 
   // Read board pinouts / raspberrypi_pinout.css
   var raspberryPinoutCSS = fs.readFileSync(
-    "../public/amalgamNative/boards_pinout/raspberrypi_pinout.css",
+    `../${PUBLIC_PATH}/amalgamNative/boards_pinout/raspberrypi_pinout.css`,
     "utf8"
   );
 
@@ -226,7 +236,7 @@ app.post("/generateWebPage", function(req, res) {
   const userName = req.body.userName;
   // Create index.html file
   fs.writeFile(
-    `../public/userapps/${userName}/index.html`,
+    `../${PUBLIC_PATH}/userapps/${userName}/index.html`,
     req.body.htmlDoc,
     function(err) {
       if (err) {
@@ -240,7 +250,7 @@ app.post("/generateWebPage", function(req, res) {
 
   // Create hardware.css file
   fs.writeFile(
-    `../public/userapps/${userName}/hardware.css`,
+    `../${PUBLIC_PATH}/userapps/${userName}/hardware.css`,
     req.body.cssDoc,
     function(err) {
       if (err) {
@@ -254,18 +264,18 @@ app.post("/generateWebPage", function(req, res) {
 
   // Copy amalgamNative folder to the user folder
   fs.copySync(
-    `../public/amalgamNative`,
-    `../public/userapps/${userName}/amalgam`
+    `../${PUBLIC_PATH}/amalgamNative`,
+    `../${PUBLIC_PATH}/userapps/${userName}/amalgam`
   );
 
   // If success send the user a link back
   if (process.env.NODE_ENV === "production") {
     res.send({
-      link: `http://${DOMAIN_URL}/userapps/${userName}/index.html`
+      link: `http://${DOMAIN_URL}/userapps/${userName}`
     });
   } else {
     res.send({
-      link: `http://${DOMAIN_URL}:${DOMAIN_PORT}/userapps/${userName}/index.html`
+      link: `http://${DOMAIN_URL}:${DOMAIN_PORT}/userapps/${userName}`
     });
   }
 });
