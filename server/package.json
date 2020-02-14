@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "prod": "NODE_ENV='production' pm2 start src/app.js",
+    "prod": "pm2 flush; pm2 delete app; NODE_ENV='production' pm2 start src/app.js",
     "serve": "./node_modules/.bin/nodemon src/app.js 'npm run lint && node'",
     "lint": "./node_modules/.bin/esling **/*.js"
   },
