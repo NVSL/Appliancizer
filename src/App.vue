@@ -796,8 +796,6 @@ export default {
         0: {
           device: "/dev/i2c-1",
           type: "i2c",
-          sdaNet: "SDA",
-          sclNet: "SCL",
           SDA: "2",
           SCL: "3"
         }
@@ -806,10 +804,6 @@ export default {
         0: {
           device: "/dev/spidev0.0",
           type: "spi",
-          mosiNet: "MOSI",
-          misoNet: "MISO",
-          sclkNet: "SCLK",
-          ce0Net: "CE0",
           MOSI: "10",
           MISO: "9",
           SCLK: "11",
@@ -820,8 +814,6 @@ export default {
         0: {
           device: "/dev/ttyUSB0",
           type: "serial",
-          txdNet: "TXD",
-          rxdNet: "RXD",
           TXD: "14",
           RXD: "15"
         }
@@ -842,7 +834,7 @@ export default {
           partImage: "buttons/smd-button.png",
           image: "buttons/smd-button.svg",
           height: "6mm",
-          width: "6mm",
+          width: "9.5mm",
           requires: ["resistor_1206_10k"]
         },
         1: {
@@ -2140,8 +2132,6 @@ export default {
     //##########
     mapComponentsPins(hardVars, key) {
       // Translate Pins (e.g. (gpio:$gpio) to (gpio:4) )
-
-      console.log(this.eComponentSaved[key].componentIfaces);
       var hardVarsDic = [];
       var interfaceCounter = 0;
       var allTags = hardVars
@@ -2149,7 +2139,6 @@ export default {
         .slice(1, -1)
         .split(",");
       for (var i in allTags) {
-        console.log(allTags[i]);
         var hardTag = allTags[i].split(":");
         var net = hardTag[0];
         var variable = hardTag[1];
@@ -2198,10 +2187,7 @@ export default {
             this.eComponentSaved[key]["componentIfaces"][ifaceName]["type"] =
               "gpio";
             this.eComponentSaved[key]["componentIfaces"][ifaceName][
-              "gpioNet"
-            ] = net.toUpperCase();
-            this.eComponentSaved[key]["componentIfaces"][ifaceName][
-              "GPIO"
+              net.toUpperCase()
             ] = pinName;
           }
 
@@ -2347,7 +2333,7 @@ export default {
         if (hardElement == undefined) {
           // Generate subititle elemetn for a non Hard element
           hardElement = "";
-          subtitleText = `Buy at: <a href="${
+          subtitleText = `<a href="${
             componentSaved.componentBuyLink
           }" target="_blank">Buy Link</a> | Qty: ${componentQty}`;
         } else {
@@ -2357,7 +2343,14 @@ export default {
           for (var ifacekey in interfaces) {
             var type = interfaces[ifacekey].type;
             if (type == "gpio") {
-              var gpioNum = interfaces[ifacekey].GPIO;
+              // Get gpio number from an unknown gpio net
+              let gpioNum = null;
+              for (let key in interfaces[ifacekey]) {
+                if (key != "type") {
+                  // If is not type then is the gpio net containing gpio num
+                  gpioNum = interfaces[ifacekey][key];
+                }
+              }
               ifacesSummary =
                 ifacesSummary + type.toUpperCase() + ":" + gpioNum + ", ";
             } else {
@@ -2369,9 +2362,9 @@ export default {
 
           // Generate subtitle Text for Hard element
           hardElement = " &lt" + hardElement + "&gt";
-          subtitleText = `Buy at: <a href="${
+          subtitleText = `<a href="${
             componentSaved.componentBuyLink
-          }?quantity=${componentQty}" target="_blank">Link</a> 
+          }?quantity=${componentQty}" target="_blank">Buy Link</a> 
           | Qty: ${componentQty} | Hard HTML Tag: ${hardElement} (${ifacesSummary})`;
         }
 
@@ -2461,29 +2454,12 @@ export default {
     BuildScreen_downloadPCBFiles() {
       console.log("Sending PCB parts to server");
 
-      // Send html and css generated files
-      // server
-      //   .post("generatePCB", {
-      //     pcbHeight: this.FinalPCB.height,
-      //     pcbWidth: this.FinalPCB.width,
-      //     pinMap: this.raspberryNetMap,
-      //     parts: this.eComponentSaved
-      //   })
-      //   .then(response => {
-      //     // Should return a link
-      //     if (response.status != 200) {
-      //       alert(response.data.error);
-      //       console.error("Server error when trying to generate PCB");
-      //     } else {
-      //       console.log(response.data.msg);
-      //     }
-      //   })
-      //   .catch(error => alert(error.message)); // if network error
-
       var pcbInput = {}; // Empty object
+
       // Add pcb Width and Height
       pcbInput["pcbHeight"] = this.FinalPCB.height;
       pcbInput["pcbWidth"] = this.FinalPCB.width;
+
       // Add connector
       if (this.eComponentSaved["connector"] == undefined) {
         console.error("You are trying to build a PCB without connector");
@@ -2493,9 +2469,11 @@ export default {
           netsAvailabe: this.eComponentSaved["connector"]
             .componentConnectorNetMap["allNets"],
           partsPosition: {
-            componentName: this.eComponentSaved["connector"].componentName,
-            componentX: this.eComponentSaved["connector"].componentCenterLeft,
-            componentY: this.eComponentSaved["connector"].componentCenterTop
+            part_0: {
+              componentName: this.eComponentSaved["connector"].componentName,
+              componentX: this.eComponentSaved["connector"].componentCenterLeft,
+              componentY: this.eComponentSaved["connector"].componentCenterTop
+            }
           }
         };
       }
@@ -2544,18 +2522,26 @@ export default {
           }
           moduleNum++;
         }
-
-        // componentWidth: this.eComponentSaved[key].componentWidth,
-        // componentHeight: this.eComponentSaved[key].componentHeight,
-        // componentX: this.eComponentSaved[key].componentCenterLeft,
-        // componentY: this.eComponentSaved[key].componentCenterTop,
-        // gpio: this.eComponentSaved[key].gpio,
-        // i2c: this.eComponentSaved[key].i2c,
-        // spi: this.eComponentSaved[key].spi,
-        // serial: this.eComponentSaved[key].spi
       }
       console.log("\n######\n###### Final PCB data\n######");
       console.log(JSON.stringify(pcbInput, null, 2));
+
+      // Send pcbInput to server
+      console.log("\n######\n###### Generating PCB\n######");
+      server
+        .post("generatePCB", {
+          pcbInput
+        })
+        .then(response => {
+          // Should return a link
+          if (response.status != 200) {
+            alert(response.data.error);
+            console.error("Server error when trying to generate PCB");
+          } else {
+            console.log(response.data.msg);
+          }
+        })
+        .catch(error => alert(error.message)); // if network error
 
       // this.GeneratedPCBimageTop;
       // // Empty images
@@ -3032,7 +3018,9 @@ Component Styles
 .submit-physical-button {
   display: block;
   background-color: transparent;
-  background-size: contain;
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
   border-style: none;
   width: 10mm;
   height: 10mm;
@@ -3043,7 +3031,9 @@ Component Styles
 .span-physical-output {
   display: block;
   background-color: transparent;
-  background-size: contain;
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
   border-style: none;
   width: 10mm;
   height: 10mm;
@@ -3092,7 +3082,9 @@ Component Styles
 .misc {
   display: block;
   background-color: transparent;
-  background-size: contain;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
   border-style: none;
   width: 5mm;
   height: 5mm;
