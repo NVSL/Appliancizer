@@ -636,10 +636,10 @@ import SimpleLED from "./demos/SimpleLED";
 var SERVER_URL;
 if (process.env.NODE_ENV === "production") {
   // Set Production variables
-  SERVER_URL = "https://appliancizer.com/";
+  SERVER_URL = "https://appliancizer.com/api/";
 } else {
   // Set Develpmnet variables
-  SERVER_URL = "http://localhost:3000/";
+  SERVER_URL = "http://localhost:3000/api/";
 }
 
 // Server URL

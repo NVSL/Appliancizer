@@ -33,30 +33,30 @@ var WEB_URL;
 if (process.env.NODE_ENV === "production") {
   // Set Production variables
   WEB_URL = "https://appliancizer.com";
-  console.log(`Open proxy ${WEB_URL}/status for a quick check`);
+  console.log(`Open proxy ${WEB_URL}/api/status for a quick check`);
   PUBLIC_PATH = "dist"; // HTML files
 } else {
   // Set Develpmnet variables
   WEB_URL = "http://localhost";
-  console.log(`Open ${WEB_URL}:${SERVER_PORT}/status for a quick check`);
+  console.log(`Open ${WEB_URL}:${SERVER_PORT}/api/status for a quick check`);
   PUBLIC_PATH = "public"; // HTML files
 }
 
 // Without sequelize
 // Send JSON
-app.get("/status", (req, res) => {
+app.get("/api/status", (req, res) => {
   res.send({
     message: "Server Running Fine :D"
   });
 });
 
 // Get FILE (will download as (file.zip))
-app.get("/file", (req, res) => {
+app.get("/api/file", (req, res) => {
   res.sendFile(__dirname + "/lol.zip");
 });
 
 // Get FILE (will download as (:name.zip))
-app.get("/file/:name", (req, res, next) => {
+app.get("/api/file/:name", (req, res, next) => {
   var fileName = req.params.name;
   res.sendFile(__dirname + "/" + fileName, function(err) {
     if (err) {
@@ -68,7 +68,7 @@ app.get("/file/:name", (req, res, next) => {
 });
 
 // Upload Files
-app.post("/upload", function(req, res) {
+app.post("/api/upload", function(req, res) {
   if (Object.keys(req.files).length == 0) {
     return res.status(400).send("No files were uploaded.");
   }
@@ -98,7 +98,7 @@ app.post("/upload", function(req, res) {
 */
 
 // Authenticate user
-app.post("/register", function(req, res) {
+app.post("/api/register", function(req, res) {
   res.send({
     message: `Hello ${req.body.email}! your user was registered!`
   });
@@ -109,14 +109,14 @@ app.post("/register", function(req, res) {
 // ####
 
 // Download files (GET, /download/{filename})
-app.get("/download/:file(*)", (req, res) => {
+app.get("/api/download/:file(*)", (req, res) => {
   var file = req.params.file;
   var fileLocation = path.join("./files", file);
   console.log(fileLocation);
   res.download(fileLocation, file);
 });
 
-app.get("/amalgamFiles", (req, res) => {
+app.get("/api/amalgamFiles", (req, res) => {
   // Read amalgam.html
   var amalgamHTML = fs.readFileSync(
     `../${PUBLIC_PATH}/amalgamNative/amalgam.html`,
@@ -221,7 +221,7 @@ app.get("/amalgamFiles", (req, res) => {
 });
 
 // Generate web page
-app.post("/generateWebPage", function(req, res) {
+app.post("/api/generateWebPage", function(req, res) {
   console.log("\n USER NAME: ", req.body.userName);
   console.log("\n USER HTML: ", req.body.htmlDoc);
   console.log("\n USER CSS: ", req.body.cssDoc);
@@ -274,7 +274,7 @@ app.post("/generateWebPage", function(req, res) {
 });
 
 // Generate PCB
-app.post("/generatePCB", function(req, res) {
+app.post("/api/generatePCB", function(req, res) {
   console.log("\n######\n###### Generating PCB\n######");
   console.log("PCB INPUT:\n", JSON.stringify(req.body.pcbInput, null, 2));
 
