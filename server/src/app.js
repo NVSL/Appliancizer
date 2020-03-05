@@ -32,20 +32,18 @@ var DOMAIN_PORT;
 var PUBLIC_PATH;
 if (process.env.NODE_ENV === "production") {
   // Set Production variables
-  DOMAIN_URL = "appliancizer";
+  DOMAIN_URL = "https://appliancizer.com";
   DOMAIN_PORT = "80";
   let SERVER_PROXY_PORT = "8080";
   console.log(
-    `Open proxy https://${DOMAIN_URL}:${SERVER_PROXY_PORT}/status for a quick check`
+    `Open proxy ${DOMAIN_URL}:${SERVER_PROXY_PORT}/status for a quick check`
   );
   PUBLIC_PATH = "dist"; // HTML files
 } else {
   // Set Develpmnet variables
-  DOMAIN_URL = "localhost";
+  DOMAIN_URL = "http://localhost";
   DOMAIN_PORT = "8088";
-  console.log(
-    `Open http://${DOMAIN_URL}:${SERVER_PORT}/status for a quick check`
-  );
+  console.log(`Open ${DOMAIN_URL}:${SERVER_PORT}/status for a quick check`);
   PUBLIC_PATH = "public"; // HTML files
 }
 
@@ -271,11 +269,11 @@ app.post("/generateWebPage", function(req, res) {
   // If success send the user a link back
   if (process.env.NODE_ENV === "production") {
     res.send({
-      link: `http://${DOMAIN_URL}/userapps/${userName}`
+      link: `${DOMAIN_URL}/userapps/${userName}`
     });
   } else {
     res.send({
-      link: `http://${DOMAIN_URL}:${DOMAIN_PORT}/userapps/${userName}`
+      link: `${DOMAIN_URL}:${DOMAIN_PORT}/userapps/${userName}`
     });
   }
 });

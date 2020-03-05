@@ -636,7 +636,7 @@ import SimpleLED from "./demos/SimpleLED";
 var SERVER_URL;
 if (process.env.NODE_ENV === "production") {
   // Set Production variables
-  SERVER_URL = "https://appliancizer:8080/";
+  SERVER_URL = "https://appliancizer.com:8080/";
 } else {
   // Set Develpmnet variables
   SERVER_URL = "http://localhost:3000/";
