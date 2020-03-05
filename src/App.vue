@@ -438,7 +438,7 @@
                 <v-btn
                   class="vbtn info"
                   flat
-                  href="http://localhost:8081/download/Appliancizer-rpi-image.zip"
+                  :href="`${serverURL}download/Appliancizer-rpi-image.zip`"
                   >DOWNLOAD OS IMAGE</v-btn
                 >
                 <br />
@@ -636,7 +636,7 @@ import SimpleLED from "./demos/SimpleLED";
 var SERVER_URL;
 if (process.env.NODE_ENV === "production") {
   // Set Production variables
-  SERVER_URL = "http://34.94.125.143:8080/";
+  SERVER_URL = "https://appliancizer:8080/";
 } else {
   // Set Develpmnet variables
   SERVER_URL = "http://localhost:3000/";
@@ -739,7 +739,8 @@ export default {
     GeneratedPCBimageTop: "",
     GeneratedPCBimageBottom: "",
     GeneratedLink: "",
-    disableButtons: false
+    disableButtons: false,
+    serverURL: SERVER_URL
   }),
   mounted: function() {
     // TODO add this inside component list

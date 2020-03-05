@@ -32,11 +32,11 @@ var DOMAIN_PORT;
 var PUBLIC_PATH;
 if (process.env.NODE_ENV === "production") {
   // Set Production variables
-  DOMAIN_URL = "34.94.125.143";
+  DOMAIN_URL = "appliancizer";
   DOMAIN_PORT = "80";
   let SERVER_PROXY_PORT = "8080";
   console.log(
-    `Open proxy http://${DOMAIN_URL}:${SERVER_PROXY_PORT}/status for a quick check`
+    `Open proxy https://${DOMAIN_URL}:${SERVER_PROXY_PORT}/status for a quick check`
   );
   PUBLIC_PATH = "dist"; // HTML files
 } else {
