@@ -636,13 +636,11 @@ import SimpleLED from "./demos/SimpleLED";
 var SERVER_URL;
 if (process.env.NODE_ENV === "production") {
   // Set Production variables
-  SERVER_URL = "https://appliancizer.com:8080/";
+  SERVER_URL = "https://appliancizer.com/";
 } else {
   // Set Develpmnet variables
   SERVER_URL = "http://localhost:3000/";
 }
-
-console.log("SERVER_URL:", SERVER_URL);
 
 // Server URL
 const server = axios.create({

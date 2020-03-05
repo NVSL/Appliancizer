@@ -23,27 +23,22 @@ app.use(cors());
 app.use(fileUpload()); // Allows getting req.files with the file data.
 
 // Run Server
-const SERVER_PORT = 3000; // Configured to 8080 with ngnix
+const SERVER_PORT = 3000;
 app.listen(SERVER_PORT);
 console.log(`Server Running on http://localhost:${SERVER_PORT} ...`);
 
-var DOMAIN_URL;
-var DOMAIN_PORT;
+const LOCALHOST_PORT = "8088";
 var PUBLIC_PATH;
+var WEB_URL;
 if (process.env.NODE_ENV === "production") {
   // Set Production variables
-  DOMAIN_URL = "https://appliancizer.com";
-  DOMAIN_PORT = "80";
-  let SERVER_PROXY_PORT = "8080";
-  console.log(
-    `Open proxy ${DOMAIN_URL}:${SERVER_PROXY_PORT}/status for a quick check`
-  );
+  WEB_URL = "https://appliancizer.com";
+  console.log(`Open proxy ${WEB_URL}/status for a quick check`);
   PUBLIC_PATH = "dist"; // HTML files
 } else {
   // Set Develpmnet variables
-  DOMAIN_URL = "http://localhost";
-  DOMAIN_PORT = "8088";
-  console.log(`Open ${DOMAIN_URL}:${SERVER_PORT}/status for a quick check`);
+  WEB_URL = "http://localhost";
+  console.log(`Open ${WEB_URL}:${SERVER_PORT}/status for a quick check`);
   PUBLIC_PATH = "public"; // HTML files
 }
 
@@ -269,11 +264,11 @@ app.post("/generateWebPage", function(req, res) {
   // If success send the user a link back
   if (process.env.NODE_ENV === "production") {
     res.send({
-      link: `${DOMAIN_URL}/userapps/${userName}`
+      link: `${WEB_URL}/userapps/${userName}`
     });
   } else {
     res.send({
-      link: `${DOMAIN_URL}:${DOMAIN_PORT}/userapps/${userName}`
+      link: `${WEB_URL}:${LOCALHOST_PORT}/userapps/${userName}`
     });
   }
 });
