@@ -410,10 +410,12 @@
                   >
                   for manufacturing your PCB.
                 </h3>
-                <v-progress-linear :indeterminate="true"></v-progress-linear>
+                <!-- <v-progress-linear :indeterminate="true"></v-progress-linear> -->
                 <v-btn
                   class="vbtn info"
-                  flat
+                  :loading="pcbLoading"
+                  :disabled="pcbLoading"
+                  light
                   @click="BuildScreen_downloadPCBFiles()"
                   >DOWNLOAD PCB FILES</v-btn
                 >
@@ -437,7 +439,6 @@
                 </h3>
                 <v-btn
                   class="vbtn info"
-                  flat
                   :href="`${serverURL}download/Appliancizer-rpi-image.zip`"
                   >DOWNLOAD OS IMAGE</v-btn
                 >
@@ -448,10 +449,7 @@
                   your hardware app.
                 </h3>
                 <div class="text-xs-center">
-                  <v-btn
-                    class="vbtn info"
-                    flat
-                    @click="BuildScreen_deployOnline()"
+                  <v-btn class="vbtn info" @click="BuildScreen_deployOnline()"
                     >DEPLOY APP ONLINE</v-btn
                   >
                   <br />
@@ -507,7 +505,6 @@
                         <div class="text-xs-center">
                           <v-btn
                             class="vbtn info"
-                            flat
                             @click="BuildScreen_deployOnline()"
                             >DEPLOY APP ONLINE</v-btn
                           >
@@ -557,7 +554,6 @@
                         <div class="text-xs-center">
                           <v-btn
                             class="vbtn info"
-                            flat
                             @click="BuildScreen_downloadAPP()"
                             >DOWNLOAD APP</v-btn
                           >
@@ -738,6 +734,7 @@ export default {
     GeneratedPCBimageBottom: "",
     GeneratedLink: "",
     disableButtons: false,
+    pcbLoading: false,
     serverURL: SERVER_URL
   }),
   mounted: function() {
@@ -2204,6 +2201,14 @@ export default {
     openBuildScreen() {
       // Just to test Build screen
       this.BuildScreen = true;
+
+      // Generate PCB Final Comopnents Review
+      this.BuildScreen_generatePCBReview();
+
+      // Generate Hadware APP link
+      this.BuildScreen_deployOnline();
+    },
+    BuildScreen_generatePCBReview() {
       // Reset Final Components
       this.FinalComponents = [];
 
@@ -2526,7 +2531,8 @@ export default {
       console.log(JSON.stringify(pcbInput, null, 2));
 
       // Send pcbInput to server
-      console.log("\n######\n###### Generating PCB\n######");
+      console.log("\n######\n###### Generating PCB (Server Side...) \n######");
+      this.pcbLoading = true;
       server
         .post("generatePCB", {
           pcbInput
@@ -2536,11 +2542,37 @@ export default {
           if (response.status != 200) {
             alert(response.data.error);
             console.error("Server error when trying to generate PCB");
+            this.pcbLoading = false;
           } else {
-            console.log(response.data.msg);
+            // Test with res.downlaod()
+            // const blob = new Blob([response.data], {type : 'text/plain'});
+            // FileSaver.saveAs(blob, "MySchematic.brd");
+
+            // Generate App zip file
+            let zip = new JSZip();
+            let gerberFiles = response.data.message;
+            for (let key in gerberFiles) {
+              if (gerberFiles[key].folder != "") {
+                // Add file into folder
+                zip
+                  .folder(gerberFiles[key].folder)
+                  .file(gerberFiles[key].filename, gerberFiles[key].data);
+              } else {
+                // Add file in root of folder
+                zip.file(gerberFiles[key].filename, gerberFiles[key].data);
+              }
+            }
+            zip.generateAsync({ type: "blob" }).then(function(content) {
+              // see FileSaver.js
+              FileSaver.saveAs(content, "GerberFiles.zip");
+            });
+            this.pcbLoading = false;
           }
         })
-        .catch(error => alert(error.message)); // if network error
+        .catch(error => {
+          alert(error.message);
+          this.pcbLoading = false;
+        }); // if network error
 
       // this.GeneratedPCBimageTop;
       // // Empty images
@@ -2582,9 +2614,6 @@ export default {
       //   $('#generatedPcbTop').append(stackup.top.svg);
       //   $('#generatedPcbBottom').append(stackup.bottom.svg);
       // })
-    },
-    BuildScreen_downloadOSImage() {
-      console.log("Download OS image");
     },
     generateHTMLDoc() {
       // index.html is generated here
@@ -2636,7 +2665,7 @@ export default {
 \n'
       }
       console.log("FINAL CSS:\n", cssDoc);
-      console.log("### GENERATE END");
+      console.log("### GENERATE CSS END");
       return cssDoc;
     },
     BuildScreen_downloadAPP() {
@@ -2722,7 +2751,9 @@ app.on('ready', createWindow)`;
         .catch(error => alert(error.message)); // if network error
     },
     BuildScreen_deployOnline() {
-      console.log("Deploy online");
+      console.log(
+        "\n######\n###### Deploying App Online (Server Side...)\n######"
+      );
 
       // Send html and css generated files
       server
@@ -2737,7 +2768,7 @@ app.on('ready', createWindow)`;
             alert(response.data.error);
             console.error("Server error when trying to generate web page");
           } else {
-            console.log(response.data.link);
+            console.log("GENERATED WEB LINK:", response.data.link);
             this.GeneratedLink = response.data.link;
           }
         })

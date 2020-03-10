@@ -275,46 +275,57 @@ app.post("/api/generateWebPage", function(req, res) {
 
 // Generate PCB
 app.post("/api/generatePCB", function(req, res) {
-  console.log("\n######\n###### Generating PCB\n######");
+  console.log("\n######\n###### Generating PCB \n######");
   console.log("PCB INPUT:\n", JSON.stringify(req.body.pcbInput, null, 2));
-
-  // Create pcbInput.json file
-  // fs.writeFile(
-  //   "./gadgetron/pcbInput.json",
-  //   JSON.stringify(pcbInput, null, 2),
-  //   "utf8",
-  //   function(err) {
-  //     if (err) {
-  //       res.status(500).send({
-  //         error: "Server error when creating psbInput.json File"
-  //       });
-  //       throw err;
-  //     }
-  //   }
-  // );
 
   // #####
   // DO SOMETHING WITH GADGETRON HERE!!!
   // #####
-  var spawn = require("child_process").spawn;
-  var pyprog = spawn("python3", [
+  let spawn = require("child_process").spawn;
+  let stderrString = "";
+  let pyprog = spawn("python3", [
     "../../json_to_eagle_brd/builder.py",
     "-i",
     JSON.stringify(req.body.pcbInput)
   ]);
 
-  pyprog.stdout.on("data", function(data) {
-    console.log("Data good", data.toString("utf8"));
-  });
-
   pyprog.stderr.on("data", data => {
-    console.log("Data error", data.toString("utf8"));
+    // Data error
+    console.log("\nDATA ERROR:\n", data.toString("utf8"));
+    stderrString = data.toString("utf8");
   });
 
-  console.log("\n PROCES OUTPUT:\n", process);
+  pyprog.stdout.on("data", function(data) {
+    console.log("\nDATA GOOD:\n", data.toString("utf8"));
+  });
 
-  // Return OK
-  res.status(200).send({
-    msg: "OK"
+  pyprog.on("exit", function(code) {
+    if (code == "0") {
+      // Process finish correctly
+      // Get combined schematic
+      var schematic = fs.readFileSync(
+        "../../json_to_eagle_brd/combined.sch",
+        "utf8"
+      );
+      // Get board
+      var board = fs.readFileSync(
+        "../../json_to_eagle_brd/combined.brd",
+        "utf8"
+      );
+      console.log("\nSENDING GERBER FILES\n");
+      res.send({
+        message: [
+          { filename: "appliancizer.sch", data: schematic, folder: "" },
+          { filename: "appliancizer.brd", data: board, folder: "" }
+        ]
+      });
+      console.log("\n######\n###### END Generating PCB \n######");
+    } else {
+      // Process error
+      res.status(500).send({
+        error: stderrString
+      });
+      console.log("\n######\n###### END Generating PCB \n######");
+    }
   });
 });
