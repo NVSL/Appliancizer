@@ -444,44 +444,37 @@
                 >
                 <br />
                 <h3>
-                  4. Click "Deploy app online" to host your hardware app on the
-                  on the web. A web link will be generated with the address to
-                  your hardware app.
+                  4. Turn on your raspberry pi with the flashed SD card. A
+                  screen like the one shown below should show up.
                 </h3>
+                <br />
+                <v-img
+                  :src="require('./assets/_app/HardwareAppBrowser.png')"
+                  contain
+                  height="250px"
+                ></v-img>
+                <br />
+                <h3>
+                  5. Configure the Wifi and enter the generated web link in the
+                  hardware app URL text field. Click "Go!" and now your hardware
+                  app should be running. To return click or touch the screen 4
+                  times.
+                </h3>
+                <br />
                 <div class="text-xs-center">
-                  <v-btn class="vbtn info" @click="BuildScreen_deployOnline()"
-                    >DEPLOY APP ONLINE</v-btn
-                  >
-                  <br />
-                  <v-chip
-                    class="ma-2"
-                    color="rgb(174, 213, 129)"
-                    label
-                    text-color="white"
-                  >
-                    <pre>Link:  </pre>
-                    <a :href="GeneratedLink" target="_blank">
+                  <v-chip color="info" label outline large text-color="black">
+                    <pre style="font-size: large;">Generated Web Link:  </pre>
+                    <a
+                      style="font-size: large;"
+                      :href="GeneratedLink"
+                      target="_blank"
+                    >
                       {{ GeneratedLink }}
                     </a>
                   </v-chip>
                 </div>
                 <br />
-                <h3>
-                  5. Turn on your raspberry pi with the flashed SD card. A
-                  screen like the one shown below should show up. Configure the
-                  Wifi and enter the generated web link in the hardware app URL
-                  text field.
-                </h3>
-                <v-img
-                  :src="require('./assets/_app/HardwareAppBrowser.png')"
-                  contain
-                  height="300px"
-                ></v-img>
-                <h3>
-                  6. Click "Go!". Great!, now your hardware app should be
-                  running. To return click or touch the screen 4 times.
-                </h3>
-
+                <br />
                 <!-- UNCOMENT THIS IF IMPLEMENTING LOCAL APP -->
                 <!-- 
                 <h3>
@@ -982,18 +975,10 @@ export default {
       },
       screens: {
         0: {
-          component: "utronics3-5inch",
-          description: "5-inch touch screen",
-          buyLink: "",
-          partImage: "screens/utronics_3.5inch.png",
-          image: "",
-          height: "80mm",
-          width: "100mm"
-        },
-        1: {
           component: "geeekpi5inch",
           description: "5-inch touch screen",
-          buyLink: "",
+          buyLink:
+            "https://www.amazon.com/GeeekPi-Capacitive-800x480-Raspberry-BeagleBone/dp/B0749D617J",
           partImage: "screens/geeekpi_5inch.png",
           image: "",
           height: "100mm",
@@ -1019,7 +1004,8 @@ export default {
         resistor_1206_10k: {
           component: "R1",
           description: "10k resistor smd 1206",
-          buyLink: "",
+          buyLink:
+            "https://www.digikey.com/product-detail/en/yageo/RC1206JR-0710KL/311-10KERCT-ND/732156",
           partImage: "misc/0603-RES.jpg",
           image: "misc/0603-RES.svg",
           height: "1.6mm",
@@ -1028,7 +1014,8 @@ export default {
         resistor_1206_330ohm: {
           component: "R1",
           description: "330 Ohm resistor smd 1206",
-          buyLink: "",
+          buyLink:
+            "https://www.digikey.com/product-detail/en/yageo/RC1206JR-07330RL/311-330ERCT-ND/732226",
           partImage: "misc/0603-RES.jpg",
           image: "misc/0603-RES.svg",
           height: "1.6mm",
@@ -2337,9 +2324,18 @@ export default {
         if (hardElement == undefined) {
           // Generate subititle elemetn for a non Hard element
           hardElement = "";
-          subtitleText = `<a href="${
-            componentSaved.componentBuyLink
-          }" target="_blank">Buy Link</a> | Qty: ${componentQty}`;
+          if (componentSaved.componentBuyLink.includes("digikey")) {
+            // Add quantities for digikey
+            console.log("LINK CONTAINS DIGIKEY", componentQty);
+            subtitleText = `<a href="${
+              componentSaved.componentBuyLink
+            }?quantity=${componentQty}" target="_blank">Buy Link</a> | Qty: ${componentQty}`;
+          } else {
+            console.log("LINK DOES NOT CONTAINS DIGIKEY", componentQty);
+            subtitleText = `<a href="${
+              componentSaved.componentBuyLink
+            }" target="_blank">Buy Link</a> | Qty: ${componentQty}`;
+          }
         } else {
           // Get all interfaces in a summary
           var interfaces = finalDisplayList[key].component.componentIfaces;
@@ -2366,10 +2362,18 @@ export default {
 
           // Generate subtitle Text for Hard element
           hardElement = " &lt" + hardElement + "&gt";
-          subtitleText = `<a href="${
-            componentSaved.componentBuyLink
-          }?quantity=${componentQty}" target="_blank">Buy Link</a> 
-          | Qty: ${componentQty} | Hard HTML Tag: ${hardElement} (${ifacesSummary})`;
+          if (componentSaved.componentBuyLink.includes("digikey")) {
+            // Add quantities for digikey
+            subtitleText = `<a href="${
+              componentSaved.componentBuyLink
+            }?quantity=${componentQty}" target="_blank">Buy Link</a> 
+            | Qty: ${componentQty} | Hard HTML Tag: ${hardElement} (${ifacesSummary})`;
+          } else {
+            subtitleText = `<a href="${
+              componentSaved.componentBuyLink
+            }" target="_blank">Buy Link</a> 
+            | Qty: ${componentQty} | Hard HTML Tag: ${hardElement} (${ifacesSummary})`;
+          }
         }
 
         // Push to visual list
