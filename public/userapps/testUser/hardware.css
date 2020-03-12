@@ -1,16 +1,8 @@
-#playPause {
+#turnON {
   hardware: physical-button (gpio:"4");
 }
 
 physical-button {
-  display: none;
-}
-
-#progressBar {
-  hardware: physical-motorized-pot (motora:"17",motorb:"27",touch:"22",i2c-addr:0x48,i2c-port:url("/dev/i2c-1"));
-}
-
-physical-motorized-pot {
   display: none;
 }
 

@@ -48,7 +48,8 @@
         <v-container fluid fill-height>
           <v-layout row wrap>
             <splitpanes class="default-theme" watch-slots>
-              <span :splitpanes-size="webpageContainerPaneSize">
+              <!-- <span :splitpanes-size="webpageContainerPaneSize"> -->
+              <pane>
                 <div id="webpageContainerProgressbar" class="text-xs-center">
                   <v-progress-circular
                     color="rgb(174, 213, 129)"
@@ -56,20 +57,58 @@
                     indeterminate
                   ></v-progress-circular>
                 </div>
-                <v-layout row>
-                  <v-toolbar-title class="pt-2 mx-3">Webpage</v-toolbar-title>
-                  <v-spacer></v-spacer>
-                  <v-btn id="buttonAdd" class="vbtn" @click="openHTMLEditor()">
-                    ADD
-                    <v-icon>add</v-icon>
-                  </v-btn>
+                <v-layout column fill-height>
+                  <v-layout row>
+                    <v-toolbar-title class="pt-2 mx-3"
+                      >Device Screen</v-toolbar-title
+                    >
+                    <v-spacer></v-spacer>
+                    <v-menu offset-y>
+                      <template v-slot:activator="{ on }">
+                        <v-btn class="vbtn" outline v-on="on">
+                          <v-icon>smartphone</v-icon>
+                          HDMI SCREEN ({{ hdmiCurrentScreen }})
+                          <v-icon>arrow_drop_down</v-icon>
+                        </v-btn>
+                      </template>
+                      <v-list>
+                        <v-list-tile
+                          v-for="(screen, index) in hdmiScreens"
+                          :key="screen.title"
+                          avatar
+                          @click="hdmiScreens_newScreenClick(index)"
+                        >
+                          <v-list-tile-content>
+                            <v-list-tile-title>
+                              {{ screen.title }}
+                            </v-list-tile-title>
+                          </v-list-tile-content>
+
+                          <v-list-tile-avatar tile>
+                            <img :src="require('./assets/' + screen.avatar)" />
+                          </v-list-tile-avatar>
+                        </v-list-tile>
+                      </v-list>
+                    </v-menu>
+                    <v-btn
+                      id="buttonAdd"
+                      class="vbtn"
+                      @click="openHTMLEditor()"
+                    >
+                      ADD WEB PAGE
+                      <v-icon>add</v-icon>
+                    </v-btn>
+                  </v-layout>
+
+                  <v-divider class="pb-1"></v-divider>
+                  <v-flex fill-height>
+                    <div id="webpageContainer" style="visibility: visible">
+                      <!-- User Web page will be injected here -->
+                    </div>
+                  </v-flex>
                 </v-layout>
-                <v-divider class="pb-1"></v-divider>
-                <div id="webpageContainer" style="visibility: visible">
-                  <!-- User Web page will be injected here -->
-                </div>
-              </span>
-              <span>
+              </pane>
+              <pane>
                 <div id="PCBPanel" :style="{ height: pcbPanelHeight }">
                   <v-layout row>
                     <v-toolbar-title class="pt-2 mx-3">PCB</v-toolbar-title>
@@ -141,7 +180,7 @@
                     ></v-img>
                   </v-flex>
                 </v-layout>
-              </span>
+              </pane>
             </splitpanes>
           </v-layout>
         </v-container>
@@ -177,7 +216,7 @@
         offset-y
       >
         <v-list>
-          <v-list-tile v-for="(item, index) in menu_items" :key="index">
+          <v-list-tile v-for="(item, index) in menu_items" :key="item.title">
             <v-list-tile-title @click="menuItemClick(index)">
               {{ item.title }}
             </v-list-tile-title>
@@ -241,63 +280,65 @@
               vertical
               :push-other-panes="false"
             >
-              <splitpanes horizontal :push-other-panes="false">
-                <span>
-                  <v-toolbar color="grey darken-4" dark dense>
-                    <v-toolbar-title>
-                      <strong>HTML</strong>
-                    </v-toolbar-title>
-                  </v-toolbar>
-                  <v-divider></v-divider>
-                  <div id="htmlEditor">{{ EditorHTMLText }}</div>
-                </span>
-                <span>
-                  <v-toolbar color="grey darken-4" dark dense>
-                    <v-toolbar-title>
-                      <strong>CSS</strong>
-                    </v-toolbar-title>
-                  </v-toolbar>
-                  <v-divider></v-divider>
-                  <div id="cssEditor">{{ EditorCSSText }}</div>
-                </span>
-                <span>
-                  <v-expansion-panel color="grey darken-4" dark>
-                    <v-expansion-panel-content>
-                      <template v-slot:header>
-                        <v-toolbar-title>
-                          <strong>JS</strong>
-                        </v-toolbar-title>
-                      </template>
-                      <v-card class="white">
-                        <v-container class="pt-4 pb-0 my-0">
-                          <!-- <v-subheader class="py-1 my-1">Example: https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js</v-subheader> -->
-                          <v-text-field
-                            light
-                            class="pa-0 ma-1"
-                            v-model="EditorJS_extSoruceOne"
-                            label="External Source 1"
-                            placeholder="https://..."
-                            type="text"
-                            clearable
-                          ></v-text-field>
-                          <v-text-field
-                            light
-                            class="pa-0 ma-1"
-                            v-model="EditorJS_extSoruceTwo"
-                            label="External Source 2"
-                            placeholder="https://..."
-                            type="text"
-                            clearable
-                          ></v-text-field>
-                        </v-container>
-                      </v-card>
-                    </v-expansion-panel-content>
-                  </v-expansion-panel>
-                  <v-divider></v-divider>
-                  <div id="jsEditor">{{ EditorJSText }}</div>
-                </span>
-              </splitpanes>
-              <span>
+              <pane>
+                <splitpanes horizontal :push-other-panes="false">
+                  <pane>
+                    <v-toolbar color="grey darken-4" dark dense>
+                      <v-toolbar-title>
+                        <strong>HTML</strong>
+                      </v-toolbar-title>
+                    </v-toolbar>
+                    <v-divider></v-divider>
+                    <div id="htmlEditor">{{ EditorHTMLText }}</div>
+                  </pane>
+                  <pane>
+                    <v-toolbar color="grey darken-4" dark dense>
+                      <v-toolbar-title>
+                        <strong>CSS</strong>
+                      </v-toolbar-title>
+                    </v-toolbar>
+                    <v-divider></v-divider>
+                    <div id="cssEditor">{{ EditorCSSText }}</div>
+                  </pane>
+                  <pane>
+                    <v-expansion-panel color="grey darken-4" dark>
+                      <v-expansion-panel-content>
+                        <template v-slot:header>
+                          <v-toolbar-title>
+                            <strong>JS</strong>
+                          </v-toolbar-title>
+                        </template>
+                        <v-card class="white">
+                          <v-container class="pt-4 pb-0 my-0">
+                            <!-- <v-subheader class="py-1 my-1">Example: https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js</v-subheader> -->
+                            <v-text-field
+                              light
+                              class="pa-0 ma-1"
+                              v-model="EditorJS_extSoruceOne"
+                              label="External Source 1"
+                              placeholder="https://..."
+                              type="text"
+                              clearable
+                            ></v-text-field>
+                            <v-text-field
+                              light
+                              class="pa-0 ma-1"
+                              v-model="EditorJS_extSoruceTwo"
+                              label="External Source 2"
+                              placeholder="https://..."
+                              type="text"
+                              clearable
+                            ></v-text-field>
+                          </v-container>
+                        </v-card>
+                      </v-expansion-panel-content>
+                    </v-expansion-panel>
+                    <v-divider></v-divider>
+                    <div id="jsEditor">{{ EditorJSText }}</div>
+                  </pane>
+                </splitpanes>
+              </pane>
+              <pane>
                 <iframe
                   id="HTMLEditor_iframe"
                   @load="HTMLEditor_iframeOnLoad()"
@@ -308,7 +349,7 @@
                   allowpaymentrequest="true"
                   allowfullscreen="true"
                 ></iframe>
-              </span>
+              </pane>
             </splitpanes>
           </v-container>
         </v-card>
@@ -602,7 +643,7 @@
 </template>
 
 <script>
-import Splitpanes from "splitpanes";
+import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import PcbBoard from "./components/PcbBoard.vue";
 import $ from "jquery";
@@ -641,6 +682,7 @@ export default {
   name: "app",
   components: {
     Splitpanes,
+    Pane,
     PcbBoard
   },
   data: () => ({
@@ -728,7 +770,17 @@ export default {
     GeneratedLink: "",
     disableButtons: false,
     pcbLoading: false,
-    serverURL: SERVER_URL
+    serverURL: SERVER_URL,
+
+    hdmiScreens: [
+      // Default
+      {
+        title: "MONITOR",
+        avatar: "screens/monitor.png"
+      }
+      // others populated with hdmiScreens_populate()
+    ],
+    hdmiCurrentScreen: "MONITOR"
   }),
   mounted: function() {
     // TODO add this inside component list
@@ -1172,8 +1224,8 @@ export default {
     // Add global click
     this.$el.addEventListener("click", this.onGlobalClick);
 
-    // Initialize search of soft elements that can be harden.
-    //this.searchSoftElements();
+    // Populate HDMI screens
+    this.hdmiScreens_pupulate();
 
     // #### HTML Editor inits
     // Prepare Main CSS and JS Tags
@@ -1206,6 +1258,20 @@ export default {
     //##########
     //########## MAIN SCREEN
     //##########
+    hdmiScreens_pupulate() {
+      for (let key in this.eComponentList.screens) {
+        this.hdmiScreens.push({
+          tite: this.eComponentList.screens[key].component,
+          avatar: this.eComponentList.screens[key].partImage
+        });
+        console.log(this.hdmiScreens);
+      }
+    },
+    hdmiScreens_newScreenClick(index) {
+      console.log("Click ", index);
+      // Set new screen Name in button
+      this.hdmiCurrentScreen = this.hdmiScreens[index].title;
+    },
     searchSoftElements() {
       // Zero any previeous arrays
       this.eAvailableComponents = [];

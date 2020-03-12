@@ -20,7 +20,7 @@
     "material-design-icons-iconfont": "^5.0.1",
     "pcb-stackup": "^4.2.0",
     "raw-loader": "^3.1.0",
-    "splitpanes": "^1.14.5",
+    "splitpanes": "^2.2.1",
     "stylus": "^0.54.7",
     "stylus-loader": "^3.0.2",
     "vue": "^2.6.10",
