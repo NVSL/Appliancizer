@@ -67,7 +67,7 @@
                       <template v-slot:activator="{ on }">
                         <v-btn class="vbtn" outline v-on="on">
                           <v-icon>smartphone</v-icon>
-                          HDMI SCREEN ({{ hdmiCurrentScreen }})
+                          HDMI SCREEN ({{ hdmiScreens_current }})
                           <v-icon>arrow_drop_down</v-icon>
                         </v-btn>
                       </template>
@@ -101,9 +101,18 @@
                   </v-layout>
 
                   <v-divider class="pb-1"></v-divider>
-                  <v-flex fill-height>
-                    <div id="webpageContainer" style="visibility: visible">
-                      <!-- User Web page will be injected here -->
+                  <v-flex fill-height style="background-color:rgb(35, 35, 35)">
+                    <div
+                      id="hdmiScreenBorder"
+                      v-bind:class="{ phone: hdmiScreens_display }"
+                      v-bind:style="{
+                        height: hdmiScreens_height,
+                        width: hdmiScreens_width
+                      }"
+                    >
+                      <div id="webpageContainer" style="visibility: visible">
+                        <!-- User Web page will be injected here -->
+                      </div>
                     </div>
                   </v-flex>
                 </v-layout>
@@ -776,11 +785,16 @@ export default {
       // Default
       {
         title: "MONITOR",
-        avatar: "screens/monitor.png"
+        avatar: "screens/monitor.png",
+        height: "100%",
+        width: "100%"
       }
       // others populated with hdmiScreens_populate()
     ],
-    hdmiCurrentScreen: "MONITOR"
+    hdmiScreens_current: "MONITOR",
+    hdmiScreens_display: false,
+    hdmiScreens_height: "100%",
+    hdmiScreens_width: "100%"
   }),
   mounted: function() {
     // TODO add this inside component list
@@ -1027,7 +1041,7 @@ export default {
       },
       screens: {
         0: {
-          component: "geeekpi5inch",
+          component: "GeekPi 5-inch",
           description: "5-inch touch screen",
           buyLink:
             "https://www.amazon.com/GeeekPi-Capacitive-800x480-Raspberry-BeagleBone/dp/B0749D617J",
@@ -1261,16 +1275,26 @@ export default {
     hdmiScreens_pupulate() {
       for (let key in this.eComponentList.screens) {
         this.hdmiScreens.push({
-          tite: this.eComponentList.screens[key].component,
-          avatar: this.eComponentList.screens[key].partImage
+          title: this.eComponentList.screens[key].component,
+          avatar: this.eComponentList.screens[key].partImage,
+          height: this.eComponentList.screens[key].height,
+          width: this.eComponentList.screens[key].width
         });
-        console.log(this.hdmiScreens);
       }
     },
     hdmiScreens_newScreenClick(index) {
-      console.log("Click ", index);
       // Set new screen Name in button
-      this.hdmiCurrentScreen = this.hdmiScreens[index].title;
+      this.hdmiScreens_current = this.hdmiScreens[index].title;
+      this.hdmiScreens_height = this.hdmiScreens[index].height;
+      this.hdmiScreens_width = this.hdmiScreens[index].width;
+
+      if (this.hdmiScreens_current == "MONITOR") {
+        // If MONITOR, set screen to max
+        this.hdmiScreens_display = false;
+      } else {
+        // Not MONITOR, resize screen
+        this.hdmiScreens_display = true;
+      }
     },
     searchSoftElements() {
       // Zero any previeous arrays
@@ -2912,6 +2936,7 @@ app.on('ready', createWindow)`;
 }
 
 #webpageContainer {
+  background-color: #f2f2f2;
   visibility: hidden;
   height: 100%;
   overflow: scroll;
@@ -3029,6 +3054,28 @@ Draggable elements css
   right: 0;
   top: 0;
   bottom: 0;
+}
+
+/*
+Hdmi Screen Phone like border 
+*/
+#hdmiScreenBorder {
+  -webkit-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+  -webkit-animation: fadein 2s; /* Safari, Chrome and Opera > 12.1 */
+  -moz-animation: fadein 2s; /* Firefox < 16 */
+  -ms-animation: fadein 2s; /* Internet Explorer */
+  -o-animation: fadein 2s; /* Opera < 12.1 */
+  animation: fadein 2s;
+}
+
+.phone {
+  position: relative;
+  border: 40px solid #121212;
+  border-width: 40px 7px;
+  border-radius: 40px;
+  margin: 20px auto;
+  overflow: hidden;
 }
 
 /*
