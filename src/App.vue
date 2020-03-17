@@ -782,14 +782,14 @@ export default {
     serverURL: SERVER_URL,
 
     hdmiScreens: [
-      // Default
-      {
-        title: "MONITOR",
-        avatar: "screens/monitor.png",
-        height: "100%",
-        width: "100%"
-      }
-      // others populated with hdmiScreens_populate()
+      // {
+      // key,
+      // title,
+      // avatar,
+      // height,
+      // width
+      // }
+      // populated with hdmiScreens_populate()
     ],
     hdmiScreens_current: "MONITOR",
     hdmiScreens_display: false,
@@ -1273,8 +1273,19 @@ export default {
     //########## MAIN SCREEN
     //##########
     hdmiScreens_pupulate() {
+      // Populate default screen (Monitor)
+      this.hdmiScreens.push({
+        key: "monitor",
+        title: "MONITOR",
+        avatar: "screens/monitor.png",
+        height: "100%",
+        width: "100%"
+      });
+
+      // Populate screens in JSON file
       for (let key in this.eComponentList.screens) {
         this.hdmiScreens.push({
+          key: key,
           title: this.eComponentList.screens[key].component,
           avatar: this.eComponentList.screens[key].partImage,
           height: this.eComponentList.screens[key].height,
@@ -1287,14 +1298,54 @@ export default {
       this.hdmiScreens_current = this.hdmiScreens[index].title;
       this.hdmiScreens_height = this.hdmiScreens[index].height;
       this.hdmiScreens_width = this.hdmiScreens[index].width;
+      let hdmiScreenKey = this.hdmiScreens[index].key;
 
       if (this.hdmiScreens_current == "MONITOR") {
         // If MONITOR, set screen to max
         this.hdmiScreens_display = false;
+        // Delete any touch screen from component dictionar
+        delete this.eComponentSaved["TouchScreen"];
       } else {
-        // Not MONITOR, resize screen
+        // Touch screen, resize screen to touch screen size
         this.hdmiScreens_display = true;
+        // Add Touch screen to component dictionary
+        this.hdmiScreens_saveMonitorScreenComponent(
+          "TouchScreen",
+          index,
+          hdmiScreenKey
+        );
       }
+    },
+    hdmiScreens_saveMonitorScreenComponent(monitorScreenId, index, key) {
+      this.eComponentSaved[monitorScreenId] = {
+        elementId: null,
+        type: "screen",
+        // Physical component values
+        componentSelected: index,
+        componentName: this.eComponentList.screens[key].component, // Set in the next function
+        componentDescription: this.eComponentList.screens[key].description, // Set in the next function
+        componentSchematic: null, // Set in the next function
+        componentConnectorNetMap: null, // Set in next function (connector only)
+        componentBuyLink: this.eComponentList.screens[key].buyLink, // Set in the next function
+        componentHardElement: null, // Set in the next function
+        componentHardElementVars: null, // Set in the next function
+        componentPartImage: this.eComponentList.screens[key].partImage, // Set in the next function
+        componentImage: null, // Set in the next function
+        componentWidth: this.eComponentList.screens[key].width, // Set in the next function
+        componentHeight: this.eComponentList.screens[key].height, // Set in the next function
+        componentRequires: null, // Set in the next function
+        componentChildIDs: [], // Set at the end
+        componentIfaces: {},
+        componentLeft: null, // Set in get position
+        componentTop: null, // Set in get position
+        componentCenterLeft: null, // Set in get position
+        componentCenterTop: null, // Set in get position
+        // Original html tag values
+        html: "",
+        width: "",
+        height: "",
+        innerHTML: ""
+      };
     },
     searchSoftElements() {
       // Zero any previeous arrays
@@ -2109,6 +2160,9 @@ export default {
     unselectComponents() {
       // Unselect components
       for (var key in this.eComponentSaved) {
+        // If element not in screen skip
+        if (this.eComponentSaved[key].elementId == null) continue;
+
         // Remove selection border
         $("#" + this.eComponentSaved[key].elementId).css(
           "border",
@@ -2362,7 +2416,7 @@ export default {
       for (var key in this.eComponentSaved) {
         // Get hardware CSS variables
         var hardVars = this.eComponentSaved[key].componentHardElementVars;
-        if (hardVars == undefined) {
+        if (hardVars == undefined || hardVars == null) {
           console.log("SKIPPED:" + key);
           continue;
         }
@@ -2411,7 +2465,7 @@ export default {
         var hardElement = componentSaved.componentHardElement;
         var subtitleText = "";
 
-        if (hardElement == undefined) {
+        if (hardElement == undefined || hardElement == null) {
           // Generate subititle elemetn for a non Hard element
           hardElement = "";
           if (componentSaved.componentBuyLink.includes("digikey")) {
@@ -2580,7 +2634,10 @@ export default {
       pcbInput["modules"] = {};
       for (var key in this.eComponentSaved) {
         // Get I/Os
-        if (this.eComponentSaved[key].componentHardElement != undefined) {
+        if (
+          this.eComponentSaved[key].componentHardElement != undefined ||
+          this.eComponentSaved[key].componentHardElement != null
+        ) {
           // Its a parent comopnent
           var moduleName = "module_" + moduleNum;
           pcbInput["modules"][moduleName] = {
@@ -2738,7 +2795,7 @@ export default {
       for (var key in this.eComponentSaved) {
         var compId = key;
         var compHardElement = this.eComponentSaved[key].componentHardElement;
-        if (compHardElement == undefined) {
+        if (compHardElement == undefined || compHardElement == null) {
           // Skip screen, connector, and misc components
           console.log("SKIPPED:" + key);
           continue;
