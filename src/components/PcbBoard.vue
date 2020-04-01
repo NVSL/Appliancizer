@@ -11,6 +11,7 @@
     @click="resize_show()"
   >
     <div
+      id="pcb-resizable-corners"
       class="vdr-stick vdr-stick-mr"
       @mousedown="resizeVr_init($event)"
       style="width: 8px; height: 8px; margin-top: -4px; right: -4px;"
@@ -60,6 +61,14 @@ export default {
     );
   },
   methods: {
+    setpcbsize(height, width) {
+      // Set PCB Size (using props not rendering correctly)
+      this.pcb.height = height;
+      this.pcb.width = width;
+      let element = this.$refs.PCB;
+      element.style.height = this.pcb.height + "mm";
+      element.style.width = this.pcb.width + "mm";
+    },
     resize_show() {
       //console.log("Show Resize");
       var element = this.$refs.PCB; //document.querySelector("#PCB");
@@ -114,12 +123,12 @@ export default {
     resizeVr_drag(e) {
       if (this.dragEnable == true) {
         console.log("Dragging");
-        var element = this.$refs.PCB;
-        var height = this.startHeight + e.clientY - this.startY;
-        var width = this.startWidth + e.clientX - this.startX;
+        let element = this.$refs.PCB;
+        let height = this.startHeight + e.clientY - this.startY;
+        let width = this.startWidth + e.clientX - this.startX;
         // Get width and height in mm
-        var rulerHeight = $("#mm_rule").height();
-        var rulerWidth = $("#mm_rule").width();
+        let rulerHeight = $("#mm_rule").height();
+        let rulerWidth = $("#mm_rule").width();
         this.pcb.height = Math.floor(height / (rulerHeight / 100));
         this.pcb.width = Math.floor(width / (rulerWidth / 100));
         element.style.height = this.pcb.height + "mm";

@@ -4,14 +4,14 @@
 // - ***Add RPI sound  header (Note that a device that needs one device more for the connectro is needed)
 // - How to add a notification if max number of I/Os for the connector is reached? (hard)
 // - Add rotation (Hard)
-// - Screen rezise should be in the webpage (IMPORTANT) 
-// - 0.- Take amalgam files from server because babel is changing the files :S and thest MyHardwareApp again.
-// - 1.- Add missing buy links and correct compnent dimensions/sizes. ***Get right part sizes (Missing both colored Tactile buttons and motorized pot correct size)
+// - 1.- ***Get right part sizes (Missing both colored Tactile buttons and motorized pot correct size)
 // - 2.- Check all schematc_names..
 // - 3.- Check image and UI for raspberry PI.
 // - 4.- Maybe add users
-// - 5.- Make package file so the user just do npm install
 // - 6.- Try to remove jquery.min from injector (not necessary)
+// Tomorrow 2: 
+// - Add projects dashboard and save/load projects
+// - Integrate users to project (SQL)
 -->
 
 <template>
@@ -40,6 +40,8 @@
           </v-tabs>
 
           <v-btn class="vbtn" flat @click="testClick()">TEST</v-btn>
+          <v-btn class="vbtn" flat @click="project_save()">PR-SAVE</v-btn>
+          <v-btn class="vbtn" flat @click="project_load()">PR-LOAD</v-btn>
         </v-toolbar-items>
       </v-toolbar>
 
@@ -133,6 +135,7 @@
                   </v-layout>
                   <v-divider class="pb-1"></v-divider>
                   <PcbBoard
+                    ref="PcbBoard"
                     id="PCB"
                     :w="pcbWidth"
                     :h="pcbHeight"
@@ -722,7 +725,7 @@ export default {
     uniqueId: 0,
     eComponentList: null,
     eComponentImages: [],
-    eComponentSaved: {},
+    eComponentSaved: {} /* Holds list of hardwarized components */,
     eAvailableComponents: [],
     nonAvailableComponents: [],
     snackbar: false,
@@ -735,6 +738,8 @@ export default {
     iframeOnScreen: false,
     menu_items: [{ title: "Rotate" }],
     HTMLEditor: false,
+    HTMLEditor_clear: false,
+    HTMLEditor_projectLoad: false,
     EditorIFRAME_head: undefined,
     EditorIFRAME_body: undefined,
     EditorMAIN_cssTag: undefined,
@@ -748,6 +753,7 @@ export default {
     EditorJS_Settings: false,
     EditorJS_extSoruceOne: undefined,
     EditorJS_extSoruceTwo: undefined,
+
     Demos: [
       { title: "Simple LED", demo: SimpleLED },
       { title: "Simple Button", demo: SimpleButton },
@@ -794,7 +800,17 @@ export default {
     hdmiScreens_current: "MONITOR",
     hdmiScreens_display: false,
     hdmiScreens_height: "100%",
-    hdmiScreens_width: "100%"
+    hdmiScreens_width: "100%",
+    project_data: {
+      EditorHTMLText: "",
+      EditorCSSText: "",
+      EditorJSText: "",
+      eComponentSaved: {},
+      eAvailableComponents: [],
+      nonAvailableComponents: [],
+      webpageContainer: "",
+      PCB: ""
+    }
   }),
   mounted: function() {
     // TODO add this inside component list
@@ -1270,6 +1286,95 @@ export default {
   },
   methods: {
     //##########
+    //########## PROJECT SAVE/LOAD
+    //##########
+    project_save() {
+      // Clone PCB and remove inner childs that are not elements
+      let pcbClone = document.querySelector("#PCB").cloneNode(true);
+      pcbClone.removeChild(pcbClone.querySelector("#mm_rule"));
+      pcbClone.removeChild(pcbClone.querySelector("#pcb-resizable-corners"));
+
+      // Make a deep copy of object using JSON stringify
+      this.project_data = JSON.stringify(
+        {
+          FinalPCB_height: this.FinalPCB.height,
+          FinalPCB_width: this.FinalPCB.width,
+          EditorHTMLText: this.EditorHTMLText,
+          EditorCSSText: this.EditorCSSText,
+          EditorJSText: this.EditorJSText,
+          eComponentSaved: this.eComponentSaved,
+          eAvailableComponents: this.eAvailableComponents,
+          nonAvailableComponents: this.nonAvailableComponents,
+          webpageContainer: document.querySelector("#webpageContainer")
+            .innerHTML,
+          PCB: pcbClone.innerHTML
+        },
+        null,
+        2
+      );
+      console.log(this.project_data);
+      // console.log(this.EditorHTMLText);
+      // console.log(this.EditorCSSText);
+      // console.log(this.EditorJSText);
+      // console.log(this.eComponentSaved);
+      // console.log(this.eAvailableComponents);
+      // console.log(this.nonAvailableComponents);
+      // console.log(document.querySelector("#webpageContainer").innerHTML);
+      // console.log(document.querySelector("#PCB").innerHTML);
+    },
+    project_clear() {
+      // Clear all content
+      this.$refs.PcbBoard.setpcbsize(this.pcbHeight, this.pcbWidth);
+      this.HTMLEditor_clear = true; // Clear will be executed when Editor opens.
+      this.eComponentSaved = {};
+      this.eAvailableComponents = [];
+      this.nonAvailableComponents = [];
+      $("#webpageContainer").empty();
+      $("#PCB")
+        .find("*")
+        .not("#mm_rule")
+        .not("#pcb-resizable-corners")
+        .remove();
+    },
+    project_load() {
+      let project = JSON.parse(this.project_data);
+
+      // Clear current project
+      this.project_clear();
+
+      // Load project form database
+
+      // Set project
+      this.$refs.PcbBoard.setpcbsize(
+        project.FinalPCB_height,
+        project.FinalPCB_width
+      );
+      this.HTMLEditor_projectLoad = true;
+      this.eComponentSaved = project.eComponentSaved;
+      this.eAvailableComponents = project.eAvailableComponents;
+      this.nonAvailableComponents = project.nonAvailableComponents;
+      $("#webpageContainer").append(project.webpageContainer);
+      this.EditorMAIN_cssTag.remove(); // Inject CSS to whole document
+      this.EditorMAIN_cssTag = $("<style></style>").appendTo($("head"));
+      this.EditorMAIN_cssTag.text(project.EditorCSSText);
+      this.EditorMAIN_jsTag.remove(); // Inject JS to whole document
+      this.EditorMAIN_jsTag = $("<script/>").appendTo($("body"));
+      this.EditorMAIN_jsTag.text(project.EditorJSText);
+      $("#PCB").append(project.PCB);
+      for (let key in this.eComponentSaved) {
+        // Add clickable functions to components after PCB html ready!
+        if (this.eComponentSaved[key].html != "") {
+          let elementId = this.eComponentSaved[key].elementId;
+          this.addComponentClickFunctions(elementId);
+        }
+      }
+      if (this.eComponentSaved["TouchScreen"]) {
+        // Set HDMI screen
+        let index = this.eComponentSaved["TouchScreen"].componentSelected;
+        this.hdmiScreens_setScreen(index);
+      }
+    },
+    //##########
     //########## MAIN SCREEN
     //##########
     hdmiScreens_pupulate() {
@@ -1293,12 +1398,11 @@ export default {
         });
       }
     },
-    hdmiScreens_newScreenClick(index) {
-      // Set new screen Name in button
+    hdmiScreens_setScreen(index) {
+      // Set new screen
       this.hdmiScreens_current = this.hdmiScreens[index].title;
       this.hdmiScreens_height = this.hdmiScreens[index].height;
       this.hdmiScreens_width = this.hdmiScreens[index].width;
-      let hdmiScreenKey = this.hdmiScreens[index].key;
 
       if (this.hdmiScreens_current == "MONITOR") {
         // If MONITOR, set screen to max
@@ -1308,11 +1412,20 @@ export default {
       } else {
         // Touch screen, resize screen to touch screen size
         this.hdmiScreens_display = true;
+      }
+    },
+    hdmiScreens_newScreenClick(index) {
+      // Save or delete new screen
+      this.hdmiScreens_setScreen(index);
+      if (this.hdmiScreens_current == "MONITOR") {
+        // Delete any touch screen from component dictionary
+        delete this.eComponentSaved["TouchScreen"];
+      } else {
         // Add Touch screen to component dictionary
         this.hdmiScreens_saveMonitorScreenComponent(
           "TouchScreen",
           index,
-          hdmiScreenKey
+          this.hdmiScreens[index].key
         );
       }
     },
@@ -1349,14 +1462,15 @@ export default {
     },
     searchSoftElements() {
       // Zero any previeous arrays
+      this.eComponentSaved = {};
       this.eAvailableComponents = [];
       this.nonAvailableComponents = [];
-      this.eComponentSaved = {};
 
-      // Empty PCB board of any component
+      // Empty PCB board of any component except useful divs
       $("#PCB")
         .find("*")
-        .not(".vdr-stick")
+        .not("#mm_rule")
+        .not("#pcb-resizable-corners")
         .remove();
 
       // Make webpageContainer invisible
@@ -1719,6 +1833,50 @@ export default {
         $("#" + thisId).empty();
       }
 
+      // Add Interactive functions when the component is clicked.
+      this.addComponentClickFunctions(elementId);
+
+      // Save new component
+      var selectedNumber = 0; // First element by default
+      this.eComponentSaved[thisId] = {
+        elementId: elementId,
+        type: thisType,
+        // Physical component values
+        componentSelected: selectedNumber,
+        componentName: null, // Set in the next function
+        componentDescription: null, // Set in the next function
+        componentSchematic: null, // Set in the next function
+        componentConnectorNetMap: null, // Set in next function (connector only)
+        componentBuyLink: null, // Set in the next function
+        componentHardElement: null, // Set in the next function
+        componentHardElementVars: null, // Set in the next function
+        componentPartImage: null, // Set in the next function
+        componentImage: null, // Set in the next function
+        componentWidth: null, // Set in the next function
+        componentHeight: null, // Set in the next function
+        componentRequires: null, // Set in the next function
+        componentChildIDs: [], // Set at the end
+        componentIfaces: {},
+        componentLeft: null, // Set in get position
+        componentTop: null, // Set in get position
+        componentCenterLeft: null, // Set in get position
+        componentCenterTop: null, // Set in get position
+        // Original html tag values
+        html: thisHtml,
+        width: thisWidth,
+        height: thisHeight,
+        innerHTML: thisInnerHtml
+      };
+
+      // Apply style settings for new component (TODO: get Id and type)
+      this.setNewComponentSelection(thisId, thisType, selectedNumber);
+
+      // Move element to left, top coordinates
+      this.moveComponentToPosition(thisId, thisLeft, thisTop);
+
+      console.log(`### ADDING COMPONENT [${thisType}] END`);
+    },
+    addComponentClickFunctions(elementId) {
       // Make it draggable
       $("#" + elementId).draggable({
         containment: "#PCB",
@@ -1829,46 +1987,6 @@ export default {
           console.log("### END");
         }
       });
-
-      // Save new component
-      var selectedNumber = 0; // First element by default
-      this.eComponentSaved[thisId] = {
-        elementId: elementId,
-        type: thisType,
-        // Physical component values
-        componentSelected: selectedNumber,
-        componentName: null, // Set in the next function
-        componentDescription: null, // Set in the next function
-        componentSchematic: null, // Set in the next function
-        componentConnectorNetMap: null, // Set in next function (connector only)
-        componentBuyLink: null, // Set in the next function
-        componentHardElement: null, // Set in the next function
-        componentHardElementVars: null, // Set in the next function
-        componentPartImage: null, // Set in the next function
-        componentImage: null, // Set in the next function
-        componentWidth: null, // Set in the next function
-        componentHeight: null, // Set in the next function
-        componentRequires: null, // Set in the next function
-        componentChildIDs: [], // Set at the end
-        componentIfaces: {},
-        componentLeft: null, // Set in get position
-        componentTop: null, // Set in get position
-        componentCenterLeft: null, // Set in get position
-        componentCenterTop: null, // Set in get position
-        // Original html tag values
-        html: thisHtml,
-        width: thisWidth,
-        height: thisHeight,
-        innerHTML: thisInnerHtml
-      };
-
-      // Apply style settings for new component (TODO: get Id and type)
-      this.setNewComponentSelection(thisId, thisType, selectedNumber);
-
-      // Move element to left, top coordinates
-      this.moveComponentToPosition(thisId, thisLeft, thisTop);
-
-      console.log(`### ADDING COMPONENT [${thisType}] END`);
     },
     addChildComponents(parentId, childComponentsList) {
       // Reset child components List
@@ -2178,6 +2296,21 @@ export default {
     //##########
     openHTMLEditor() {
       this.HTMLEditor = true;
+
+      // Clear editor if there is a new project
+      if (this.HTMLEditor_clear == true) {
+        this.EditorHTML.getSession().setValue("");
+        this.EditorCSS.getSession().setValue("");
+        this.EditorJS.getSession().setValue("");
+      }
+
+      // Load new project data
+      if (this.HTMLEditor_projectLoad == true) {
+        let project = JSON.parse(this.project_data);
+        this.EditorHTML.getSession().setValue(project.EditorHTMLText);
+        this.EditorCSS.getSession().setValue(project.EditorCSSText);
+        this.EditorJS.getSession().setValue(project.EditorJSText);
+      }
     },
     HTMLEditor_loadDemo(Demo) {
       // HTML
@@ -2724,47 +2857,6 @@ export default {
           alert(error.message);
           this.pcbLoading = false;
         }); // if network error
-
-      // this.GeneratedPCBimageTop;
-      // // Empty images
-      // $('#generatedPcbTop').empty();
-      // $('#generatedPcbBottom').empty();
-
-      // // const layers = [
-      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.dri').default, filename: './gerberfiles/Arduino/arduino.dri'},
-      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GBL').default, filename: './gerberfiles/Arduino/arduino.GBL'},
-      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GBP').default, filename: './gerberfiles/Arduino/arduino.GBP'},
-      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GBS').default, filename: './gerberfiles/Arduino/arduino.GBS'},
-      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GML').default, filename: './gerberfiles/Arduino/arduino.GML'},
-      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.gpi').default, filename: './gerberfiles/Arduino/arduino.gpi'},
-      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GTL').default, filename: './gerberfiles/Arduino/arduino.GTL'},
-      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GTO').default, filename: './gerberfiles/Arduino/arduino.GTO'},
-      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GTP').default, filename: './gerberfiles/Arduino/arduino.GTP'},
-      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.GTS').default, filename: './gerberfiles/Arduino/arduino.GTS'},
-      // //   {gerber: require('raw-loader!./gerberfiles/Arduino/arduino.TXT').default, filename: './gerberfiles/Arduino/arduino.TXT'}
-      // // ]
-
-      // const layers = [
-      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GBL').default, filename: './gerberfiles/artik530/artik530.GBL'},
-      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GBO').default, filename: './gerberfiles/artik530/artik530.GBO'},
-      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GBP').default, filename: './gerberfiles/artik530/artik530.GBP'},
-      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GBS').default, filename: './gerberfiles/artik530/artik530.GBS'},
-      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GML').default, filename: './gerberfiles/artik530/artik530.GML'},
-      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GTL').default, filename: './gerberfiles/artik530/artik530.GTL'},
-      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GTO').default, filename: './gerberfiles/artik530/artik530.GTO'},
-      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GTP').default, filename: './gerberfiles/artik530/artik530.GTP'},
-      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.GTS').default, filename: './gerberfiles/artik530/artik530.GTS'},
-      //   {gerber: require('raw-loader!./gerberfiles/artik530/artik530.TXT').default, filename: './gerberfiles/artik530/artik530.TXT'}
-      // ]
-
-      // console.log(layers);
-
-      // pcbStackup(layers).then(stackup => {
-      //   //console.log(stackup.top.svg) // logs "<svg ... </svg>"
-      //   //console.log(stackup.bottom.svg) // logs "<svg ... </svg>"
-      //   $('#generatedPcbTop').append(stackup.top.svg);
-      //   $('#generatedPcbBottom').append(stackup.bottom.svg);
-      // })
     },
     generateHTMLDoc() {
       // index.html is generated here
