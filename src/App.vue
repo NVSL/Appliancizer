@@ -42,6 +42,9 @@
           <v-btn class="vbtn" flat @click="testClick()">TEST</v-btn>
           <v-btn class="vbtn" flat @click="project_save()">PR-SAVE</v-btn>
           <v-btn class="vbtn" flat @click="project_load()">PR-LOAD</v-btn>
+          <v-btn class="vbtn" flat @click="ProjectsScreen_open()"
+            >PR-SCREEN</v-btn
+          >
         </v-toolbar-items>
       </v-toolbar>
 
@@ -650,6 +653,29 @@
           </v-container>
         </v-card>
       </v-dialog>
+
+      <!-- Projects Screen -->
+      <v-dialog
+        v-model="ProjectsScreen"
+        fullscreen
+        hide-overlay
+        transition="dialog-bottom-transition"
+      >
+        <v-card id="projectsScreenDialogHeight">
+          <v-toolbar dark dense color="grey darken-4">
+            <v-toolbar-title>Projects Screen</v-toolbar-title>
+            <v-divider class="mx-3" inset vertical></v-divider>
+            <v-spacer></v-spacer>
+            <v-divider class="mx-3" inset vertical></v-divider>
+            <v-toolbar-items>
+              <v-btn icon dark class="vbtn" @click="ProjectsScreen = false">
+                <v-icon>close</v-icon>
+              </v-btn>
+            </v-toolbar-items>
+          </v-toolbar>
+          <v-container fluid> </v-container>
+        </v-card>
+      </v-dialog>
     </v-app>
   </div>
 </template>
@@ -801,6 +827,7 @@ export default {
     hdmiScreens_display: false,
     hdmiScreens_height: "100%",
     hdmiScreens_width: "100%",
+    ProjectsScreen: true,
     project_data: {
       EditorHTMLText: "",
       EditorCSSText: "",
@@ -1373,6 +1400,12 @@ export default {
         let index = this.eComponentSaved["TouchScreen"].componentSelected;
         this.hdmiScreens_setScreen(index);
       }
+    },
+    //##########
+    //########## PROJECTS SCREEN
+    //##########
+    ProjectsScreen_open() {
+      this.ProjectsScreen = true;
     },
     //##########
     //########## MAIN SCREEN
@@ -3267,6 +3300,10 @@ HTML Editor css
   overflow-x: auto;
 }
 
+#projectsScreenDialogHeight {
+  /* height: 100%; */
+  overflow-x: auto;
+}
 .output {
   background: #fff;
   border-left: 1px solid #f3f3f3;
