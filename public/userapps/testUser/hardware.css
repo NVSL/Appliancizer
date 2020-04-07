@@ -1,4 +1,4 @@
-#turnON {
+#playPause {
   hardware: physical-button (gpio:"4");
 }
 

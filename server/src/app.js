@@ -277,6 +277,7 @@ app.post("/api/generateWebPage", function(req, res) {
 app.post("/api/generatePCB", function(req, res) {
   console.log("\n######\n###### Generating PCB \n######");
   console.log("PCB INPUT:\n", JSON.stringify(req.body.pcbInput, null, 2));
+
   // Run Gadgetron modules combinator
   let spawn = require("child_process").spawn;
   let pyprog = spawn("python3", [
@@ -295,27 +296,22 @@ app.post("/api/generatePCB", function(req, res) {
   });
 
   pyprog.on("exit", function(code) {
-    try {
-      if (code == "0") {
-        // Process finish correctly
-        // Get board, if it doesn't exist then combined board failed.
-        var board = fs.readFileSync(
-          "../../json_to_eagle_brd/COMBINED.brd",
-          "utf8"
-        );
-        console.log("\n...SENDING GERBER FILES\n");
-        res.send({
-          message: [{ filename: "appliancizer.brd", data: board, folder: "" }]
-        });
-        console.log("\n######\n###### END Generating PCB (Success) \n######");
-      } else {
-        // Process error
-        res.status(500).send({ error: "Database error" });
+    if (code == "0") {
+      // Process finish correctly
+      try {
+        // Get PCB, if it doesn't exist then combined board failed.
+        fs.readFileSync("../../json_to_eagle_brd/COMBINED.brd", "utf8");
+      } catch (err) {
+        console.log(err.stack);
+        res.status(500).send({ error: "Server error" });
         console.log("\n######\n###### END Generating PCB (Fail) \n######");
+        return;
       }
-    } catch (err) {
-      console.log(err.stack);
-      res.status(500).send({ error: "Database error" });
+      res.send({ message: "Success" });
+      console.log("\n######\n###### END Generating PCB (Success) \n######");
+    } else {
+      // Process error
+      res.status(500).send({ error: "Server error" });
       console.log("\n######\n###### END Generating PCB (Fail) \n######");
     }
   });
@@ -345,7 +341,7 @@ app.get("/api/autoroutePCB", function(req, res) {
       console.log("\n######\n###### Autorouting PCB (Timeout) \n######");
       return;
     }
-  }, 30000); // 30 seconds
+  }, 60000); // 60 seconds
 
   eagleAutoroute.stderr.on("data", data => {
     // Data error
@@ -360,22 +356,20 @@ app.get("/api/autoroutePCB", function(req, res) {
     if (code == "0") {
       // Process finish correctly
       try {
-        // Get board, if it doesn't exist then combined board failed.
+        // Get board, if it doesn't exist then routed board failed.
         fs.readFileSync("../../json_to_eagle_brd/ROUTED.brd", "utf8");
       } catch (err) {
         console.log(err.stack);
-        res.status(500).send({ error: "Database error" });
+        res.status(500).send({ error: "Server error" });
         console.log("\n######\n###### END Autorouting PCB (Fail) \n######");
         return;
       }
       // Eagle autorouted correctly
-      res.send({
-        message: "Success"
-      });
+      res.send({ message: "Success" });
       console.log("\n######\n###### END Autorouting PCB (Success) \n######");
     } else {
       // Process error
-      res.status(500).send({ error: "Database error" });
+      res.status(500).send({ error: "Server error" });
       console.log("\n######\n###### END Autorouting PCB (Fail) \n######");
     }
   });
@@ -421,27 +415,88 @@ app.get("/api/generateGerber", function(req, res) {
   });
 
   eagleGerber.on("exit", function(code) {
-    if (code == "0") {
-      // Process finish correctly
-      // try {
-      //   // Get board, if it doesn't exist then combined board failed.
-      //   fs.readFileSync("../../json_to_eagle_brd/ROUTED.brd", "utf8");
-      // } catch (err) {
-      //   console.log(err.stack);
-      //   res.status(500).send({ error: "Database error" });
-      //   console.log(
-      //     "\n######\n###### END Generating PCB Gerber (Fail) \n######"
-      //   );
-      //   return;
-      // }
-      // Eagle autorouted correctly
-      res.send({ message: "Success" });
-      console.log(
-        "\n######\n###### END Generating PCB Gerber (Success) \n######"
-      );
-    } else {
-      // Process error
-      res.status(500).send({ error: "Database error" });
+    try {
+      if (code == "0") {
+        // Process finish correctly
+
+        // Get board
+        let board = fs.readFileSync(
+          "../../json_to_eagle_brd/ROUTED.brd",
+          "utf8"
+        );
+
+        // Get Gerber Files
+        let routedGBL = fs.readFileSync(
+          "../../json_to_eagle_brd/GERBER/ROUTED.GBL",
+          "utf8"
+        );
+        let routedGBO = fs.readFileSync(
+          "../../json_to_eagle_brd/GERBER/ROUTED.GBO",
+          "utf8"
+        );
+        let routedGBP = fs.readFileSync(
+          "../../json_to_eagle_brd/GERBER/ROUTED.GBP",
+          "utf8"
+        );
+        let routedGBS = fs.readFileSync(
+          "../../json_to_eagle_brd/GERBER/ROUTED.GBS",
+          "utf8"
+        );
+        let routedGML = fs.readFileSync(
+          "../../json_to_eagle_brd/GERBER/ROUTED.GML",
+          "utf8"
+        );
+        let routedGTL = fs.readFileSync(
+          "../../json_to_eagle_brd/GERBER/ROUTED.GTL",
+          "utf8"
+        );
+        let routedGTO = fs.readFileSync(
+          "../../json_to_eagle_brd/GERBER/ROUTED.GTO",
+          "utf8"
+        );
+        let routedGTP = fs.readFileSync(
+          "../../json_to_eagle_brd/GERBER/ROUTED.GTP",
+          "utf8"
+        );
+        let routedGTS = fs.readFileSync(
+          "../../json_to_eagle_brd/GERBER/ROUTED.GTS",
+          "utf8"
+        );
+        let routedTXT = fs.readFileSync(
+          "../../json_to_eagle_brd/GERBER/ROUTED.TXT",
+          "utf8"
+        );
+
+        console.log("\n...SENDING GERBER FILES\n");
+        res.send({
+          message: [
+            { filename: "appliancizer.brd", data: board, folder: "" },
+            { filename: "routed.GBL", data: routedGBL, folder: "" },
+            { filename: "routed.GBO", data: routedGBO, folder: "" },
+            { filename: "routed.GBP", data: routedGBP, folder: "" },
+            { filename: "routed.GBS", data: routedGBS, folder: "" },
+            { filename: "routed.GML", data: routedGML, folder: "" },
+            { filename: "routed.GTL", data: routedGTL, folder: "" },
+            { filename: "routed.GTO", data: routedGTO, folder: "" },
+            { filename: "routed.GTP", data: routedGTP, folder: "" },
+            { filename: "routed.GTS", data: routedGTS, folder: "" },
+            { filename: "routed.TXT", data: routedTXT, folder: "" }
+          ]
+        });
+        // Eagle generated gerber files correctly
+        console.log(
+          "\n######\n###### END Generating PCB Gerber (Success) \n######"
+        );
+      } else {
+        // Process error
+        res.status(500).send({ error: "Server error" });
+        console.log(
+          "\n######\n###### END Generating PCB Gerber (Fail) \n######"
+        );
+      }
+    } catch (err) {
+      console.log(err.stack);
+      res.status(500).send({ error: "Server error" });
       console.log("\n######\n###### END Generating PCB Gerber (Fail) \n######");
     }
   });

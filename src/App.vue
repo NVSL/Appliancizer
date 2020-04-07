@@ -467,14 +467,70 @@
                   for manufacturing your PCB.
                 </h3>
                 <!-- <v-progress-linear :indeterminate="true"></v-progress-linear> -->
-                <v-btn
-                  class="vbtn info"
-                  :loading="pcbLoading"
-                  :disabled="pcbLoading"
-                  light
-                  @click="BuildScreen_downloadPCBFiles()"
-                  >DOWNLOAD PCB FILES</v-btn
-                >
+                <v-layout row align-center fill-height>
+                  <v-flex xs4>
+                    <v-btn
+                      class="vbtn info"
+                      :loading="pcbLoading"
+                      :disabled="pcbLoading"
+                      light
+                      @click="BuildScreen_downloadPCBFiles()"
+                      >GENERATE PCB FILES</v-btn
+                    >
+                    <v-progress-circular
+                      :rotate="-90"
+                      :size="100"
+                      :width="15"
+                      :value="pcbPercentage"
+                      :color="
+                        pcbPercentage == 100 ? 'rgb(174, 213, 129)' : 'info'
+                      "
+                    >
+                      {{ pcbPercentage }}
+                    </v-progress-circular>
+                  </v-flex>
+                  <v-flex xs4>
+                    <div>
+                      <v-icon v-if="pcbGenerate == 0" color="gray"
+                        >access_time</v-icon
+                      >
+                      <v-icon v-else-if="pcbGenerate == 1" color="gray"
+                        >directions_run</v-icon
+                      >
+                      <v-icon v-else-if="pcbGenerate == 2" color="green"
+                        >check</v-icon
+                      >
+                      <v-icon v-else color="red">close</v-icon>
+                      <span> Generating PCB </span>
+                    </div>
+                    <div>
+                      <v-icon v-if="pcbAutoroute == 0" color="gray"
+                        >access_time</v-icon
+                      >
+                      <v-icon v-else-if="pcbAutoroute == 1" color="gray"
+                        >directions_run</v-icon
+                      >
+                      <v-icon v-else-if="pcbAutoroute == 2" color="green"
+                        >check</v-icon
+                      >
+                      <v-icon v-else color="red">close</v-icon>
+                      <span> Autorouting PCB </span>
+                    </div>
+                    <div>
+                      <v-icon v-if="pcbGerberFiles == 0" color="gray"
+                        >access_time</v-icon
+                      >
+                      <v-icon v-else-if="pcbGerberFiles == 1" color="gray"
+                        >directions_run</v-icon
+                      >
+                      <v-icon v-else-if="pcbGerberFiles == 2" color="green"
+                        >check</v-icon
+                      >
+                      <v-icon v-else color="red">close</v-icon>
+                      <span> Generating PCB Gerber Files </span>
+                    </div>
+                  </v-flex>
+                </v-layout>
                 <br />
               </v-container>
               <v-layout row wrap class="pt-5">
@@ -811,6 +867,10 @@ export default {
     GeneratedLink: "",
     disableButtons: false,
     pcbLoading: false,
+    pcbPercentage: 0,
+    pcbGenerate: 0, //0: Halt, 1: Begin, 2: Correct, 3: Error
+    pcbAutoroute: 0, //0: Halt, 1: Begin, 2: Correct, 3: Error
+    pcbGerberFiles: 0, //0: Halt, 1: Begin, 2: Correct, 3: Error
     serverURL: SERVER_URL,
 
     hdmiScreens: [
@@ -827,7 +887,7 @@ export default {
     hdmiScreens_display: false,
     hdmiScreens_height: "100%",
     hdmiScreens_width: "100%",
-    ProjectsScreen: true,
+    ProjectsScreen: false,
     project_data: {
       EditorHTMLText: "",
       EditorCSSText: "",
@@ -2504,6 +2564,12 @@ export default {
 
       // Generate Hadware APP link
       this.BuildScreen_deployOnline();
+
+      // Reset PCB Generation run flags
+      this.pcbPercentage = 0;
+      this.pcbGenerate = 0;
+      this.pcbAutoroute = 0;
+      this.pcbGerberFiles = 0;
     },
     BuildScreen_generatePCBReview() {
       // Reset Final Components
@@ -2769,7 +2835,7 @@ export default {
         this.CancelBuildButtonCount = 0;
       }
     },
-    BuildScreen_downloadPCBFiles() {
+    async BuildScreen_downloadPCBFiles() {
       console.log("Sending PCB parts to server");
 
       var pcbInput = {}; // Empty object
@@ -2780,7 +2846,8 @@ export default {
 
       // Add connector
       if (this.eComponentSaved["connector"] == undefined) {
-        console.error("You are trying to build a PCB without connector");
+        console.error("You are trying to build a PCB without a connector");
+        return;
       } else {
         pcbInput["connector"] = {
           schematicName: this.eComponentSaved["connector"].componentSchematic,
@@ -2850,46 +2917,61 @@ export default {
       // Send pcbInput to server
       console.log("\n######\n###### Generating PCB (Server Side...) \n######");
       this.pcbLoading = true;
-      server
-        .post("generatePCB", {
-          pcbInput
-        })
-        .then(response => {
-          // Should return a link
-          if (response.status != 200) {
-            alert(response.data.error);
-            console.error("Server error when trying to generate PCB");
-            this.pcbLoading = false;
-          } else {
-            // Test with res.downlaod()
-            // const blob = new Blob([response.data], {type : 'text/plain'});
-            // FileSaver.saveAs(blob, "MySchematic.brd");
+      this.pcbPercentage = 0;
+      this.pcbGenerate = 0;
+      this.pcbAutoroute = 0;
+      this.pcbGerberFiles = 0;
 
-            // Generate App zip file
-            let zip = new JSZip();
-            let gerberFiles = response.data.message;
-            for (let key in gerberFiles) {
-              if (gerberFiles[key].folder != "") {
-                // Add file into folder
-                zip
-                  .folder(gerberFiles[key].folder)
-                  .file(gerberFiles[key].filename, gerberFiles[key].data);
-              } else {
-                // Add file in root of folder
-                zip.file(gerberFiles[key].filename, gerberFiles[key].data);
-              }
-            }
-            zip.generateAsync({ type: "blob" }).then(function(content) {
-              // see FileSaver.js
-              FileSaver.saveAs(content, "GerberFiles.zip");
-            });
-            this.pcbLoading = false;
+      try {
+        // Generate PCB
+        this.pcbGenerate = 1;
+        let genRes = await server.post("generatePCB", { pcbInput });
+        console.log("-- PCB Generation:", genRes.data.message);
+        this.pcbPercentage = 50;
+        this.pcbGenerate = 2;
+        // Autoroutre PCB
+        this.pcbAutoroute = 1;
+        let autoRes = await server.get("autoroutePCB");
+        console.log("-- PCB Autorouting:", autoRes.data.message);
+        this.pcbPercentage = 75;
+        this.pcbAutoroute = 2;
+        // Generate PCB Gerber Files
+        this.pcbGerberFiles = 1;
+        let gerberRes = await server.get("generateGerber");
+        console.log("-- PCB Gerber Files:", gerberRes.data.message);
+        this.pcbPercentage = 100;
+        this.pcbGerberFiles = 2;
+        // Zip Gerber Files
+        let zip = new JSZip();
+        let gerberFiles = gerberRes.data.message;
+        for (let key in gerberFiles) {
+          if (gerberFiles[key].folder != "") {
+            // Add file into folder
+            zip
+              .folder(gerberFiles[key].folder)
+              .file(gerberFiles[key].filename, gerberFiles[key].data);
+          } else {
+            // Add file in root of folder
+            zip.file(gerberFiles[key].filename, gerberFiles[key].data);
           }
-        })
-        .catch(error => {
-          alert(error.message);
-          this.pcbLoading = false;
-        }); // if network error
+        }
+        zip.generateAsync({ type: "blob" }).then(function(content) {
+          // see FileSaver.js
+          FileSaver.saveAs(content, "GerberFiles.zip");
+        });
+        this.pcbLoading = false;
+      } catch (error) {
+        alert(error.response.statusText);
+        this.pcbLoading = false;
+        this.pcbPercentage = 0;
+        if (this.pcbGenerate == 1) {
+          this.pcbGenerate = 3;
+        } else if (this.pcbAutoroute == 1) {
+          this.pcbAutoroute = 3;
+        } else if (this.pcbGerberFiles == 1) {
+          this.pcbGerberFiles = 3;
+        }
+      }
     },
     generateHTMLDoc() {
       // index.html is generated here
