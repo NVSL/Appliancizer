@@ -328,7 +328,7 @@ app.get("/api/autoroutePCB", function(req, res) {
   }
 
   let spawn = require("child_process").spawn;
-  let eagleAutoroute = spawn("/mnt/c/EAGLE 9.4.2/eagle.exe", [
+  let eagleAutoroute = spawn("../../eagle-9.4.2/eagle", [
     "../../json_to_eagle_brd/COMBINED.brd",
     "-CAUTO;WRITE @ROUTED.brd;QUIT;"
   ]);
@@ -383,7 +383,7 @@ app.get("/api/generateGerber", function(req, res) {
   fs.emptyDirSync("../../json_to_eagle_brd/GERBER/");
 
   let spawn = require("child_process").spawn;
-  let eagleGerber = spawn("/mnt/c/EAGLE 9.4.2/eagle.exe", [
+  let eagleGerber = spawn("../../eagle-9.4.2/eagle", [
     "-X",
     "-N",
     "-d",

@@ -1161,7 +1161,7 @@ export default {
           schematic: "connector_raspberrypi",
           connectorNetMap: this.raspberryNetMap,
           buyLink:
-            "https://www.digikey.com/product-detail/en/adafruit-industries-llc/2222/1528-1785-ND/6238005",
+            "https://www.digikey.com/product-detail/en/PRT-14017/1568-1462-ND/6569366",
           partImage: "connectors/rpi_partimage.jpg",
           image: "connectors/rpi_connector.png",
           height: "5mm",
