@@ -430,7 +430,7 @@
                         :key="index + '_list'"
                         avatar
                       >
-                        <v-list-tile-avatar size="62">
+                        <v-list-tile-avatar tile size="62">
                           <img :src="item.image" />
                         </v-list-tile-avatar>
 
@@ -1006,7 +1006,7 @@ export default {
           partImage: "buttons/tactile-button-round-red.jpg",
           image: "buttons/red-round-button.2D.svg",
           height: "10mm",
-          width: "10mm",
+          width: "15mm",
           requires: ["resistor_1206_10k"]
         },
         2: {
@@ -1020,7 +1020,7 @@ export default {
           partImage: "buttons/tactile-button-round-blue.jpg",
           image: "buttons/blue-round-button.2D.svg",
           height: "10mm",
-          width: "10mm",
+          width: "15mm",
           requires: ["resistor_1206_10k"]
         },
         3: {
@@ -1034,14 +1034,14 @@ export default {
           partImage: "buttons/tactile-button-round-green.jpg",
           image: "buttons/green-round-button.2D.svg",
           height: "10mm",
-          width: "10mm",
+          width: "15mm",
           requires: ["resistor_1206_10k"]
         }
       },
       span: {
         0: {
           component: "LED1",
-          description: "LED 5mm red",
+          description: "LED Thruhole 5mm red",
           schematic: "led_thruhole",
           buyLink:
             "https://www.digikey.com/product-detail/en/cree-inc/C503B-RAN-CZ0C0AA1/C503B-RAN-CZ0C0AA1-ND/6561758",
@@ -1055,7 +1055,7 @@ export default {
         },
         1: {
           component: "LED1",
-          description: "LED 5mm blue",
+          description: "LED Thruhole 5mm blue",
           schematic: "led_thruhole",
           buyLink:
             "https://www.digikey.com/product-detail/en/cree-inc/C503B-BCN-CV0Z0461/C503B-BCN-CV0Z0461-ND/1922945",
@@ -1069,7 +1069,7 @@ export default {
         },
         2: {
           component: "LED1",
-          description: "LED 5mm green",
+          description: "LED Thruhole 5mm green",
           schematic: "led_thruhole",
           buyLink:
             "https://www.digikey.com/product-detail/en/cree-inc/C503B-GAN-CB0F0791/C503B-GAN-CB0F0791-ND/1922938",
@@ -1082,20 +1082,34 @@ export default {
           requires: ["resistor_1206_330ohm"]
         },
         3: {
-          component: "LED1",
-          description: "LED 5mm white",
-          schematic: "led_thruhole",
+          component: "D1",
+          description: "LED smd 1206 red",
+          schematic: "led_smd",
           buyLink:
-            "https://www.digikey.com/product-detail/en/cree-inc/C503B-WAN-CBBDB231/C503B-WAN-CBBDB231-ND/5824156",
+            "https://www.digikey.com/product-detail/en/lite-on-inc/LTST-C150CKT/160-1167-1-ND/269239",
           hardElement: "physical-output",
           hardElementVars: "(gpio:$gpio)",
-          partImage: "output/LED-WHITE.jpg",
-          image: "output/white-5mm-LED.2D.svg",
-          height: "5mm",
-          width: "5mm",
+          partImage: "output/LED-1206-RED.png",
+          image: "output/red-LED-1206.svg",
+          height: "2mm",
+          width: "4.5mm",
           requires: ["resistor_1206_330ohm"]
         },
         4: {
+          component: "D1",
+          description: "LED smd 1206 Blue",
+          schematic: "led_smd",
+          buyLink:
+            "https://www.digikey.com/product-detail/en/lite-on-inc/LTST-C150TBKT/160-1643-1-ND/573584",
+          hardElement: "physical-output",
+          hardElementVars: "(gpio:$gpio)",
+          partImage: "output/LED-1206-BLUE.png",
+          image: "output/blue-LED-1206.svg",
+          height: "2mm",
+          width: "4.5mm",
+          requires: ["resistor_1206_330ohm"]
+        },
+        5: {
           component: "D1",
           description: "LED smd 1206 Green",
           schematic: "led_smd",
@@ -1103,10 +1117,10 @@ export default {
             "https://www.digikey.com/product-detail/en/lite-on-inc/LTST-C150GKT/160-1169-1-ND/269241",
           hardElement: "physical-output",
           hardElementVars: "(gpio:$gpio)",
-          partImage: "output/LED-1206.png",
-          image: "output/LED-1206.svg",
-          height: "1.6mm",
-          width: "3.2mm",
+          partImage: "output/LED-1206-GREEN.png",
+          image: "output/green-LED-1206.svg",
+          height: "2mm",
+          width: "4.5mm",
           requires: ["resistor_1206_330ohm"]
         }
       },
@@ -1162,9 +1176,9 @@ export default {
           connectorNetMap: this.raspberryNetMap,
           buyLink:
             "https://www.digikey.com/product-detail/en/PRT-14017/1568-1462-ND/6569366",
-          partImage: "connectors/rpi_partimage.jpg",
+          partImage: "connectors/rpi_connector_partimage.jpg",
           image: "connectors/rpi_connector.png",
-          height: "5mm",
+          height: "7mm",
           width: "51mm"
         }
       },
@@ -1177,8 +1191,8 @@ export default {
             "https://www.digikey.com/product-detail/en/yageo/RC1206JR-0710KL/311-10KERCT-ND/732156",
           partImage: "misc/0603-RES.jpg",
           image: "misc/0603-RES.svg",
-          height: "1.6mm",
-          width: "3.2mm"
+          height: "2mm",
+          width: "4.5mm"
         },
         resistor_1206_330ohm: {
           component: "R1",
@@ -1187,8 +1201,8 @@ export default {
             "https://www.digikey.com/product-detail/en/yageo/RC1206JR-07330RL/311-330ERCT-ND/732226",
           partImage: "misc/0603-RES.jpg",
           image: "misc/0603-RES.svg",
-          height: "1.6mm",
-          width: "3.2mm"
+          height: "2mm",
+          width: "4.5mm"
         },
         ads1015: {
           component: "U2",
@@ -1707,7 +1721,7 @@ export default {
         "", // thisInnerHtml
         '<div id="connector"></div>', // thisHtml
         5, // thisLeft
-        5 // thisTop
+        10 // thisTop
       );
     },
     launchSnackbar(text, color, timeout) {
@@ -1793,6 +1807,7 @@ export default {
     //########## HTML COMPONENT MANAGMENT
     //##########
     testClick() {
+      
       // TEST RANGE
       // this.addNewHTMLComponent(
       //   "progressBar", // thisId
@@ -1803,15 +1818,25 @@ export default {
       //   5 // thisTop
       // );
 
-      // // TEST ADDING A BUTTON
-      this.addNewHTMLComponent(
-        "playPause", // thisId
-        "test_submit", // thisType
-        "", // thisInnerHtml
-        '<button onclick="playPause()" id="playPause"></button>', // thisHtml
-        5, // thisLeft
-        5 // thisTop
-      );
+      // // // TEST ADDING A BUTTON
+      // this.addNewHTMLComponent(
+      //   "playPause", // thisId
+      //   "test_submit", // thisType
+      //   "", // thisInnerHtml
+      //   '<button onclick="playPause()" id="playPause"></button>', // thisHtml
+      //   5, // thisLeft
+      //   5 // thisTop
+      // );
+
+      // // // TEST ADDING AN LED
+      // this.addNewHTMLComponent(
+      //   "myLED", // thisId
+      //   "test_span", // thisType
+      //   "", // thisInnerHtml
+      //   '<span id="myLED"></span>', // thisHtml
+      //   5, // thisLeft
+      //   5 // thisTop
+      // );
 
       // // TEST CONNECTOR
       this.addNewHTMLComponent(
@@ -2690,6 +2715,14 @@ export default {
         }
       }
 
+      // Show raspberry pi board first (TODO add this somewhere else)
+      this.FinalComponents.push({
+        image: this.getComponentsImg("boards/RaspberryPi.jpg"),
+        title: `<strong>Part:</strong> Raspberry Pi`,
+        subtitle: `<a href="https://www.digikey.com/product-detail/en/raspberry-pi/RASPBERRY-PI-4B-4GB/1690-RASPBERRYPI4B-4GB-ND/10258781?quantity=1" target="_blank">Buy Link</a> | Qty: 1`
+      });
+
+      // Generate list of components to be displayed
       for (key in finalDisplayList) {
         // Check if component is a main module element
         var componentSaved = finalDisplayList[key].component;
@@ -2752,7 +2785,9 @@ export default {
           }
         }
 
-        // Push to visual list
+        console.log("Push final board!!!")
+
+        // Show generated list
         this.FinalComponents.push({
           image: this.getComponentsImg(componentSaved.componentPartImage),
           title: `<strong>Part:</strong> ${
@@ -3433,7 +3468,7 @@ Component Styles
 .submit-physical-button {
   display: block;
   background-color: transparent;
-  background-size: 100% 100%;
+  background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
   border-style: none;
@@ -3446,7 +3481,7 @@ Component Styles
 .span-physical-output {
   display: block;
   background-color: transparent;
-  background-size: 100% 100%;
+  background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
   border-style: none;
@@ -3460,7 +3495,7 @@ Component Styles
   display: block;
   -webkit-appearance: none;
   background-image: url("~@/assets/range/motorizedPot.png");
-  background-size: 100% 100%;
+  background-size: contain;
   background-repeat: no-repeat;
   background-color: transparent;
   border: none;
@@ -3487,6 +3522,8 @@ Component Styles
   display: block;
   background-color: transparent;
   background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
   border-style: none;
   width: 51mm;
   height: 5mm;
@@ -3497,7 +3534,7 @@ Component Styles
 .misc {
   display: block;
   background-color: transparent;
-  background-size: 100% 100%;
+  background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
   border-style: none;

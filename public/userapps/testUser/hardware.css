@@ -1,8 +1,8 @@
-#playPause {
-  hardware: physical-button (gpio:"4");
+#myLED {
+  hardware: physical-output (gpio:"4");
 }
 
-physical-button {
+physical-output {
   display: none;
 }
 
