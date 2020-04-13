@@ -1136,8 +1136,8 @@ export default {
             "(motora:$gpio, motorb:$gpio, \
                 touch:$gpio, i2c-addr:0x48, i2c-port:url($i2c))",
           partImage: "range/motorized-potentiometer.png",
-          image: "range/motorizedPot.png",
-          height: "9mm",
+          image: "range/motorized-pot.svg",
+          height: "36mm",
           width: "152mm",
           requires: ["ads1015", "at42qt1010", "tb6612fng"]
         },
@@ -1807,16 +1807,15 @@ export default {
     //########## HTML COMPONENT MANAGMENT
     //##########
     testClick() {
-      
       // TEST RANGE
-      // this.addNewHTMLComponent(
-      //   "progressBar", // thisId
-      //   "test_range", // thisType
-      //   "", // thisInnerHtml
-      //   '<input type="range" min="0" max="28" step="1" value="0" id="progressBar">', // thisHtml
-      //   5, // thisLeft
-      //   5 // thisTop
-      // );
+      this.addNewHTMLComponent(
+        "progressBar", // thisId
+        "test_range", // thisType
+        "", // thisInnerHtml
+        '<input type="range" min="0" max="28" step="1" value="0" id="progressBar">', // thisHtml
+        10, // thisLeft
+        10 // thisTop
+      );
 
       // // // TEST ADDING A BUTTON
       // this.addNewHTMLComponent(
@@ -2785,8 +2784,6 @@ export default {
           }
         }
 
-        console.log("Push final board!!!")
-
         // Show generated list
         this.FinalComponents.push({
           image: this.getComponentsImg(componentSaved.componentPartImage),
@@ -2870,6 +2867,19 @@ export default {
         this.CancelBuildButtonCount = 0;
       }
     },
+    BuildScreen_pcb_negativeY(pcbInput) {
+      // Create a negative Y output of the PCB for eagle
+      pcbInput["pcbHeight"] *= -1;
+      pcbInput["connector"]["partsPosition"]["part_0"]["componentY"] *= -1;
+      for (let module_x in pcbInput["modules"]) {
+        for (let parts in pcbInput["modules"][module_x].partsPosition) {
+          pcbInput["modules"][module_x]["partsPosition"][parts][
+            "componentY"
+          ] *= -1;
+        }
+      }
+      return pcbInput;
+    },
     async BuildScreen_downloadPCBFiles() {
       console.log("Sending PCB parts to server");
 
@@ -2947,7 +2957,11 @@ export default {
         }
       }
       console.log("\n######\n###### Final PCB data\n######");
-      console.log(JSON.stringify(pcbInput, null, 2));
+      // Generate Negative of PCB
+      let pcbInputNegativeY = this.BuildScreen_pcb_negativeY(
+        JSON.parse(JSON.stringify(pcbInput)) // Copy object
+      );
+      console.log(JSON.stringify(pcbInputNegativeY, null, 2));
 
       // Send pcbInput to server
       console.log("\n######\n###### Generating PCB (Server Side...) \n######");
@@ -2960,7 +2974,9 @@ export default {
       try {
         // Generate PCB
         this.pcbGenerate = 1;
-        let genRes = await server.post("generatePCB", { pcbInput });
+        let genRes = await server.post("generatePCB", {
+          pcbInput: pcbInputNegativeY
+        });
         console.log("-- PCB Generation:", genRes.data.message);
         this.pcbPercentage = 50;
         this.pcbGenerate = 2;

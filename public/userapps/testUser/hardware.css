@@ -1,8 +1,8 @@
-#myLED {
-  hardware: physical-output (gpio:"4");
+#progressBar {
+  hardware: physical-motorized-pot (motora:"4",motorb:"17",touch:"27",i2c-addr:0x48,i2c-port:url("/dev/i2c-1"));
 }
 
-physical-output {
+physical-motorized-pot {
   display: none;
 }
 
