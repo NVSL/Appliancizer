@@ -1,8 +1,8 @@
-#progressBar {
-  hardware: physical-motorized-pot (motora:"4",motorb:"17",touch:"27",i2c-addr:0x48,i2c-port:url("/dev/i2c-1"));
+#myButton {
+  hardware: physical-button (gpio:"4");
 }
 
-physical-motorized-pot {
+physical-button {
   display: none;
 }
 

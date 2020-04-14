@@ -341,7 +341,7 @@ app.get("/api/autoroutePCB", function(req, res) {
       console.log("\n######\n###### Autorouting PCB (Timeout) \n######");
       return;
     }
-  }, 60000); // 60 seconds
+  }, 240000); // 4 mins max
 
   eagleAutoroute.stderr.on("data", data => {
     // Data error

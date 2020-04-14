@@ -70,7 +70,12 @@
                     <v-spacer></v-spacer>
                     <v-menu offset-y>
                       <template v-slot:activator="{ on }">
-                        <v-btn class="vbtn" outline v-on="on">
+                        <v-btn
+                          class="vbtn"
+                          outline
+                          v-on="on"
+                          :disabled="hdmiScreens_button_disabled"
+                        >
                           <v-icon>smartphone</v-icon>
                           HDMI SCREEN ({{ hdmiScreens_current }})
                           <v-icon>arrow_drop_down</v-icon>
@@ -887,6 +892,7 @@ export default {
     hdmiScreens_display: false,
     hdmiScreens_height: "100%",
     hdmiScreens_width: "100%",
+    hdmiScreens_button_disabled: false,
     ProjectsScreen: false,
     project_data: {
       EditorHTMLText: "",
@@ -1387,7 +1393,7 @@ export default {
   },
   methods: {
     //##########
-    //########## PROJECT SAVE/LOAD
+    //########## PROJECT SAVE/LOAD (TODO add hdmiScreens_button_disabled)
     //##########
     project_save() {
       // Clone PCB and remove inner childs that are not elements
@@ -1735,7 +1741,7 @@ export default {
     },
     // Sets app to RUN Mode
     setRunMode() {
-      console.log("Running MODE", this.runStop);
+      console.log("### ON Running MODE");
 
       // If already in run mode return
       if (this.runStop == true) return;
@@ -1751,16 +1757,28 @@ export default {
       $("iframe").css("pointer-events", "all");
 
       // For all available comopnents, remove their draggable class
-      var ele;
-      for (ele of this.eAvailableComponents) {
-        console.log(ele);
+      console.log("Elements IDs that can be harden:");
+      for (let ele of this.eAvailableComponents) {
         $("#" + ele + "_drag").removeClass("draggable_element");
         $("#" + ele + "_drag").attr("draggable", "false");
+        // If element is on PCB remove it from the screen
+        let isOnPCB = false;
+        if (ele in this.eComponentSaved) {
+          isOnPCB = true;
+          // Display none
+          $("#" + ele + "_drag").css("display", "none");
+          // Add any innerHTML if component is span
+          if (this.eComponentSaved[ele].type == "span") {
+            $("#" + ele).append(this.eComponentSaved[ele].innerHTML);
+          }
+        }
+        console.log("id: " + ele + " | OnSceen: " + isOnPCB);
       }
 
       // For all non available comopnents, remove their class
-      for (ele of this.nonAvailableComponents) {
-        console.log(ele);
+      console.log("Elements IDs that can not be harden:");
+      for (let ele of this.nonAvailableComponents) {
+        console.log("id: " + ele);
         $("#" + ele + "_nondrag").removeClass("none_draggable_element");
       }
 
@@ -1770,7 +1788,7 @@ export default {
     },
     // Sets app to EDIT Mode
     setEditMode() {
-      console.log("Edit MODE", this.runStop);
+      console.log("### ON Edit MODE");
 
       // If already in edit mode return
       if (this.runStop == false) return;
@@ -1786,16 +1804,28 @@ export default {
       $("iframe").css("pointer-events", "all");
 
       // For all available comopnents, add their draggable class
-      var ele;
-      for (ele of this.eAvailableComponents) {
-        console.log(ele);
+      console.log("Elements IDs that can be harden:");
+      for (let ele of this.eAvailableComponents) {
         $("#" + ele + "_drag").addClass("draggable_element");
         $("#" + ele + "_drag").attr("draggable", "true");
+        // If element is on PCB remove add it to the the screen
+        let isOnPCB = false;
+        if (ele in this.eComponentSaved) {
+          isOnPCB = true;
+          // Restore display settings
+          $("#" + ele + "_drag").css("display", "inline-block");
+          // Remove any innerHTML of element (e.g, Text) if span
+          if (this.eComponentSaved[ele].type == "span") {
+            $("#" + ele).empty();
+          }
+        }
+        console.log("id: " + ele + " | OnSceen: " + isOnPCB);
       }
 
       // For all non available comopnents, add their class
-      for (ele of this.nonAvailableComponents) {
-        console.log(ele);
+      console.log("Elements IDs that can not be harden:");
+      for (let ele of this.nonAvailableComponents) {
+        console.log("id: " + ele);
         $("#" + ele + "_nondrag").addClass("none_draggable_element");
       }
 
@@ -1917,6 +1947,8 @@ export default {
           $("#" + thisId).addClass("range-physical-slider");
         } else if (thisType == "screens") {
           $("#" + thisId).addClass("physical-screen");
+          // Disable HDMI Screens button
+          this.hdmiScreens_button_disabled = true;
         } else {
           console.error("FATAL ERROR: Unknown element type");
           return;
@@ -1941,6 +1973,8 @@ export default {
           $("#" + thisId).addClass("range-physical-slider");
         } else if (thisType == "screens") {
           $("#" + thisId).addClass("physical-screen");
+          // Disable HDMI Screens button
+          this.hdmiScreens_button_disabled = true;
         } else {
           console.error("FATAL ERROR: Unknown element type");
           return;
@@ -2336,6 +2370,8 @@ export default {
         $("#" + this.currentComponentId).removeClass("range-physical-slider");
       } else if (e_type == "screens") {
         $("#" + this.currentComponentId).removeClass("physical-screen");
+        // Enable HDMI Screens button
+        this.hdmiScreens_button_disabled = false;
       } else {
         console.error("Unknown element type");
       }
