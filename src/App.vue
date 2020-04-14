@@ -3377,6 +3377,7 @@ Draggable elements css
   position: relative; /*parent must have positioning*/
   border-color: rgb(174, 213, 129);
   border-style: dotted;
+  vertical-align: top;
 }
 
 .draggable_element:after {
