@@ -1148,6 +1148,20 @@ export default {
           requires: ["ads1015", "at42qt1010", "tb6612fng"]
         },
         1: {
+          component: "U1",
+          description: "Temperature Sensor MCP9808",
+          schematic: "temperature_sensor",
+          buyLink:
+            "https://www.digikey.com/product-detail/en/adafruit-industries-llc/1782/1528-1032-ND/4990781",
+          hardElement: "physical-motorized-pot",
+          hardElementVars: "(i2c-addr:0x18, i2c-port:url($i2c))",
+          partImage: "range/mcp9808.png",
+          image: "range/mcp9808.svg",
+          height: "36mm",
+          width: "36mm",
+          requires: []
+        },
+        2: {
           component: "POTTODO", // TODO add device and schematic
           description: "Potentiometer 100K",
           schematic: "",
