@@ -375,6 +375,136 @@
         </v-card>
       </v-dialog>
 
+      <!-- List of Components Available -->
+      <v-dialog v-model="AvailableComponentsScreen" max-width="70%">
+        <v-card>
+          <v-toolbar dark dense color="grey darken-4">
+            <v-toolbar-title>List of Available Components</v-toolbar-title>
+            <v-divider class="mx-3" inset vertical></v-divider>
+            <v-spacer></v-spacer>
+            <v-divider class="mx-3" inset vertical></v-divider>
+            <v-toolbar-items>
+              <v-btn
+                icon
+                dark
+                class="vbtn"
+                @click="AvailableComponentsScreen = false"
+              >
+                <v-icon>close</v-icon>
+              </v-btn>
+            </v-toolbar-items>
+          </v-toolbar>
+          <v-card-text>
+            <h2>
+              1-bit Input Components
+            </h2>
+            <!-- eslint-disable -->
+            <code>
+  HTML Element Example: 
+  &lt;button id="myInput"&gt; TEXT &lt;/button&gt; 
+            </code>
+            <!-- eslint-enable -->
+            <br />
+            <br />
+            <v-divider></v-divider>
+            <br />
+            <v-layout v-if="eComponentList !== null" row wrap>
+              <v-flex
+                v-for="comp in eComponentList.submit"
+                :key="comp.description"
+              >
+                <v-card>
+                  <v-img
+                    :src="require('./assets/' + comp.partImage)"
+                    height="100px"
+                    contain
+                  >
+                  </v-img>
+                  <v-card-title>
+                    {{ comp.description }}
+                  </v-card-title>
+                </v-card>
+              </v-flex>
+            </v-layout>
+            <br />
+            <br />
+            <h2>
+              N-bit Output Components
+            </h2>
+            <!-- eslint-disable -->
+            <code>
+  HTML Element Example: 
+  &lt;span id="myOutput"&gt; TEXT &lt;/span&gt; 
+            </code>
+            <!-- eslint-enable -->
+            <br />
+            <br />
+            <v-divider></v-divider>
+            <br />
+            <v-layout v-if="eComponentList !== null" row wrap>
+              <v-flex
+                v-for="comp in eComponentList.span"
+                :key="comp.description"
+              >
+                <v-card>
+                  <v-img
+                    :src="require('./assets/' + comp.partImage)"
+                    height="100px"
+                    contain
+                  >
+                  </v-img>
+                  <v-card-title>
+                    {{ comp.description }}
+                  </v-card-title>
+                </v-card>
+              </v-flex>
+            </v-layout>
+            <br />
+            <br />
+            <h2>
+              Sensors (N-bit Range Input) Components
+            </h2>
+            <!-- eslint-disable -->
+            <code>
+  HTML Element Example: 
+  &lt;input type="range" id="mySensor" min="0" max="10" step="1" value="0"&gt; 
+            </code>
+            <!-- eslint-enable -->
+            <br />
+            <br />
+            <v-divider></v-divider>
+            <br />
+            <v-layout v-if="eComponentList !== null" row wrap>
+              <v-flex
+                v-for="comp in eComponentList.range"
+                :key="comp.description"
+              >
+                <v-card>
+                  <v-img
+                    :src="require('./assets/' + comp.partImage)"
+                    height="100px"
+                    contain
+                  >
+                  </v-img>
+                  <v-card-title>
+                    {{ comp.description }}
+                  </v-card-title>
+                </v-card>
+              </v-flex>
+            </v-layout>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              class="vbtn"
+              color="primary"
+              @click="AvailableComponentsScreen = false"
+              >Close</v-btn
+            >
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
       <!-- Build Screen -->
       <v-dialog
         v-model="BuildScreen"
@@ -840,12 +970,12 @@ export default {
     EditorJS_Settings: false,
     EditorJS_extSoruceOne: undefined,
     EditorJS_extSoruceTwo: undefined,
-
     Demos: [
       { title: "Simple LED", demo: SimpleLED },
       { title: "Simple Button", demo: SimpleButton },
       { title: "Video Player", demo: VideoPlayer }
     ],
+    AvailableComponentsScreen: true,
     BuildScreen: false,
     FinalPCB: {
       height: 0,
