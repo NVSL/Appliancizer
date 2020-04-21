@@ -1,22 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <link rel="import" href="amalgam/amalgam.html">
-  <link rel="stylesheet" href="hardware.css">
-  <style>
-  </style>
-  </head>
-  <body>
-<div id="myTemp">25C</div>
+export default {
+  html: `<div id="myTemp">25C</div>
 <button id="tempUP">UP</button>
 <button id="tempDOWN">DOWN</button>
 <input type="range" id="mySensor" min="-45" max="125" step="1" value="25" />
-<span id="myOutput"> OFF </span>
-  <script>
-var SETPOINT = 25;
+<span id="myOutput"> OFF </span>`,
+  css: "",
+  js: `var SETPOINT = 25;
 var NEW_SETPOINT = SETPOINT;
 var CURRENT_TEMP = SETPOINT;
 function changeTemp(temp) {
@@ -101,6 +90,5 @@ tempDOWN.addEventListener("click", () => {
   startSixSecTimer();
   NEW_SETPOINT -= 1;
   changeTemp(NEW_SETPOINT);
-});  </script>
-  </body>
-</html>
+});`,
+};

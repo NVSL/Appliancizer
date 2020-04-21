@@ -39,12 +39,12 @@
             </v-tab>
           </v-tabs>
 
-          <v-btn class="vbtn" flat @click="testClick()">TEST</v-btn>
+          <!-- <v-btn class="vbtn" flat @click="testClick()">TEST</v-btn>
           <v-btn class="vbtn" flat @click="project_save()">PR-SAVE</v-btn>
           <v-btn class="vbtn" flat @click="project_load()">PR-LOAD</v-btn>
           <v-btn class="vbtn" flat @click="ProjectsScreen_open()"
             >PR-SCREEN</v-btn
-          >
+          > -->
         </v-toolbar-items>
       </v-toolbar>
 
@@ -206,6 +206,42 @@
         </v-container>
       </v-content>
 
+      <!-- Build Warnings Dialog -->
+      <v-dialog v-model="BuildWarningsScreen" max-width="40%">
+        <v-card>
+          <v-toolbar dark dense color="warning">
+            <v-toolbar-title>Warning</v-toolbar-title>
+            <v-divider class="mx-3" inset vertical></v-divider>
+            <v-spacer></v-spacer>
+            <v-divider class="mx-3" inset vertical></v-divider>
+            <v-toolbar-items>
+              <v-btn
+                icon
+                dark
+                class="vbtn"
+                @click="BuildWarningsScreen = false"
+              >
+                <v-icon>close</v-icon>
+              </v-btn>
+            </v-toolbar-items>
+          </v-toolbar>
+          <v-card-text>
+            No elements found in PCB area. Add elements to the PCB area (Green
+            Rectange) first !
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              class="vbtn"
+              color="info"
+              light
+              @click="BuildWarningsScreen = false"
+              >Close</v-btn
+            >
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
       <!-- Snackbar for Info -->
       <v-snackbar
         v-model="snackbar"
@@ -255,6 +291,13 @@
           <v-toolbar dark dense color="grey darken-4">
             <v-toolbar-title>Webpage Editor</v-toolbar-title>
             <v-divider class="mx-3" inset vertical></v-divider>
+            <v-btn
+              class="vbtn"
+              outline
+              @click="AvailableComponentsScreen = true"
+            >
+              List of Components
+            </v-btn>
             <v-menu offset-y>
               <template v-slot:activator="{ on }">
                 <v-btn class="vbtn warning" flat v-on="on">
@@ -301,60 +344,88 @@
               :push-other-panes="false"
             >
               <pane>
-                <splitpanes horizontal :push-other-panes="false">
+                <splitpanes
+                  horizontal
+                  :push-other-panes="false"
+                  @resize="HTMLEditor_panes_resize()"
+                >
                   <pane>
-                    <v-toolbar color="grey darken-4" dark dense>
-                      <v-toolbar-title>
-                        <strong>HTML</strong>
-                      </v-toolbar-title>
-                    </v-toolbar>
-                    <v-divider></v-divider>
-                    <div id="htmlEditor">{{ EditorHTMLText }}</div>
+                    <v-container fill-height pa-0>
+                      <v-layout column wrap>
+                        <v-flex shrink>
+                          <v-toolbar color="grey darken-4" dark dense>
+                            <v-toolbar-title>
+                              <strong>HTML</strong>
+                            </v-toolbar-title>
+                          </v-toolbar>
+                        </v-flex>
+                        <v-divider></v-divider>
+                        <v-flex grow>
+                          <div id="htmlEditor">{{ EditorHTMLText }}</div>
+                        </v-flex>
+                      </v-layout>
+                    </v-container>
                   </pane>
                   <pane>
-                    <v-toolbar color="grey darken-4" dark dense>
-                      <v-toolbar-title>
-                        <strong>CSS</strong>
-                      </v-toolbar-title>
-                    </v-toolbar>
-                    <v-divider></v-divider>
-                    <div id="cssEditor">{{ EditorCSSText }}</div>
+                    <v-container fill-height pa-0>
+                      <v-layout column wrap>
+                        <v-flex shrink>
+                          <v-toolbar color="grey darken-4" dark dense>
+                            <v-toolbar-title>
+                              <strong>CSS</strong>
+                            </v-toolbar-title>
+                          </v-toolbar>
+                        </v-flex>
+                        <v-divider></v-divider>
+                        <v-flex grow>
+                          <div id="cssEditor">{{ EditorCSSText }}</div>
+                        </v-flex>
+                      </v-layout>
+                    </v-container>
                   </pane>
                   <pane>
-                    <v-expansion-panel color="grey darken-4" dark>
-                      <v-expansion-panel-content>
-                        <template v-slot:header>
-                          <v-toolbar-title>
-                            <strong>JS</strong>
-                          </v-toolbar-title>
-                        </template>
-                        <v-card class="white">
-                          <v-container class="pt-4 pb-0 my-0">
-                            <!-- <v-subheader class="py-1 my-1">Example: https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js</v-subheader> -->
-                            <v-text-field
-                              light
-                              class="pa-0 ma-1"
-                              v-model="EditorJS_extSoruceOne"
-                              label="External Source 1"
-                              placeholder="https://..."
-                              type="text"
-                              clearable
-                            ></v-text-field>
-                            <v-text-field
-                              light
-                              class="pa-0 ma-1"
-                              v-model="EditorJS_extSoruceTwo"
-                              label="External Source 2"
-                              placeholder="https://..."
-                              type="text"
-                              clearable
-                            ></v-text-field>
-                          </v-container>
-                        </v-card>
-                      </v-expansion-panel-content>
-                    </v-expansion-panel>
-                    <v-divider></v-divider>
-                    <div id="jsEditor">{{ EditorJSText }}</div>
+                    <v-container fill-height pa-0>
+                      <v-layout column wrap>
+                        <v-flex shrink>
+                          <v-expansion-panel color="grey darken-4" dark>
+                            <v-expansion-panel-content>
+                              <template v-slot:header>
+                                <v-toolbar-title>
+                                  <strong>JS</strong>
+                                </v-toolbar-title>
+                              </template>
+                              <v-card class="white">
+                                <v-container class="pt-4 pb-0 my-0">
+                                  <!-- <v-subheader class="py-1 my-1">Example: https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js</v-subheader> -->
+                                  <v-text-field
+                                    light
+                                    class="pa-0 ma-1"
+                                    v-model="EditorJS_extSoruceOne"
+                                    label="External Source 1"
+                                    placeholder="https://..."
+                                    type="text"
+                                    clearable
+                                  ></v-text-field>
+                                  <v-text-field
+                                    light
+                                    class="pa-0 ma-1"
+                                    v-model="EditorJS_extSoruceTwo"
+                                    label="External Source 2"
+                                    placeholder="https://..."
+                                    type="text"
+                                    clearable
+                                  ></v-text-field>
+                                </v-container>
+                              </v-card>
+                            </v-expansion-panel-content>
+                          </v-expansion-panel>
+                        </v-flex>
+                        <v-divider></v-divider>
+                        <v-flex grow>
+                          <div id="jsEditor"></div>
+                        </v-flex>
+                      </v-layout>
+                    </v-container>
                   </pane>
                 </splitpanes>
               </pane>
@@ -399,9 +470,17 @@
               1-bit Input Components
             </h2>
             <!-- eslint-disable -->
-            <code>
-  HTML Element Example: 
-  &lt;button id="myInput"&gt; TEXT &lt;/button&gt; 
+            <div> Code Snippets: </div>
+            <code style="vertical-align:top; margin-right: 20px; height: 120px">
+  HTML: 
+  &lt;button id="myInput"&gt; TEXT &lt;/button&gt;
+            </code>
+            <code style="height: 120px">
+  JavaScript: 
+  let myInput = document.getElementById("myInput");
+  myInput.addEventListener("click", () => {
+    // Input code
+  }); 
             </code>
             <!-- eslint-enable -->
             <br />
@@ -432,9 +511,15 @@
               N-bit Output Components
             </h2>
             <!-- eslint-disable -->
-            <code>
-  HTML Element Example: 
-  &lt;span id="myOutput"&gt; TEXT &lt;/span&gt; 
+            <div> Code Snippets: </div>
+            <code style="vertical-align:top; margin-right: 20px; height: 120px">
+  HTML: 
+ &lt;span id="myOutput"&gt; TEXT &lt;/span&gt; 
+            </code>
+            <code style="height: 120px">
+  JavaScript: 
+  let myOutput = document.getElementById("myOutput");
+  myOutput.innerText = "ON";
             </code>
             <!-- eslint-enable -->
             <br />
@@ -465,9 +550,17 @@
               Sensors (N-bit Range Input) Components
             </h2>
             <!-- eslint-disable -->
-            <code>
-  HTML Element Example: 
+            <div> Code Snippets: </div>
+            <code style="vertical-align:top; margin-right: 20px; height: 120px">
+  HTML: 
   &lt;input type="range" id="mySensor" min="0" max="10" step="1" value="0"&gt; 
+            </code>
+            <code style="height: 120px">
+  JavaScript: 
+  let mySensor = document.getElementById("mySensor");
+  mySensor.oninput = () => {
+    console.log(mySensor.value);
+  };
             </code>
             <!-- eslint-enable -->
             <br />
@@ -497,7 +590,8 @@
             <v-spacer></v-spacer>
             <v-btn
               class="vbtn"
-              color="primary"
+              color="info"
+              light
               @click="AvailableComponentsScreen = false"
               >Close</v-btn
             >
@@ -891,6 +985,7 @@ import axios from "axios";
 import VideoPlayer from "./demos/VideoPlayer";
 import SimpleButton from "./demos/SimpleButton";
 import SimpleLED from "./demos/SimpleLED";
+// import TemperatureController from "./demos/TemperatureController";
 
 var SERVER_URL;
 if (process.env.NODE_ENV === "production") {
@@ -954,6 +1049,7 @@ export default {
     menu_x: 0,
     iframeOnScreen: false,
     menu_items: [{ title: "Rotate" }],
+    BuildWarningsScreen: false,
     HTMLEditor: false,
     HTMLEditor_clear: false,
     HTMLEditor_projectLoad: false,
@@ -974,8 +1070,9 @@ export default {
       { title: "Simple LED", demo: SimpleLED },
       { title: "Simple Button", demo: SimpleButton },
       { title: "Video Player", demo: VideoPlayer }
+      // { title: "Temp Controller", demo: TemperatureController }
     ],
-    AvailableComponentsScreen: true,
+    AvailableComponentsScreen: false,
     BuildScreen: false,
     FinalPCB: {
       height: 0,
@@ -1287,8 +1384,8 @@ export default {
           hardElementVars: "(i2c-addr:0x18, i2c-port:url($i2c))",
           partImage: "range/mcp9808.png",
           image: "range/mcp9808.svg",
-          height: "36mm",
-          width: "36mm",
+          height: "13mm",
+          width: "21mm",
           requires: []
         },
         2: {
@@ -1550,6 +1647,7 @@ export default {
         {
           FinalPCB_height: this.FinalPCB.height,
           FinalPCB_width: this.FinalPCB.width,
+          hdmiScreens_current: this.hdmiScreens_current,
           EditorHTMLText: this.EditorHTMLText,
           EditorCSSText: this.EditorCSSText,
           EditorJSText: this.EditorJSText,
@@ -1563,7 +1661,7 @@ export default {
         null,
         2
       );
-      console.log(this.project_data);
+      // console.log(this.project_data);
       // console.log(this.EditorHTMLText);
       // console.log(this.EditorCSSText);
       // console.log(this.EditorJSText);
@@ -2620,6 +2718,12 @@ export default {
       this.EditorJSText = Demo.js;
       this.EditorJS.getSession().setValue(this.EditorJSText);
     },
+    HTMLEditor_panes_resize() {
+      // Redraw Editors
+      this.EditorHTML.resize();
+      this.EditorCSS.resize();
+      this.EditorJS.resize();
+    },
     HTMLEditor_run() {
       // Refresh iframe
       var iframe = document.querySelector("#HTMLEditor_iframe");
@@ -2760,6 +2864,12 @@ export default {
       return finalhardVar;
     },
     openBuildScreen() {
+      // If there are no components in PCB return
+      if (Object.keys(this.eComponentSaved).length == 0) {
+        this.BuildWarningsScreen = true;
+        return;
+      }
+
       // Just to test Build screen
       this.BuildScreen = true;
 
@@ -3186,6 +3296,9 @@ export default {
             zip.file(gerberFiles[key].filename, gerberFiles[key].data);
           }
         }
+        // Zip all project data
+        this.project_save();
+        zip.file("project.json", this.project_data);
         zip.generateAsync({ type: "blob" }).then(function(content) {
           // see FileSaver.js
           FileSaver.saveAs(content, "GerberFiles.zip");
@@ -3394,6 +3507,8 @@ app.on('ready', createWindow)`;
 }
 
 #PCB {
+  margin-left: 8px;
+  margin-top: 4px;
   position: relative !important; /* Makes the PCB inlined to parent */
 }
 
@@ -3583,19 +3698,19 @@ HTML Editor css
 
 #htmlEditor {
   width: 100%;
-  height: 80%;
+  height: 100%;
   overflow: hidden;
 }
 
 #cssEditor {
   width: 100%;
-  height: 80%;
+  height: 100%;
   overflow: hidden;
 }
 
 #jsEditor {
   width: 100%;
-  height: 80%;
+  height: 100%;
   overflow: hidden;
 }
 
