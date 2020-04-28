@@ -46,7 +46,7 @@ if (process.env.NODE_ENV === "production") {
 // Send JSON
 app.get("/api/status", (req, res) => {
   res.send({
-    message: "Server Running Fine :D"
+    message: "Server Running Fine :D",
   });
 });
 
@@ -100,7 +100,7 @@ app.post("/api/upload", function(req, res) {
 // Authenticate user
 app.post("/api/register", function(req, res) {
   res.send({
-    message: `Hello ${req.body.email}! your user was registered!`
+    message: `Hello ${req.body.email}! your user was registered!`,
   });
 });
 
@@ -191,32 +191,32 @@ app.get("/api/amalgamFiles", (req, res) => {
       {
         filename: "physical-motorized-pot.js",
         data: physicalMotorizedPotJS,
-        folder: ""
+        folder: "",
       },
       { filename: "physical-pot.js", data: physicalPotJS, folder: "" },
       { filename: "physical-rgb-led.js", data: physicalRgbLedJS, folder: "" },
       {
         filename: "physical-servo-motor.js",
         data: physicalServoMotorJS,
-        folder: ""
+        folder: "",
       },
       { filename: "physical-output.js", data: physicalOutputJS, folder: "" },
       {
         filename: "test-physical-button.js",
         data: testPhysicalButtonJS,
-        folder: ""
+        folder: "",
       },
       {
         filename: "test-physical-submit.js",
         data: testPhysicalSubmitJS,
-        folder: ""
+        folder: "",
       },
       {
         filename: "raspberrypi_pinout.css",
         data: raspberryPinoutCSS,
-        folder: "boards_pinout"
-      }
-    ]
+        folder: "boards_pinout",
+      },
+    ],
   });
 });
 
@@ -234,7 +234,7 @@ app.post("/api/generateWebPage", function(req, res) {
     function(err) {
       if (err) {
         res.status(500).send({
-          error: "Server error when creating html File"
+          error: "Server error when creating html File",
         });
         throw err;
       }
@@ -248,7 +248,7 @@ app.post("/api/generateWebPage", function(req, res) {
     function(err) {
       if (err) {
         res.status(500).send({
-          error: "Server error when creating css File"
+          error: "Server error when creating css File",
         });
         throw err;
       }
@@ -264,11 +264,11 @@ app.post("/api/generateWebPage", function(req, res) {
   // If success send the user a link back
   if (process.env.NODE_ENV === "production") {
     res.send({
-      link: `${WEB_URL}/userapps/${userName}`
+      link: `${WEB_URL}/userapps/${userName}`,
     });
   } else {
     res.send({
-      link: `${WEB_URL}:${LOCALHOST_PORT}/userapps/${userName}`
+      link: `${WEB_URL}:${LOCALHOST_PORT}/userapps/${userName}`,
     });
   }
 });
@@ -283,10 +283,10 @@ app.post("/api/generatePCB", function(req, res) {
   let pyprog = spawn("python3", [
     "../../json_to_eagle_brd/builder.py",
     "-i",
-    JSON.stringify(req.body.pcbInput)
+    JSON.stringify(req.body.pcbInput),
   ]);
 
-  pyprog.stderr.on("data", data => {
+  pyprog.stderr.on("data", (data) => {
     // Data error
     console.log("\nDATA ERROR:\n", data.toString("utf8"));
   });
@@ -330,7 +330,7 @@ app.get("/api/autoroutePCB", function(req, res) {
   let spawn = require("child_process").spawn;
   let eagleAutoroute = spawn("../../eagle-9.4.2/eagle", [
     "../../json_to_eagle_brd/COMBINED.brd",
-    "-CAUTO;WRITE @ROUTED.brd;QUIT;"
+    "-CAUTO;WRITE @ROUTED.brd;QUIT;",
   ]);
   // Set timeout for eagle autoruter
   setTimeout(function() {
@@ -341,9 +341,9 @@ app.get("/api/autoroutePCB", function(req, res) {
       console.log("\n######\n###### Autorouting PCB (Timeout) \n######");
       return;
     }
-  }, 240000); // 4 mins max
+  }, 300000); // 5 mins max
 
-  eagleAutoroute.stderr.on("data", data => {
+  eagleAutoroute.stderr.on("data", (data) => {
     // Data error
     console.log("\nDATA ERROR:\n", data.toString("utf8"));
   });
@@ -392,7 +392,7 @@ app.get("/api/generateGerber", function(req, res) {
     "../../json_to_eagle_brd/artik_2layer.cam",
     "../../json_to_eagle_brd/ROUTED.brd",
     "-o",
-    "../../json_to_eagle_brd/GERBER/"
+    "../../json_to_eagle_brd/GERBER/",
   ]);
   // Set timeout for eagle autoruter
   setTimeout(function() {
@@ -405,7 +405,7 @@ app.get("/api/generateGerber", function(req, res) {
     }
   }, 10000); // 10 seconds
 
-  eagleGerber.stderr.on("data", data => {
+  eagleGerber.stderr.on("data", (data) => {
     // Data error
     console.log("\nDATA ERROR:\n", data.toString("utf8"));
   });
@@ -480,8 +480,8 @@ app.get("/api/generateGerber", function(req, res) {
             { filename: "routed.GTO", data: routedGTO, folder: "" },
             { filename: "routed.GTP", data: routedGTP, folder: "" },
             { filename: "routed.GTS", data: routedGTS, folder: "" },
-            { filename: "routed.TXT", data: routedTXT, folder: "" }
-          ]
+            { filename: "routed.TXT", data: routedTXT, folder: "" },
+          ],
         });
         // Eagle generated gerber files correctly
         console.log(

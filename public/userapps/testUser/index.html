@@ -7,100 +7,112 @@
   <link rel="import" href="amalgam/amalgam.html">
   <link rel="stylesheet" href="hardware.css">
   <style>
+#video-placeholder {
+  width: 100%;
+}
+
+#progressBar {
+  width: 99%;
+}
+
+body {
+  margin: 0;
+}
   </style>
   </head>
   <body>
-<div id="myTemp">25C</div>
-<button id="tempUP">UP</button>
-<button id="tempDOWN">DOWN</button>
-<input type="range" id="mySensor" min="-45" max="125" step="1" value="25" />
-<span id="myOutput"> OFF </span>
+<div id="video-placeholder"></div> 
+<br>
+<button onclick="playPause()" id="playPause">Play/Pause</button>
+<button onclick="prev()" id="prev">Prev</button>
+<button onclick="next()" id="next">Next</button>
+<input type="range" min="0" max="100" step="1" value="10" id="slider">
+<input type="range" min="0" max="10" step="1" value="0" id="progressBar">
+
   <script>
-var SETPOINT = 25;
-var NEW_SETPOINT = SETPOINT;
-var CURRENT_TEMP = SETPOINT;
-function changeTemp(temp) {
-  let myTemp = document.getElementById("myTemp");
-  myTemp.innerText = temp + "C";
-}
-function displayTemp() {
-  let myTemp = document.getElementById("myTemp");
-  myTemp.style.visibility = "visible";
-}
-function hideTemp() {
-  let myTemp = document.getElementById("myTemp");
-  myTemp.style.visibility = "hidden";
-}
-function toogleTempVisibility() {
-  let myTemp = document.getElementById("myTemp");
-  let tempVisibility = myTemp.style.visibility;
-  if (tempVisibility == "visible") {
-    hideTemp();
-  } else {
-    displayTemp();
-  }
-}
 
-function checkSetPointTemp(SETPOINT) {
-  let myOutput = document.getElementById("myOutput");
-  if (CURRENT_TEMP > SETPOINT) {
-    myOutput.innerText = "ON";
-  } else {
-    myOutput.innerText = "OFF";
-  }
-}
+// Load YouTube library
+var tag = document.createElement("script");
+tag.src = "https://www.youtube.com/iframe_api";
+var firstScriptTag = document.getElementsByTagName("script")[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-var mySensor = document.getElementById("mySensor");
-mySensor.oninput = () => {
-  CURRENT_TEMP = mySensor.value;
-  changeTemp(CURRENT_TEMP);
-  checkSetPointTemp(SETPOINT);
-};
-
-// Init SETPOINT
-changeTemp(SETPOINT);
-console.log("Set point: ", SETPOINT);
-
-// tempreature set mode
-
-// Hide and display text
-var oneSecTimer = null;
-function startOneSecTimer() {
-  oneSecTimer = setInterval(() => {
-    toogleTempVisibility();
-  }, 500);
-}
-
-var sixSecTimer = null;
-function startSixSecTimer() {
-  displayTemp();
-  if (sixSecTimer == null) startOneSecTimer();
-  if (sixSecTimer != null) clearTimeout(sixSecTimer);
-  sixSecTimer = setTimeout(() => {
-    clearInterval(oneSecTimer);
-    if (NEW_SETPOINT != SETPOINT) {
-      SETPOINT = NEW_SETPOINT;
-      console.log("New Set point: ", SETPOINT);
+var player = null;
+var playerState = null;
+function onYouTubeIframeAPIReady() {
+  player = new YT.Player("video-placeholder", {
+    width: 600,
+    height: 475,
+    videoId: "DCLrDnZO_0E",
+    playerVars: {
+      rel: 0,
+      color: "white",
+      playlist: "dQiNVk_u0po, IvUU8joBb1Q,S-m-CHigCY4,HpaHvUOk3F0",
+    },
+    events: {
+      onReady: youtubeInit
     }
-    changeTemp(CURRENT_TEMP);
-    checkSetPointTemp(SETPOINT);
-    displayTemp();
-    sixSecTimer = null;
-  }, 6000);
+  });
+}
+function youtubeInit () { 
+  var progressBar = document.getElementById("progressBar");
+  //progressBar.setAttribute("max", `${player.getDuration()}`);
+  // Chrome bug: this way it doesnt trigger webcomponent attribute-change
+  progressBar.max = player.getDuration();
+  playerState = YT.PlayerState.PAUSED;
+  player.unMute(); // unMute by Defalut
+  setInterval(function () {
+    updateProgressBar();
+  }, 1000);
+}
+function updateProgressBar() {
+  var progressBar = document.getElementById("progressBar");
+  if (progressBar == null) return;
+  //progressBar.setAttribute("value", `${player.getCurrentTime()}`);
+  // Chrome bug: this way it doesnt trigger webcompoent attribute-change
+  progressBar.value = player.getCurrentTime(); 
+  // Update DURATION 
+  //progressBar.setAttribute("max", `${player.getDuration()}`);
+  // Chrome bug: this way it doesnt trigger webcomponent attribute-change
+  if (player.getDuration() != progressBar.max) {
+	progressBar.max = player.getDuration();
+  }
+}
+function formatTime(time){
+  time = Math.round(time);
+  var minutes = Math.floor(time / 60),
+  seconds = time - minutes * 60;
+  seconds = seconds < 10 ? "0" + seconds : seconds;
+  return minutes + ":" + seconds;
+}
+function playPause () {
+  if (player.getPlayerState() == YT.PlayerState.CUED || 
+	  player.getPlayerState() == YT.PlayerState.PAUSED ) {
+    player.playVideo();
+  } else {
+    player.pauseVideo();
+  }
+}
+function prev () {
+  player.previousVideo();
+}
+function next () {
+  player.nextVideo();
+}
+var slider = document.getElementById("slider");
+slider.oninput = function() {
+  if (typeof player.setVolume === "function" && player !== null) {
+    player.setVolume(this.value);
+  }
+}
+var progressBar = document.getElementById("progressBar");
+progressBar.oninput = function() {
+  if (typeof player.seekTo === "function" && player !== null) {
+    player.seekTo(this.value);
+  }
 }
 
-let tempUP = document.getElementById("tempUP");
-tempUP.addEventListener("click", () => {
-  startSixSecTimer();
-  NEW_SETPOINT += 1;
-  changeTemp(NEW_SETPOINT);
-});
 
-let tempDOWN = document.getElementById("tempDOWN");
-tempDOWN.addEventListener("click", () => {
-  startSixSecTimer();
-  NEW_SETPOINT -= 1;
-  changeTemp(NEW_SETPOINT);
-});  </script>
+  </script>
   </body>
 </html>

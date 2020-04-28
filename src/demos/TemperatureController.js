@@ -1,3 +1,4 @@
+/* eslint-disable */
 export default {
   html: `<div id="myTemp">25C</div>
 <button id="tempUP">UP</button>

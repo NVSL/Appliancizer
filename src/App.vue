@@ -337,6 +337,7 @@
               </v-btn>
             </v-toolbar-items>
           </v-toolbar>
+          <!-- Missing a flex to fill height insted of trying percentages -->
           <v-container id="editorMainPanes" fluid fill-height>
             <splitpanes
               class="default-theme"
@@ -985,7 +986,7 @@ import axios from "axios";
 import VideoPlayer from "./demos/VideoPlayer";
 import SimpleButton from "./demos/SimpleButton";
 import SimpleLED from "./demos/SimpleLED";
-// import TemperatureController from "./demos/TemperatureController";
+import TemperatureController from "./demos/TemperatureController";
 
 var SERVER_URL;
 if (process.env.NODE_ENV === "production") {
@@ -1069,8 +1070,8 @@ export default {
     Demos: [
       { title: "Simple LED", demo: SimpleLED },
       { title: "Simple Button", demo: SimpleButton },
-      { title: "Video Player", demo: VideoPlayer }
-      // { title: "Temp Controller", demo: TemperatureController }
+      { title: "Video Player", demo: VideoPlayer },
+      { title: "Temp Controller", demo: TemperatureController }
     ],
     AvailableComponentsScreen: false,
     BuildScreen: false,
@@ -3721,6 +3722,7 @@ HTML Editor css
 }
 
 #editorMainPanes {
+  /* TODO: Should be flex:1 */
   height: 90%;
 }
 
