@@ -22,6 +22,7 @@
         <v-toolbar-title class="hidden-sm-and-down"
           >Appliancizer</v-toolbar-title
         >
+        <v-divider class="mx-3" inset vertical></v-divider>
         <v-spacer></v-spacer>
         <v-toolbar-items>
           <v-tabs right slider-color="rgb(174, 213, 129)" color="grey darken-4">
@@ -38,7 +39,6 @@
               </v-btn>
             </v-tab>
           </v-tabs>
-
           <!-- <v-btn class="vbtn" flat @click="testClick()">TEST</v-btn>
           <v-btn class="vbtn" flat @click="project_save()">PR-SAVE</v-btn>
           <v-btn class="vbtn" flat @click="project_load()">PR-LOAD</v-btn>
@@ -46,6 +46,70 @@
             >PR-SCREEN</v-btn
           > -->
         </v-toolbar-items>
+
+        <!-- User Profile -->
+        <div v-if="auth.username">
+          <v-menu
+            v-model="signOut_MenuDisplay"
+            :close-on-content-click="false"
+            :nudge-width="100"
+            offset-y
+          >
+            <template v-slot:activator="{ on }">
+              <v-btn class="vbtn text-none" outline v-on="on">
+                <v-icon v-if="auth.security_level === 'admin'">vpn_key </v-icon>
+                {{ auth.username }}
+              </v-btn>
+            </template>
+
+            <v-card>
+              <v-list>
+                <v-list-tile>
+                  <v-list-tile-avatar>
+                    <v-avatar color="rgb(174, 213, 129)">
+                      <!-- TODO: put this in a computed method -->
+                      <span class="white--text headline">{{
+                        auth.username.charAt(0).toUpperCase()
+                      }}</span>
+                    </v-avatar>
+                  </v-list-tile-avatar>
+
+                  <v-list-tile-content>
+                    <v-list-tile-title>Username</v-list-tile-title>
+                    <v-list-tile-sub-title
+                      class="font-weight-light subtitle-1"
+                      >{{ auth.username }}</v-list-tile-sub-title
+                    >
+                  </v-list-tile-content>
+
+                  <v-list-tile-action> </v-list-tile-action>
+                </v-list-tile>
+              </v-list>
+
+              <v-divider></v-divider>
+
+              <v-list dense nav>
+                <v-list-tile @click="signOut()">
+                  <v-list-tile-avatar>
+                    <v-icon>meeting_room</v-icon>
+                  </v-list-tile-avatar>
+                  <v-list-tile-content>
+                    Sign out
+                  </v-list-tile-content>
+                </v-list-tile>
+                <v-list-tile @click="ProjectsScreen_open()">
+                  <v-list-tile-avatar>
+                    <v-icon>dashboard</v-icon>
+                  </v-list-tile-avatar>
+                  <v-list-tile-content>
+                    Projects dashboard
+                  </v-list-tile-content>
+                </v-list-tile>
+              </v-list>
+            </v-card>
+          </v-menu>
+        </div>
+        <v-btn v-else class="vbtn" outline @click="signIn()">SIGN IN</v-btn>
       </v-toolbar>
 
       <!-- #Main Content -->
@@ -137,7 +201,11 @@
                       class="vbtn"
                       @click="openBuildScreen()"
                     >
-                      BUILD
+                      BUILD {{
+                        project_data.projectname
+                          ? project_data.projectname
+                          : "?"
+                      }}
                       <v-icon>build</v-icon>
                     </v-btn>
                   </v-layout>
@@ -940,16 +1008,252 @@
         </v-card>
       </v-dialog>
 
+      <!-- Login Register Dialog -->
+      <v-dialog
+        @keydown.enter.native="signIn_enterClick()"
+        v-model="signIn_Dialog"
+        max-width="600px"
+        retain-focus
+      >
+        <v-card>
+          <v-tabs
+            v-model="signIn_Tab"
+            dark
+            grow
+            color="grey darken-4"
+            slider-color="rgb(174, 213, 129)"
+          >
+            <v-tab>
+              LogIn
+            </v-tab>
+            <v-tab>
+              Register
+            </v-tab>
+            <v-tab> Forgot <br />Password? </v-tab>
+            <v-tab-item>
+              <!-- LOGIN -->
+              <v-card>
+                <v-card-title primary-title>
+                  <div class="headline">Login</div>
+                </v-card-title>
+                <v-card-text>
+                  <v-form v-model="signIn_LoginValidate" ref="signIn_LoginForm">
+                    <v-text-field
+                      classs="inputField"
+                      v-model="signIn_LoginUsername"
+                      label="Username"
+                      prepend-icon="face"
+                      name="username"
+                      :rules="signIn_LoginUsernameRules"
+                      color="rgb(174, 213, 129)"
+                      autocomplete="on"
+                      required
+                    />
+                    <v-text-field
+                      classs="inputField"
+                      v-model="signIn_LoginPassword"
+                      :type="signIn_LoginShowPassword ? 'text' : 'password'"
+                      label="Password"
+                      prepend-icon="lock"
+                      :append-icon="
+                        signIn_LoginShowPassword
+                          ? 'visibility'
+                          : 'visibility_off'
+                      "
+                      @click:append="
+                        signIn_LoginShowPassword = !signIn_LoginShowPassword
+                      "
+                      :rules="signIn_LoginPasswordRules"
+                      color="rgb(174, 213, 129)"
+                      autocomplete="new-password"
+                      required
+                    />
+                  </v-form>
+                  <v-alert
+                    dense
+                    type="error"
+                    icon="warning"
+                    :value="signIn_LoginErrorTextDisplay"
+                    >{{ signIn_LoginErrorText }}</v-alert
+                  >
+                </v-card-text>
+                <v-divider></v-divider>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn
+                    outline
+                    class="vbtn"
+                    @click="signIn_Login()"
+                    color="rgb(174, 213, 129)"
+                    >Log in</v-btn
+                  >
+                </v-card-actions>
+              </v-card>
+            </v-tab-item>
+            <v-tab-item>
+              <!-- REGISTER -->
+              <v-window v-model="signIn_RegisterStep">
+                <!-- STEP 1 (REGISTER)-->
+                <v-window-item :value="1">
+                  <v-card>
+                    <v-card-title primary-title>
+                      <div class="headline">Register</div>
+                    </v-card-title>
+                    <v-card-text>
+                      <v-form
+                        ref="signIn_RegisterForm"
+                        v-model="signIn_RegisterValidate"
+                        lazy-validation
+                      >
+                        <v-text-field
+                          classs="inputField"
+                          v-model="signIn_RegisterUsername"
+                          label="Username"
+                          prepend-icon="face"
+                          name="username"
+                          :rules="signIn_RegisterUsernameRules"
+                          :counter="25"
+                          color="rgb(174, 213, 129)"
+                          autocomplete="on"
+                        />
+                        <v-text-field
+                          classs="inputField"
+                          v-model="signIn_RegisterEmail"
+                          label="Email"
+                          prepend-icon="email"
+                          name="email"
+                          autocomplete="email"
+                          :rules="signIn_RegisterEmailRules"
+                          color="rgb(174, 213, 129)"
+                        />
+                        <v-text-field
+                          classs="inputField"
+                          v-model="signIn_RegisterPassword"
+                          :type="
+                            signIn_RegisterShowPassword ? 'text' : 'password'
+                          "
+                          label="Password"
+                          hint="At least 8 characters"
+                          prepend-icon="lock"
+                          :append-icon="
+                            signIn_RegisterShowPassword
+                              ? 'visibility'
+                              : 'visibility_off'
+                          "
+                          @click:append="
+                            signIn_RegisterShowPassword = !signIn_RegisterShowPassword
+                          "
+                          :rules="signIn_RegisterPasswordRules"
+                          color="rgb(174, 213, 129)"
+                          autocomplete="new-password"
+                        />
+                        <v-text-field
+                          classs="inputField"
+                          v-model="signIn_RegisterPasswordConfirm"
+                          :type="
+                            signIn_RegisterShowPassword ? 'text' : 'password'
+                          "
+                          label="Confirm Password"
+                          prepend-icon="lock"
+                          :append-icon="
+                            signIn_RegisterShowPassword
+                              ? 'visibility'
+                              : 'visibility_off'
+                          "
+                          @click:append="
+                            signIn_RegisterShowPassword = !signIn_RegisterShowPassword
+                          "
+                          :rules="signIn_RegisterPasswordConfirmRules"
+                          autocomplete="new-password"
+                          color="rgb(174, 213, 129)"
+                        />
+                      </v-form>
+                      <v-alert
+                        dense
+                        type="error"
+                        icon="warning"
+                        :value="signIn_RegisterErrorTextDisplay"
+                        >{{ signIn_RegisterErrorText }}</v-alert
+                      >
+                    </v-card-text>
+                    <v-divider></v-divider>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn
+                        outline
+                        class="vbtn"
+                        @click="signIn_CreateAccount()"
+                        color="rgb(174, 213, 129)"
+                        >Create Account</v-btn
+                      >
+                    </v-card-actions>
+                  </v-card>
+                </v-window-item>
+                <!-- STEP 2 (THANK YOU, VERIFICATION EMAIL SENT)-->
+                <v-window-item :value="2">
+                  <v-card height="100%">
+                    <v-card-title primary-title>
+                      <div class="headline">Thank you!</div>
+                    </v-card-title>
+                    <v-card-text>
+                      <br />
+                      <br />
+                      <br />
+                      <br />
+                      <strike>
+                        TODO: A verification link has been sent to your email !
+                      </strike>
+                      <br />
+                      Welcome! {{ auth.username }}
+                      <br />
+                      <br />
+                      <br />
+                      <br />
+                      <br />
+                    </v-card-text>
+                    <v-divider></v-divider>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn
+                        outline
+                        class="vbtn"
+                        @click="signIn_Dialog = false"
+                        color="rgb(174, 213, 129)"
+                        >Close</v-btn
+                      >
+                    </v-card-actions>
+                  </v-card>
+                </v-window-item>
+              </v-window>
+            </v-tab-item>
+            <v-tab-item>
+              <!-- FORGOT PASSWORD -->
+              <v-card>
+                <v-card-title primary-title>
+                  <div class="headline">Forgot Password?</div>
+                </v-card-title>
+                <v-card-text>
+                  <br />
+                  <br />
+                  <br />Is your fault for not being careful!
+                  <br />
+                  ... just kidding I havn't implmented this yet.
+                </v-card-text>
+              </v-card>
+            </v-tab-item>
+          </v-tabs>
+        </v-card>
+      </v-dialog>
+
       <!-- Projects Screen -->
       <v-dialog
         v-model="ProjectsScreen"
-        fullscreen
-        hide-overlay
+        width="90%"
         transition="dialog-bottom-transition"
       >
         <v-card id="projectsScreenDialogHeight">
           <v-toolbar dark dense color="grey darken-4">
-            <v-toolbar-title>Projects Screen</v-toolbar-title>
+            <v-toolbar-title>Projects Dashboard</v-toolbar-title>
             <v-divider class="mx-3" inset vertical></v-divider>
             <v-spacer></v-spacer>
             <v-divider class="mx-3" inset vertical></v-divider>
@@ -959,7 +1263,47 @@
               </v-btn>
             </v-toolbar-items>
           </v-toolbar>
-          <v-container fluid> </v-container>
+          <v-container fluid>
+            <v-data-table
+              :headers="projects_table_headers"
+              :items="projects_table_items"
+              :items-per-page="5"
+              class="elevation-1"
+            >
+              <template slot="items" slot-scope="props">
+                <td>{{ props.item.name }}</td>
+                <td>
+                  <v-img
+                    class="my-4"
+                    :src="require('' + props.item.pcbImage)"
+                    width="150px"
+                    contain
+                  >
+                  </v-img>
+                </td>
+                <td>{{ props.item.created_date }}</td>
+                <td>{{ props.item.updated_date }}</td>
+                <td>
+                  <a
+                    :href="ProjectsScreen_generateWebLink(props.item.name)"
+                    target="_blank"
+                  >
+                    {{ ProjectsScreen_generateWebLink(props.item.name) }}</a
+                  >
+                </td>
+                <td>
+                  <v-btn
+                    dark
+                    class="vbtn"
+                    color="primary"
+                    @click="ProjectsScreen_loadProject(props.item.name)"
+                  >
+                    Load
+                  </v-btn>
+                </td>
+              </template>
+            </v-data-table>
+          </v-container>
         </v-card>
       </v-dialog>
     </v-app>
@@ -989,11 +1333,14 @@ import SimpleLED from "./demos/SimpleLED";
 import TemperatureController from "./demos/TemperatureController";
 
 var SERVER_URL;
+var WEBSITE_URL;
 if (process.env.NODE_ENV === "production") {
   // Set Production variables
+  WEBSITE_URL = "https://appliancizer.com/";
   SERVER_URL = "https://appliancizer.com/api/";
 } else {
   // Set Develpmnet variables
+  WEBSITE_URL = "http://localhost/";
   SERVER_URL = "http://localhost:3000/api/";
 }
 
@@ -1011,6 +1358,37 @@ export default {
     PcbBoard
   },
   data: () => ({
+    // Autentication
+    signIn_Dialog: false,
+    signIn_Tab: null,
+    signIn_LoginShowPassword: false,
+    signIn_LoginValidate: false,
+    signIn_LoginUsername: "",
+    signIn_LoginUsernameRules: [],
+    signIn_LoginPassword: "",
+    signIn_LoginPasswordRules: [],
+    signIn_LoginErrorText: "",
+    signIn_LoginErrorTextDisplay: false,
+    signIn_RegisterStep: 1,
+    signIn_RegisterShowPassword: false,
+    signIn_RegisterValidate: false,
+    signIn_RegisterUsername: "",
+    signIn_RegisterUsernameRules: [],
+    signIn_RegisterEmail: "",
+    signIn_RegisterEmailRules: [],
+    signIn_RegisterPassword: "",
+    signIn_RegisterPasswordRules: [],
+    signIn_RegisterPasswordConfirm: "",
+    signIn_RegisterPasswordConfirmRules: [],
+    signIn_RegisterErrorText: "",
+    signIn_RegisterErrorTextDisplay: false,
+    signOut_MenuDisplay: false,
+    auth: {
+      id: null,
+      username: "",
+      security_level: ""
+    },
+    // PCB
     lwidth: 0,
     height: 0,
     top: 0,
@@ -1121,8 +1499,10 @@ export default {
     hdmiScreens_height: "100%",
     hdmiScreens_width: "100%",
     hdmiScreens_button_disabled: false,
+    // Project Save/Load
     ProjectsScreen: false,
     project_data: {
+      projectname: "lal",
       EditorHTMLText: "",
       EditorCSSText: "",
       EditorJSText: "",
@@ -1131,8 +1511,53 @@ export default {
       nonAvailableComponents: [],
       webpageContainer: "",
       PCB: ""
-    }
+    },
+    projects_table_headers: [
+      {
+        text: "Project Name",
+        align: "start",
+        value: "name"
+      },
+      { text: "Virtual PCB", sortable: false, value: "pcbImage" },
+      { text: "Created on", value: "created_date" },
+      { text: "Last update", value: "updated_date" },
+      { text: "Generated Web Link", sortable: false },
+      { text: "Load Project", sortable: false }
+    ],
+    projects_table_items: [
+      {
+        name: "Frozen Yogurt",
+        pcbImage: "./assets/demo1.png",
+        created_date: "2020-05-18 00:21:28.641318-07",
+        updated_date: "2020-05-18 00:21:28.641318-07"
+      },
+      {
+        name: "Ice cream sandwich",
+        pcbImage: "./assets/demo2.png",
+        created_date: "2020-05-18 00:21:28.66472-07",
+        updated_date: "2020-05-18 00:21:28.660092-07"
+      }
+    ]
   }),
+  watch: {
+    signIn_Tab: function(val) {
+      // Reset validations when any sign In Tab is click
+      switch (val) {
+        case 0:
+          setTimeout(() => {
+            this.$refs.signIn_LoginForm.resetValidation();
+          }, 0);
+          break;
+        case 1:
+          setTimeout(() => {
+            this.$refs.signIn_RegisterForm.resetValidation();
+          }, 0);
+          break;
+        default:
+          break;
+      }
+    }
+  },
   mounted: function() {
     // TODO add this inside component list
     this.raspberryNetMap = {
@@ -1412,8 +1837,8 @@ export default {
             "https://www.amazon.com/GeeekPi-Capacitive-800x480-Raspberry-BeagleBone/dp/B0749D617J",
           partImage: "screens/geeekpi_5inch.png",
           image: "",
-          height: "100mm",
-          width: "160mm"
+          height: "80mm",
+          width: "135mm"
         }
       },
       connector: {
@@ -1600,6 +2025,14 @@ export default {
       });
     };
 
+    // Enable key enter for authentication
+    document.addEventListener("keydown", event => {
+      if (event.keyCode == 13) {
+        // Enter key press
+        this.signIn_enterKeyPress();
+      }
+    });
+
     // Add global click
     this.$el.addEventListener("click", this.onGlobalClick);
 
@@ -1632,8 +2065,183 @@ export default {
     // Init final pcb hieght and width
     this.FinalPCB.height = this.pcbWidth;
     this.FinalPCB.width = this.pcbHeight;
+
+    // #### Authentication
+    // Authenticate user if local store token is available.
+    this.authenticateUser();
   },
   methods: {
+    //##########
+    //########## AUTHENTICATION
+    //##########
+    authenticateUser() {
+      const authToken = localStorage.getItem("token");
+      if (authToken) {
+        server
+          .post("authenticateUser", {
+            token: authToken
+          })
+          .then(response => {
+            // Should return a link
+            this.auth.id = response.data.id;
+            this.auth.username = response.data.username;
+            this.auth.security_level = response.data.security_level;
+            console.log("Welcome back: ", this.auth.id, this.auth.username);
+          })
+          .catch(() => {
+            this.authenticateUser_clear();
+          });
+      }
+    },
+    authenticateUser_clear() {
+      localStorage.setItem("token", "");
+      this.auth.id = null;
+      this.auth.username = "";
+      this.auth.security_level = "";
+    },
+    signIn() {
+      console.log("Sign In click");
+      // Clear all form values
+      this.signIn_LoginUsername = "";
+      this.signIn_LoginPassword = "";
+      this.signIn_RegisterUsername = "";
+      this.signIn_RegisterEmail = "";
+      this.signIn_RegisterPassword = "";
+      this.signIn_RegisterPasswordConfirm = "";
+      // Set Register step to one
+      this.signIn_RegisterStep = 1;
+      // Pupop signIn Dialog
+      this.signIn_Dialog = true;
+      // Set Tab to Login
+      this.signIn_Tab = 1; // Set to register
+      // Clear any Login or Register text error display
+      this.signIn_LoginErrorTextDisplay = false;
+      this.signIn_RegisterErrorTextDisplay = false;
+      this.$nextTick(() => {
+        // Solves stupid bug
+        this.signIn_Tab = 0; // Set to login
+        this.$refs.signIn_LoginForm.resetValidation();
+      });
+    },
+    signIn_Login() {
+      console.log("Login Click");
+      this.signIn_LoginErrorTextDisplay = false;
+      this.signIn_LoginUsernameRules = [
+        v => !!v || "Username is required",
+        v => (v && v.length <= 25) || "Username must be less than 25 characters"
+      ];
+      this.signIn_LoginPasswordRules = [
+        v => !!v || "Password is required",
+        v =>
+          (v && v.length <= 255) || "Password must be less than 255 characters"
+      ];
+      this.$nextTick(() => {
+        if (this.$refs.signIn_LoginForm.validate()) {
+          console.log("Login Form is valid");
+          // Query request login
+          server
+            .post("userLoginRequest", {
+              username: this.signIn_LoginUsername,
+              password: this.signIn_LoginPassword
+            })
+            .then(response => {
+              // Should return a link
+              console.log(" Login Succesful ");
+              // TODO Login was succesful
+              this.signIn_Dialog = false;
+              console.log(response.data);
+              localStorage.setItem("token", response.data.token);
+              // Authenticate user
+              this.authenticateUser();
+            })
+            .catch(error => {
+              this.signIn_LoginErrorText = error.response.data.error;
+              this.signIn_LoginErrorTextDisplay = true;
+            });
+        } else {
+          console.log("Login Form is invalid");
+        }
+      });
+    },
+    signIn_CreateAccount() {
+      console.log("Create Account Click");
+      this.signIn_RegisterUsernameRules = [
+        v => !!v || "Username is required",
+        v =>
+          /^[a-zA-Z][a-zA-Z0-9]+$/.test(v) ||
+          "Username must only contain letters and numbers",
+        v => (v && v.length <= 25) || "Username must be less than 25 characters"
+      ];
+      this.signIn_RegisterEmailRules = [
+        v => !!v || "E-mail is required",
+        v => /.+@.+\..+/.test(v) || "E-mail must be valid",
+        v => (v && v.length <= 255) || "E-mail must be less than 255 characters"
+      ];
+      this.signIn_RegisterPasswordRules = [
+        v => !!v || "Password is required",
+        v => (v && v.length >= 8) || "Password must be 8 characters or more",
+        v =>
+          (v && v.length <= 255) || "Password must be less than 255 characters"
+      ];
+      this.signIn_RegisterPasswordConfirmRules = [
+        v => !!v || "Confirm Password is required",
+        () =>
+          this.signIn_RegisterPassword ===
+            this.signIn_RegisterPasswordConfirm ||
+          "Confirm Password does not match with Passowrd"
+      ];
+      this.$nextTick(() => {
+        if (this.$refs.signIn_RegisterForm.validate()) {
+          console.log("Register Form is valid");
+          // Query request login
+          server
+            .post("userRegisterRequest", {
+              username: this.signIn_RegisterUsername,
+              email: this.signIn_RegisterEmail,
+              password: this.signIn_RegisterPassword
+            })
+            .then(response => {
+              // TODO: Should return a link
+              console.log(response.data);
+              localStorage.setItem("token", response.data.token);
+              // Authenticate user
+              this.authenticateUser();
+              // Set Register step to two (Thank you)
+              this.signIn_RegisterStep = 2;
+              console.log("AccountCreated Succesfuly ");
+            })
+            .catch(error => {
+              this.signIn_RegisterErrorText = error.response.data.error;
+              this.signIn_RegisterErrorTextDisplay = true;
+            });
+        } else {
+          console.log("Register Form is invalid");
+        }
+      });
+    },
+    signIn_enterKeyPress() {
+      if (this.signIn_Dialog == true) {
+        switch (this.signIn_Tab) {
+          case 0:
+            // Enter Login
+            this.signIn_Login();
+            break;
+          case 1:
+            // Enter Create Account
+            this.signIn_CreateAccount();
+            break;
+          case 2:
+            // Nothing for now
+            break;
+          default:
+            break;
+        }
+      }
+    },
+    signOut() {
+      this.authenticateUser_clear();
+      this.signOut_MenuDisplay = false;
+    },
     //##########
     //########## PROJECT SAVE/LOAD (TODO add hdmiScreens_button_disabled)
     //##########
@@ -1729,6 +2337,16 @@ export default {
     //##########
     ProjectsScreen_open() {
       this.ProjectsScreen = true;
+    },
+    ProjectsScreen_generateWebLink(projectName) {
+      if (this.auth.username == undefined) {
+        return "error: unathorized user";
+      } else {
+        return `${WEBSITE_URL}${this.auth.username}/${projectName}`;
+      }
+    },
+    ProjectsScreen_loadProject(projectName) {
+      console.log("Loading project: ", projectName);
     },
     //##########
     //########## MAIN SCREEN
@@ -2871,7 +3489,10 @@ export default {
         return;
       }
 
-      // Just to test Build screen
+      // Restore loading buttons
+      this.pcbLoading = false;
+
+      // Open Build screen
       this.BuildScreen = true;
 
       // Generate PCB Final Comopnents Review
@@ -3855,5 +4476,23 @@ Component Styles
   width: 5mm;
   height: 5mm;
   background-image: url("~@/assets/misc/0603-RES.svg");
+}
+
+/* Input auto fill disable selection */
+@keyframes autofill {
+  0%,
+  100% {
+    /* color: inherit; */
+    background: transparent;
+  }
+}
+input:-webkit-autofill {
+  animation-delay: 1s;
+  animation-name: autofill;
+  animation-fill-mode: both;
+}
+/* Input text border outline remove*/
+input {
+  border: none;
 }
 </style>
