@@ -198,15 +198,24 @@
                     <v-spacer></v-spacer>
                     <v-btn
                       id="buttonBuild"
-                      class="vbtn"
+                      class="vbtn text-none"
                       @click="openBuildScreen()"
                     >
-                      BUILD {{
+                      BUILD
+                      {{
                         project_data.projectname
                           ? project_data.projectname
                           : "?"
                       }}
+                      <span>&nbsp;</span>
                       <v-icon>build</v-icon>
+                    </v-btn>
+                    <v-btn
+                      :disabled="project_data.projectname ? false : true"
+                      class="vbtn"
+                      @click="ProjectNameScreen = true"
+                    >
+                      <v-icon>edit</v-icon>
                     </v-btn>
                   </v-layout>
                   <v-divider class="pb-1"></v-divider>
@@ -305,6 +314,43 @@
               light
               @click="BuildWarningsScreen = false"
               >Close</v-btn
+            >
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- Project Name Dialog -->
+      <v-dialog v-model="ProjectNameScreen" max-width="40%">
+        <v-card>
+          <v-toolbar dark dense color="grey darken-4">
+            <v-toolbar-title>Project Build Name</v-toolbar-title>
+            <v-divider class="mx-3" inset vertical></v-divider>
+            <v-spacer></v-spacer>
+            <v-divider class="mx-3" inset vertical></v-divider>
+            <v-toolbar-items>
+              <v-btn icon dark class="vbtn" @click="ProjectNameScreen = false">
+                <v-icon>close</v-icon>
+              </v-btn>
+            </v-toolbar-items>
+          </v-toolbar>
+          <v-card-text>
+            <h4>Set a project name before continuing to the build process</h4>
+            <br />
+            <v-text-field
+              classs="inputField"
+              v-model="project_data.projectname"
+              :counter="30"
+              color="rgb(174, 213, 129)"
+            />
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              class="vbtn"
+              color="info"
+              light
+              @click="ProjectNameScreen = false"
+              >SET</v-btn
             >
           </v-card-actions>
         </v-card>
@@ -679,6 +725,10 @@
           <v-toolbar dark dense color="grey darken-4">
             <v-toolbar-title>Build Screen</v-toolbar-title>
             <v-divider class="mx-3" inset vertical></v-divider>
+            <v-toolbar-title
+              >Project ({{ project_data.projectname }})</v-toolbar-title
+            >
+            <h2></h2>
             <v-spacer></v-spacer>
             <v-divider class="mx-3" inset vertical></v-divider>
             <v-toolbar-items>
@@ -1271,11 +1321,11 @@
               class="elevation-1"
             >
               <template slot="items" slot-scope="props">
-                <td>{{ props.item.name }}</td>
+                <td>{{ props.item.projectname }}</td>
                 <td>
                   <v-img
                     class="my-4"
-                    :src="require('' + props.item.pcbImage)"
+                    :src="props.item.projectimage"
                     width="150px"
                     contain
                   >
@@ -1285,10 +1335,14 @@
                 <td>{{ props.item.updated_date }}</td>
                 <td>
                   <a
-                    :href="ProjectsScreen_generateWebLink(props.item.name)"
+                    :href="
+                      ProjectsScreen_generateWebLink(props.item.projectname)
+                    "
                     target="_blank"
                   >
-                    {{ ProjectsScreen_generateWebLink(props.item.name) }}</a
+                    {{
+                      ProjectsScreen_generateWebLink(props.item.projectname)
+                    }}</a
                   >
                 </td>
                 <td>
@@ -1296,7 +1350,7 @@
                     dark
                     class="vbtn"
                     color="primary"
-                    @click="ProjectsScreen_loadProject(props.item.name)"
+                    @click="ProjectsScreen_loadProject(props.item.projectname)"
                   >
                     Load
                   </v-btn>
@@ -1502,7 +1556,7 @@ export default {
     // Project Save/Load
     ProjectsScreen: false,
     project_data: {
-      projectname: "lal",
+      projectname: "",
       EditorHTMLText: "",
       EditorCSSText: "",
       EditorJSText: "",
@@ -1526,18 +1580,20 @@ export default {
     ],
     projects_table_items: [
       {
-        name: "Frozen Yogurt",
-        pcbImage: "./assets/demo1.png",
+        projectname: "Frozen Yogurt",
+        projectimage: "./assets/demo1.png",
         created_date: "2020-05-18 00:21:28.641318-07",
         updated_date: "2020-05-18 00:21:28.641318-07"
       },
       {
-        name: "Ice cream sandwich",
-        pcbImage: "./assets/demo2.png",
+        projectname: "Ice cream sandwich",
+        projectimage: "./assets/demo2.png",
         created_date: "2020-05-18 00:21:28.66472-07",
         updated_date: "2020-05-18 00:21:28.660092-07"
       }
-    ]
+    ],
+    // Project Name Screen
+    ProjectNameScreen: true
   }),
   watch: {
     signIn_Tab: function(val) {
@@ -2252,8 +2308,9 @@ export default {
       pcbClone.removeChild(pcbClone.querySelector("#pcb-resizable-corners"));
 
       // Make a deep copy of object using JSON stringify
-      this.project_data = JSON.stringify(
+      let project_data = JSON.stringify(
         {
+          projectname: this.project_data.projectname,
           FinalPCB_height: this.FinalPCB.height,
           FinalPCB_width: this.FinalPCB.width,
           hdmiScreens_current: this.hdmiScreens_current,
@@ -2279,6 +2336,7 @@ export default {
       // console.log(this.nonAvailableComponents);
       // console.log(document.querySelector("#webpageContainer").innerHTML);
       // console.log(document.querySelector("#PCB").innerHTML);
+      return project_data;
     },
     project_clear() {
       // Clear all content
@@ -2335,7 +2393,25 @@ export default {
     //##########
     //########## PROJECTS SCREEN
     //##########
-    ProjectsScreen_open() {
+    async ProjectsScreen_open() {
+      this.signOut_MenuDisplay = false;
+
+      let userProjects = await server.get(`projects/${this.auth.id}`);
+      //console.log("-- projects:", userProjects.data.result);
+
+      this.projects_table_items = []; // Clear array
+      for (let key in userProjects.data.result) {
+        this.projects_table_items.push({
+          projectname: userProjects.data.result[key].projectname,
+          projectimage: `data:image/png;base64,${Buffer.from(
+            userProjects.data.result[key].projectimage,
+            "binary"
+          ).toString("base64")}`,
+          updated_date: userProjects.data.result[key].updated_date,
+          created_date: userProjects.data.result[key].created_date
+        });
+      }
+
       this.ProjectsScreen = true;
     },
     ProjectsScreen_generateWebLink(projectName) {
@@ -2347,6 +2423,7 @@ export default {
     },
     ProjectsScreen_loadProject(projectName) {
       console.log("Loading project: ", projectName);
+      this.ProjectsScreen = false;
     },
     //##########
     //########## MAIN SCREEN
@@ -3489,6 +3566,11 @@ export default {
         return;
       }
 
+      if (this.project_data.projectname == undefined) {
+        this.ProjectNameScreen = true;
+        return;
+      }
+
       // Restore loading buttons
       this.pcbLoading = false;
 
@@ -3498,7 +3580,7 @@ export default {
       // Generate PCB Final Comopnents Review
       this.BuildScreen_generatePCBReview();
 
-      // Generate Hadware APP link
+      // Generate Hadware APP link and save project
       this.BuildScreen_deployOnline();
 
       // Reset PCB Generation run flags
@@ -4080,9 +4162,17 @@ app.on('ready', createWindow)`;
       );
 
       // Send html and css generated files
+      let userName = this.auth.username ? this.auth.username : "testUser";
+      let projectName = this.project_data.projectname
+        ? this.project_data.projectname
+        : "testProject";
+
       server
         .post("generateWebPage", {
-          userName: "testUser",
+          userId: this.auth.id,
+          userName: userName,
+          projectName: projectName,
+          projectData: this.project_save(),
           htmlDoc: this.generateHTMLDoc(),
           cssDoc: this.generateCSSDoc()
         })
