@@ -39,7 +39,8 @@
               </v-btn>
             </v-tab>
           </v-tabs>
-          <!-- <v-btn class="vbtn" flat @click="testClick()">TEST</v-btn>
+          <v-btn class="vbtn" flat @click="testClick()">TEST</v-btn>
+          <!-- 
           <v-btn class="vbtn" flat @click="project_save()">PR-SAVE</v-btn>
           <v-btn class="vbtn" flat @click="project_load()">PR-LOAD</v-btn>
           <v-btn class="vbtn" flat @click="ProjectsScreen_open()"
@@ -2308,25 +2309,20 @@ export default {
       pcbClone.removeChild(pcbClone.querySelector("#pcb-resizable-corners"));
 
       // Make a deep copy of object using JSON stringify
-      let project_data = JSON.stringify(
-        {
-          projectname: this.project_data.projectname,
-          FinalPCB_height: this.FinalPCB.height,
-          FinalPCB_width: this.FinalPCB.width,
-          hdmiScreens_current: this.hdmiScreens_current,
-          EditorHTMLText: this.EditorHTMLText,
-          EditorCSSText: this.EditorCSSText,
-          EditorJSText: this.EditorJSText,
-          eComponentSaved: this.eComponentSaved,
-          eAvailableComponents: this.eAvailableComponents,
-          nonAvailableComponents: this.nonAvailableComponents,
-          webpageContainer: document.querySelector("#webpageContainer")
-            .innerHTML,
-          PCB: pcbClone.innerHTML
-        },
-        null,
-        2
-      );
+      let project_data = {
+        projectname: this.project_data.projectname,
+        FinalPCB_height: this.FinalPCB.height,
+        FinalPCB_width: this.FinalPCB.width,
+        hdmiScreens_current: this.hdmiScreens_current,
+        EditorHTMLText: this.EditorHTMLText,
+        EditorCSSText: this.EditorCSSText,
+        EditorJSText: this.EditorJSText,
+        eComponentSaved: this.eComponentSaved,
+        eAvailableComponents: this.eAvailableComponents,
+        nonAvailableComponents: this.nonAvailableComponents,
+        webpageContainer: document.querySelector("#webpageContainer").innerHTML,
+        PCB: pcbClone.innerHTML
+      };
       // console.log(this.project_data);
       // console.log(this.EditorHTMLText);
       // console.log(this.EditorCSSText);
@@ -2336,7 +2332,7 @@ export default {
       // console.log(this.nonAvailableComponents);
       // console.log(document.querySelector("#webpageContainer").innerHTML);
       // console.log(document.querySelector("#PCB").innerHTML);
-      return project_data;
+      return JSON.stringify(project_data, null, 2);
     },
     project_clear() {
       // Clear all content
@@ -3559,7 +3555,7 @@ export default {
       //console.log(this.eComponentSaved[key]["componentIfaces"]);
       return finalhardVar;
     },
-    openBuildScreen() {
+    async openBuildScreen() {
       // If there are no components in PCB return
       if (Object.keys(this.eComponentSaved).length == 0) {
         this.BuildWarningsScreen = true;
@@ -3577,11 +3573,15 @@ export default {
       // Open Build screen
       this.BuildScreen = true;
 
+      // Take picture to the pcb and list display it
+      let canvas = await this.BuildScreen_takePicture();
+      console.log(canvas.toDataURL().split(",")[1]);
+
       // Generate PCB Final Comopnents Review
       this.BuildScreen_generatePCBReview();
 
       // Generate Hadware APP link and save project
-      this.BuildScreen_deployOnline();
+      this.BuildScreen_deployOnline(canvas);
 
       // Reset PCB Generation run flags
       this.pcbPercentage = 0;
@@ -3798,37 +3798,39 @@ export default {
         });
       }
       console.log("### ADD TO LIST END");
-
+    },
+    async BuildScreen_takePicture() {
       // Take a picture of the PCB and add it to the left
       $("#canvasPCBimage").empty(); // Delete previous image
-      html2canvas(document.querySelector("#PCB"), { logging: false }).then(
-        function(canvas) {
-          // Add canvas pcb image
-          document.querySelector("#canvasPCBimage").appendChild(canvas);
+      let canvas = await html2canvas(document.querySelector("#PCB"), {
+        logging: false
+      });
+      // Add canvas pcb image
+      document.querySelector("#canvasPCBimage").appendChild(canvas);
 
-          // Adjust horizontal pcb width Text
-          var widthFlexBox = $("#buildScreen_pcbCanvas").width();
-          var widthCanvas = canvas.width;
-          var widthFinal = 0;
-          if (widthCanvas > widthFlexBox) {
-            widthFinal = widthFlexBox;
-          } else {
-            widthFinal = widthCanvas;
-          }
-          $("#buildScreen_pcbWidthText").css("width", widthFinal + "px");
+      // Adjust horizontal pcb width Text
+      var widthFlexBox = $("#buildScreen_pcbCanvas").width();
+      var widthCanvas = canvas.width;
+      var widthFinal = 0;
+      if (widthCanvas > widthFlexBox) {
+        widthFinal = widthFlexBox;
+      } else {
+        widthFinal = widthCanvas;
+      }
+      $("#buildScreen_pcbWidthText").css("width", widthFinal + "px");
 
-          // Adjust vertical pcb Text
-          var heightFlexBox = $("#buildScreen_pcbCanvas").height();
-          var heightCanvas = canvas.height;
-          var heightFinal = 0;
-          if (heightCanvas > heightFlexBox) {
-            heightFinal = heightFlexBox;
-          } else {
-            heightFinal = heightCanvas;
-          }
-          $("#buildScreen_pcbHeightText").css("height", heightFinal + "px");
-        }
-      );
+      // Adjust vertical pcb Text
+      var heightFlexBox = $("#buildScreen_pcbCanvas").height();
+      var heightCanvas = canvas.height;
+      var heightFinal = 0;
+      if (heightCanvas > heightFlexBox) {
+        heightFinal = heightFlexBox;
+      } else {
+        heightFinal = heightCanvas;
+      }
+      $("#buildScreen_pcbHeightText").css("height", heightFinal + "px");
+
+      return canvas;
     },
     BuildScreen_pcbresize(pcb) {
       this.FinalPCB.height = pcb.height;
@@ -4156,7 +4158,7 @@ app.on('ready', createWindow)`;
         })
         .catch(error => alert(error.message)); // if network error
     },
-    BuildScreen_deployOnline() {
+    BuildScreen_deployOnline(canvas) {
       console.log(
         "\n######\n###### Deploying App Online (Server Side...)\n######"
       );
@@ -4167,11 +4169,16 @@ app.on('ready', createWindow)`;
         ? this.project_data.projectname
         : "testProject";
 
+      // // Uncomment for saving a demo in database
+      console.log(canvas.toDataURL().split(",")[1]);
+      console.log(this.project_save());
+
       server
         .post("generateWebPage", {
           userId: this.auth.id,
           userName: userName,
           projectName: projectName,
+          projectImage: canvas.toDataURL().split(",")[1],
           projectData: this.project_save(),
           htmlDoc: this.generateHTMLDoc(),
           cssDoc: this.generateCSSDoc()

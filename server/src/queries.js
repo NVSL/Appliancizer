@@ -362,29 +362,31 @@ const generateWebPage = async (req, res) => {
   console.log("\n USER ID: ", req.body.userId);
   console.log("\n USER NAME: ", req.body.userName);
   console.log("\n PROJECT NAME: ", req.body.projectName);
+  console.log("\n PROJECT IMAGE: ", req.body.projectImage);
   console.log("\n PROJECT DATA: ", req.body.projectData);
   console.log("\n USER HTML: ", req.body.htmlDoc);
   console.log("\n USER CSS: ", req.body.cssDoc);
+  q;
 
   const userId = req.body.userId;
   const userName = req.body.userName;
   const projectName = req.body.projectName;
+  const projectImage = req.body.projectImage;
   const projectData = req.body.projectData;
 
   // Update project in database
   try {
-    // Update user project
+    // Update user project if already exists
     const result = await pool.query(
-      `UPDATE projects SET project = $1,
-        updated_date = NOW() WHERE username = $2 AND projectname = $3;`,
-      [projectData, userName, projectName]
+      `UPDATE projects SET project = '${projectData}', projectimage = decode('${projectImage}','base64'),
+        updated_date = NOW() WHERE username = '${userName}' AND projectname = '${projectName}';`
     );
     if (result.rowCount != 1) {
       // If not found then create project
       await pool.query(
-        `INSERT INTO projects (user_id, username, projectname, project, updated_date)
-          VALUES ($1, $2, $3, $4, NOW());`,
-        [userId, userName, projectName, projectData]
+        `INSERT INTO projects (user_id, username, projectname, projectimage, project, updated_date) 
+        VALUES (${userId}, '${userName}', '${projectName}', decode('${projectImage}','base64'),
+        '${projectData}', NOW());`
       );
     }
   } catch (err) {

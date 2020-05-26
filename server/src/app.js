@@ -44,7 +44,7 @@ app.get("/api/status", (req, res) => {
 //
 const db = require("./manageTables");
 //db.resetTableUsers();
-//db.resetTablesWithData();
+db.resetTablesWithData();
 
 //
 // DATABASE REST QUERIES
