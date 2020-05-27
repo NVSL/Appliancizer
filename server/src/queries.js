@@ -366,7 +366,6 @@ const generateWebPage = async (req, res) => {
   console.log("\n PROJECT DATA: ", req.body.projectData);
   console.log("\n USER HTML: ", req.body.htmlDoc);
   console.log("\n USER CSS: ", req.body.cssDoc);
-  q;
 
   const userId = req.body.userId;
   const userName = req.body.userName;
@@ -400,27 +399,18 @@ const generateWebPage = async (req, res) => {
     const appDir = `../${PUBLIC_PATH}/apps/${userName}/${projectName}`;
     if (!fs.existsSync(appDir)) {
       console.log("Creating Path");
-      fs.mkdir(appDir, { recursive: true }, (err) => {
+      fs.mkdirSync(appDir, { recursive: true }, (err) => {
         if (err) throw err;
       });
     }
     // Create index.html file
-    fs.writeFileSync(
-      `../${PUBLIC_PATH}/apps/${userName}/${projectName}/index.html`,
-      req.body.htmlDoc
-    );
+    fs.writeFileSync(`${appDir}/index.html`, req.body.htmlDoc);
 
     // Create hardware.css file
-    fs.writeFileSync(
-      `../${PUBLIC_PATH}/apps/${userName}/${projectName}/hardware.css`,
-      req.body.cssDoc
-    );
+    fs.writeFileSync(`${appDir}/hardware.css`, req.body.cssDoc);
 
     // Copy amalgamNative folder to the user folder
-    fs.copySync(
-      `../${PUBLIC_PATH}/amalgamNative`,
-      `../${PUBLIC_PATH}/apps/${userName}/${projectName}/amalgam`
-    );
+    fs.copySync(`../${PUBLIC_PATH}/amalgamNative`, `${appDir}/amalgam`);
 
     // If success send the user a link back
     if (process.env.NODE_ENV === "production") {

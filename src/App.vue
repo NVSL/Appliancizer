@@ -90,12 +90,12 @@
               <v-divider></v-divider>
 
               <v-list dense nav>
-                <v-list-tile @click="signOut()">
+                <v-list-tile @click="ProjectsScreen_new()">
                   <v-list-tile-avatar>
-                    <v-icon>meeting_room</v-icon>
+                    <v-icon>fiber_new</v-icon>
                   </v-list-tile-avatar>
                   <v-list-tile-content>
-                    Sign out
+                    New Project
                   </v-list-tile-content>
                 </v-list-tile>
                 <v-list-tile @click="ProjectsScreen_open()">
@@ -104,6 +104,14 @@
                   </v-list-tile-avatar>
                   <v-list-tile-content>
                     Projects dashboard
+                  </v-list-tile-content>
+                </v-list-tile>
+                <v-list-tile @click="signOut()">
+                  <v-list-tile-avatar>
+                    <v-icon>meeting_room</v-icon>
+                  </v-list-tile-avatar>
+                  <v-list-tile-content>
+                    Sign out
                   </v-list-tile-content>
                 </v-list-tile>
               </v-list>
@@ -203,16 +211,12 @@
                       @click="openBuildScreen()"
                     >
                       BUILD
-                      {{
-                        project_data.projectname
-                          ? project_data.projectname
-                          : "?"
-                      }}
+                      {{ ProjectName ? ProjectName : "?" }}
                       <span>&nbsp;</span>
                       <v-icon>build</v-icon>
                     </v-btn>
                     <v-btn
-                      :disabled="project_data.projectname ? false : true"
+                      :disabled="ProjectName ? false : true"
                       class="vbtn"
                       @click="ProjectNameScreen = true"
                     >
@@ -335,11 +339,16 @@
             </v-toolbar-items>
           </v-toolbar>
           <v-card-text>
-            <h4>Set a project name before continuing to the build process</h4>
+            <h4>Enter a project name before continuing to the build process</h4>
+            <br />
+            <h4 v-if="!auth.username">
+              <span style="color:red">Warning!</span> Your project will not be
+              saved unless you sign in.
+            </h4>
             <br />
             <v-text-field
               classs="inputField"
-              v-model="project_data.projectname"
+              v-model="ProjectName"
               :counter="30"
               color="rgb(174, 213, 129)"
             />
@@ -726,9 +735,7 @@
           <v-toolbar dark dense color="grey darken-4">
             <v-toolbar-title>Build Screen</v-toolbar-title>
             <v-divider class="mx-3" inset vertical></v-divider>
-            <v-toolbar-title
-              >Project ({{ project_data.projectname }})</v-toolbar-title
-            >
+            <v-toolbar-title>Project ({{ ProjectName }})</v-toolbar-title>
             <h2></h2>
             <v-spacer></v-spacer>
             <v-divider class="mx-3" inset vertical></v-divider>
@@ -1395,7 +1402,7 @@ if (process.env.NODE_ENV === "production") {
   SERVER_URL = "https://appliancizer.com/api/";
 } else {
   // Set Develpmnet variables
-  WEBSITE_URL = "http://localhost/";
+  WEBSITE_URL = "http://localhost:8088/";
   SERVER_URL = "http://localhost:3000/api/";
 }
 
@@ -1556,17 +1563,6 @@ export default {
     hdmiScreens_button_disabled: false,
     // Project Save/Load
     ProjectsScreen: false,
-    project_data: {
-      projectname: "",
-      EditorHTMLText: "",
-      EditorCSSText: "",
-      EditorJSText: "",
-      eComponentSaved: {},
-      eAvailableComponents: [],
-      nonAvailableComponents: [],
-      webpageContainer: "",
-      PCB: ""
-    },
     projects_table_headers: [
       {
         text: "Project Name",
@@ -1580,21 +1576,16 @@ export default {
       { text: "Load Project", sortable: false }
     ],
     projects_table_items: [
-      {
-        projectname: "Frozen Yogurt",
-        projectimage: "./assets/demo1.png",
-        created_date: "2020-05-18 00:21:28.641318-07",
-        updated_date: "2020-05-18 00:21:28.641318-07"
-      },
-      {
-        projectname: "Ice cream sandwich",
-        projectimage: "./assets/demo2.png",
-        created_date: "2020-05-18 00:21:28.66472-07",
-        updated_date: "2020-05-18 00:21:28.660092-07"
-      }
+      // {
+      //   projectname: "Frozen Yogurt",
+      //   projectimage: "iVBORw0KGgoAAAANSUhEUgAAA",
+      //   created_date: "2020-05-18 00:21:28.641318-07",
+      //   updated_date: "2020-05-18 00:21:28.641318-07"
+      // }
     ],
     // Project Name Screen
-    ProjectNameScreen: true
+    ProjectName: "",
+    ProjectNameScreen: false
   }),
   watch: {
     signIn_Tab: function(val) {
@@ -2297,6 +2288,7 @@ export default {
     },
     signOut() {
       this.authenticateUser_clear();
+      this.project_clear();
       this.signOut_MenuDisplay = false;
     },
     //##########
@@ -2310,7 +2302,7 @@ export default {
 
       // Make a deep copy of object using JSON stringify
       let project_data = {
-        projectname: this.project_data.projectname,
+        projectname: this.ProjectName,
         FinalPCB_height: this.FinalPCB.height,
         FinalPCB_width: this.FinalPCB.width,
         hdmiScreens_current: this.hdmiScreens_current,
@@ -2323,7 +2315,7 @@ export default {
         webpageContainer: document.querySelector("#webpageContainer").innerHTML,
         PCB: pcbClone.innerHTML
       };
-      // console.log(this.project_data);
+      // console.log(project_data);
       // console.log(this.EditorHTMLText);
       // console.log(this.EditorCSSText);
       // console.log(this.EditorJSText);
@@ -2336,6 +2328,7 @@ export default {
     },
     project_clear() {
       // Clear all content
+      this.ProjectName = "";
       this.$refs.PcbBoard.setpcbsize(this.pcbHeight, this.pcbWidth);
       this.HTMLEditor_clear = true; // Clear will be executed when Editor opens.
       this.eComponentSaved = {};
@@ -2348,8 +2341,9 @@ export default {
         .not("#pcb-resizable-corners")
         .remove();
     },
-    project_load() {
-      let project = JSON.parse(this.project_data);
+    project_load(project) {
+      console.log("Loading project name: ", project.projectname);
+      console.log("Loading project: ", project);
 
       // Clear current project
       this.project_clear();
@@ -2357,6 +2351,7 @@ export default {
       // Load project form database
 
       // Set project
+      this.ProjectName = project.projectname;
       this.$refs.PcbBoard.setpcbsize(
         project.FinalPCB_height,
         project.FinalPCB_width
@@ -2366,6 +2361,9 @@ export default {
       this.eAvailableComponents = project.eAvailableComponents;
       this.nonAvailableComponents = project.nonAvailableComponents;
       $("#webpageContainer").append(project.webpageContainer);
+      this.EditorHTMLText = project.EditorHTMLText;
+      this.EditorCSSText = project.EditorCSSText;
+      this.EditorJSText = project.EditorJSText;
       this.EditorMAIN_cssTag.remove(); // Inject CSS to whole document
       this.EditorMAIN_cssTag = $("<style></style>").appendTo($("head"));
       this.EditorMAIN_cssTag.text(project.EditorCSSText);
@@ -2385,6 +2383,8 @@ export default {
         let index = this.eComponentSaved["TouchScreen"].componentSelected;
         this.hdmiScreens_setScreen(index);
       }
+
+      console.log("### END PROJECT LOADING");
     },
     //##########
     //########## PROJECTS SCREEN
@@ -2410,15 +2410,39 @@ export default {
 
       this.ProjectsScreen = true;
     },
+    ProjectsScreen_new() {
+      this.signOut_MenuDisplay = false;
+      this.project_clear();
+      this.ProjectNameScreen = true;
+    },
     ProjectsScreen_generateWebLink(projectName) {
       if (this.auth.username == undefined) {
         return "error: unathorized user";
       } else {
-        return `${WEBSITE_URL}${this.auth.username}/${projectName}`;
+        return `${WEBSITE_URL}apps/${this.auth.username}/${projectName}`;
       }
     },
     ProjectsScreen_loadProject(projectName) {
-      console.log("Loading project: ", projectName);
+      console.log("### START LOADING PROJECT: ", projectName);
+
+      server
+        .post("getProject", {
+          username: this.auth.username,
+          projectname: projectName
+        })
+        .then(response => {
+          // Should return a link
+          if (response.data.result.length == 0) {
+            // Something went wrong
+            alert("Sever error: project has no data");
+          } else {
+            // Load project
+            let project = response.data.result[0].project;
+            this.project_load(project);
+          }
+        })
+        .catch(error => alert(error.message)); // if network error
+
       this.ProjectsScreen = false;
     },
     //##########
@@ -3393,10 +3417,9 @@ export default {
 
       // Load new project data
       if (this.HTMLEditor_projectLoad == true) {
-        let project = JSON.parse(this.project_data);
-        this.EditorHTML.getSession().setValue(project.EditorHTMLText);
-        this.EditorCSS.getSession().setValue(project.EditorCSSText);
-        this.EditorJS.getSession().setValue(project.EditorJSText);
+        this.EditorHTML.getSession().setValue(this.EditorHTMLText);
+        this.EditorCSS.getSession().setValue(this.EditorCSSText);
+        this.EditorJS.getSession().setValue(this.EditorJSText);
       }
     },
     HTMLEditor_loadDemo(Demo) {
@@ -3562,7 +3585,7 @@ export default {
         return;
       }
 
-      if (this.project_data.projectname == undefined) {
+      if (this.ProjectName == "") {
         this.ProjectNameScreen = true;
         return;
       }
@@ -4003,8 +4026,7 @@ export default {
           }
         }
         // Zip all project data
-        this.project_save();
-        zip.file("project.json", this.project_data);
+        zip.file("project.json", this.project_save());
         zip.generateAsync({ type: "blob" }).then(function(content) {
           // see FileSaver.js
           FileSaver.saveAs(content, "GerberFiles.zip");
@@ -4164,14 +4186,12 @@ app.on('ready', createWindow)`;
       );
 
       // Send html and css generated files
-      let userName = this.auth.username ? this.auth.username : "testUser";
-      let projectName = this.project_data.projectname
-        ? this.project_data.projectname
-        : "testProject";
+      let userName = this.auth.username ? this.auth.username : "noUserName";
+      let projectName = this.ProjectName ? this.ProjectName : "noProjectName";
 
       // // Uncomment for saving a demo in database
-      console.log(canvas.toDataURL().split(",")[1]);
-      console.log(this.project_save());
+      // console.log(canvas.toDataURL().split(",")[1]);
+      // console.log(this.project_save());
 
       server
         .post("generateWebPage", {
