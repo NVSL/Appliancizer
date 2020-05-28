@@ -35,7 +35,7 @@ console.log(`Server Running on http://localhost:${SERVER_PORT} ...`);
 // JSON query test
 app.get("/api/status", (req, res) => {
   res.send({
-    message: "Server Running Fine :D",
+    message: "Server Running Fine :D"
   });
 });
 

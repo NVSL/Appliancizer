@@ -8,12 +8,12 @@ require("dotenv").config({
   path:
     process.env.NODE_ENV === "production"
       ? ".env.production"
-      : ".env.development",
+      : ".env.development"
 });
 
 // Connect to database
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL
 });
 pool.on("connect", () => {
   console.log("## Connected to the database ##");
@@ -121,7 +121,7 @@ const resetTablesWithData = async () => {
 
 module.exports = {
   resetTables,
-  resetTablesWithData,
+  resetTablesWithData
 };
 
 //
@@ -183,7 +183,7 @@ var simpleCounter = {
           "14",
           "15",
           "3.3V",
-          "5V",
+          "5V"
         ],
         gpio: [
           "4",
@@ -202,15 +202,15 @@ var simpleCounter = {
           "16",
           "19",
           "20",
-          "21",
+          "21"
         ],
         i2c: {
           "0": {
             device: "/dev/i2c-1",
             type: "i2c",
             SDA: "2",
-            SCL: "3",
-          },
+            SCL: "3"
+          }
         },
         spi: {
           "0": {
@@ -219,17 +219,17 @@ var simpleCounter = {
             MOSI: "10",
             MISO: "9",
             SCLK: "11",
-            CE0: "8",
-          },
+            CE0: "8"
+          }
         },
         serial: {
           "0": {
             device: "/dev/ttyUSB0",
             type: "serial",
             TXD: "14",
-            RXD: "15",
-          },
-        },
+            RXD: "15"
+          }
+        }
       },
       componentBuyLink:
         "https://www.digikey.com/product-detail/en/PRT-14017/1568-1462-ND/6569366",
@@ -246,7 +246,7 @@ var simpleCounter = {
       html: '<div id="connector"></div>',
       width: 0,
       height: 0,
-      innerHTML: "",
+      innerHTML: ""
     },
     myButton: {
       elementId: "element_1",
@@ -268,8 +268,8 @@ var simpleCounter = {
       componentIfaces: {
         iface_0: {
           type: "gpio",
-          GPIO: "4",
-        },
+          GPIO: "4"
+        }
       },
       componentLeft: 2,
       componentTop: 11,
@@ -278,7 +278,7 @@ var simpleCounter = {
       html: '<button id="myButton" onclick="test()">test</button>',
       width: 26.5781,
       height: 25,
-      innerHTML: "test",
+      innerHTML: "test"
     },
     resistor_1206_10k_2: {
       elementId: "element_2",
@@ -301,15 +301,15 @@ var simpleCounter = {
       html: '<div id="resistor_1206_10k_2" class="misc"></div>',
       width: 0,
       height: 0,
-      innerHTML: "",
-    },
+      innerHTML: ""
+    }
   },
   eAvailableComponents: ["myButton"],
   nonAvailableComponents: ["text"],
   webpageContainer:
     '<div id="myButton_drag" class="draggable_element" draggable="true" style="width:33.5781px;height:32px;display:inline-block;">\n                </div>\n<div id="text_nondrag" class="none_draggable_element" style="width:71.375px;height:27px;display:inline-block;">\n                <div id="text">Counter: 0</div></div>',
   PCB:
-    '<div id="element_0" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 5px; top: 10px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="connector" style="background-image: url(&quot;/img/rpi_connector.aac5f0c0.png&quot;); height: 7mm; width: 51mm;"></div></div><div id="element_1" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 10.7031px; top: 43.6563px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><button id="myButton" onclick="test()" class="submit-physical-button" style="background-image: url(&quot;/img/smd-button.359a9e5f.svg&quot;); height: 6mm; width: 9.5mm;"></button></div><div id="element_2" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 54px; top: 50px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="resistor_1206_10k_2" class="misc" style="background-image: url(&quot;/img/0603-RES.6db73cae.svg&quot;); height: 2mm; width: 4.5mm;"></div></div>',
+    '<div id="element_0" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 5px; top: 10px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="connector" style="background-image: url(&quot;/img/rpi_connector.aac5f0c0.png&quot;); height: 7mm; width: 51mm;"></div></div><div id="element_1" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 10.7031px; top: 43.6563px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><button id="myButton" onclick="test()" class="submit-physical-button" style="background-image: url(&quot;/img/smd-button.359a9e5f.svg&quot;); height: 6mm; width: 9.5mm;"></button></div><div id="element_2" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 54px; top: 50px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="resistor_1206_10k_2" class="misc" style="background-image: url(&quot;/img/0603-RES.6db73cae.svg&quot;); height: 2mm; width: 4.5mm;"></div></div>'
 };
 
 var simpleLED = {
@@ -358,7 +358,7 @@ var simpleLED = {
           "14",
           "15",
           "3.3V",
-          "5V",
+          "5V"
         ],
         gpio: [
           "4",
@@ -377,15 +377,15 @@ var simpleLED = {
           "16",
           "19",
           "20",
-          "21",
+          "21"
         ],
         i2c: {
           "0": {
             device: "/dev/i2c-1",
             type: "i2c",
             SDA: "2",
-            SCL: "3",
-          },
+            SCL: "3"
+          }
         },
         spi: {
           "0": {
@@ -394,17 +394,17 @@ var simpleLED = {
             MOSI: "10",
             MISO: "9",
             SCLK: "11",
-            CE0: "8",
-          },
+            CE0: "8"
+          }
         },
         serial: {
           "0": {
             device: "/dev/ttyUSB0",
             type: "serial",
             TXD: "14",
-            RXD: "15",
-          },
-        },
+            RXD: "15"
+          }
+        }
       },
       componentBuyLink:
         "https://www.digikey.com/product-detail/en/PRT-14017/1568-1462-ND/6569366",
@@ -421,7 +421,7 @@ var simpleLED = {
       html: '<div id="connector"></div>',
       width: 0,
       height: 0,
-      innerHTML: "",
+      innerHTML: ""
     },
     turnON: {
       elementId: "element_1",
@@ -443,8 +443,8 @@ var simpleLED = {
       componentIfaces: {
         iface_0: {
           type: "gpio",
-          GPIO: "4",
-        },
+          GPIO: "4"
+        }
       },
       componentLeft: 2,
       componentTop: 12,
@@ -453,7 +453,7 @@ var simpleLED = {
       html: '<button id="turnON" onclick="turnLEDON()">LED ON</button>',
       width: 56.125,
       height: 25,
-      innerHTML: "LED ON",
+      innerHTML: "LED ON"
     },
     resistor_1206_10k_2: {
       elementId: "element_2",
@@ -476,7 +476,7 @@ var simpleLED = {
       html: '<div id="resistor_1206_10k_2" class="misc"></div>',
       width: 0,
       height: 0,
-      innerHTML: "",
+      innerHTML: ""
     },
     myLED: {
       elementId: "element_3",
@@ -498,8 +498,8 @@ var simpleLED = {
       componentIfaces: {
         iface_0: {
           type: "gpio",
-          GPIO: "17",
-        },
+          GPIO: "17"
+        }
       },
       componentLeft: 25,
       componentTop: 13,
@@ -508,7 +508,7 @@ var simpleLED = {
       html: '<span id="myLED">OFF</span>',
       width: 28,
       height: 16,
-      innerHTML: "OFF",
+      innerHTML: "OFF"
     },
     resistor_1206_330ohm_4: {
       elementId: "element_4",
@@ -531,13 +531,13 @@ var simpleLED = {
       html: '<div id="resistor_1206_330ohm_4" class="misc"></div>',
       width: 0,
       height: 0,
-      innerHTML: "",
-    },
+      innerHTML: ""
+    }
   },
   eAvailableComponents: ["turnON", "turnOFF", "myLED"],
   nonAvailableComponents: [],
   webpageContainer:
     '<div id="turnON_drag" class="draggable_element" draggable="true" style="width:63.125px;height:32px;display:inline-block;">\n                </div>\n<div id="turnOFF_drag" class="draggable_element" draggable="true" style="width:70.125px;height:32px;display:inline-block;">\n                <button id="turnOFF" onclick="turnLEDOFF()">LED OFF</button></div>\n<div id="myLED_drag" class="draggable_element" draggable="true" style="width:35px;height:23px;display:inline-block;">\n                </div>\n  \n',
   PCB:
-    '<div id="element_0" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 5px; top: 10px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="connector" style="background-image: url(&quot;/img/rpi_connector.aac5f0c0.png&quot;); height: 7mm; width: 51mm;"></div></div><div id="element_1" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 10.0469px; top: 47.6563px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><button id="turnON" onclick="turnLEDON()" class="submit-physical-button" style="background-image: url(&quot;/img/smd-button.359a9e5f.svg&quot;); height: 6mm; width: 9.5mm;"></button></div><div id="element_2" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 59px; top: 55px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="resistor_1206_10k_2" class="misc" style="background-image: url(&quot;/img/0603-RES.6db73cae.svg&quot;); height: 2mm; width: 4.5mm;"></div></div><div id="element_3" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 94.5469px; top: 50.5469px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><span id="myLED" class="submit-physical-button" style="background-image: url(&quot;/img/red-5mm-LED.2D.7c46147d.svg&quot;); height: 5mm; width: 5mm;"></span></div><div id="element_4" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 133px; top: 55px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="resistor_1206_330ohm_4" class="misc" style="background-image: url(&quot;/img/0603-RES.6db73cae.svg&quot;); height: 2mm; width: 4.5mm;"></div></div>',
+    '<div id="element_0" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 5px; top: 10px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="connector" style="background-image: url(&quot;/img/rpi_connector.aac5f0c0.png&quot;); height: 7mm; width: 51mm;"></div></div><div id="element_1" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 10.0469px; top: 47.6563px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><button id="turnON" onclick="turnLEDON()" class="submit-physical-button" style="background-image: url(&quot;/img/smd-button.359a9e5f.svg&quot;); height: 6mm; width: 9.5mm;"></button></div><div id="element_2" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 59px; top: 55px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="resistor_1206_10k_2" class="misc" style="background-image: url(&quot;/img/0603-RES.6db73cae.svg&quot;); height: 2mm; width: 4.5mm;"></div></div><div id="element_3" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 94.5469px; top: 50.5469px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><span id="myLED" class="submit-physical-button" style="background-image: url(&quot;/img/red-5mm-LED.2D.7c46147d.svg&quot;); height: 5mm; width: 5mm;"></span></div><div id="element_4" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 133px; top: 55px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="resistor_1206_330ohm_4" class="misc" style="background-image: url(&quot;/img/0603-RES.6db73cae.svg&quot;); height: 2mm; width: 4.5mm;"></div></div>'
 };

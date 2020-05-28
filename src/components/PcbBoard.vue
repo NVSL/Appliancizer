@@ -157,8 +157,6 @@ export default {
 
 <style>
 .pcb {
-  margin-right: 10px !important;
-  padding: 0px;
   /* width: 30%;
     height: 50%; */
   display: inline-block;

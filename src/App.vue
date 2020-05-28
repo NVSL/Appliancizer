@@ -1,17 +1,22 @@
 <!--
-// Tomorrow:
-// - Integrate this with gadgetron.
-// - ***Add RPI sound  header (Note that a device that needs one device more for the connectro is needed)
+// TODOS:
+// - Add RPI sound  header (Note that a device that needs one device more for the connectro is needed)
 // - How to add a notification if max number of I/Os for the connector is reached? (hard)
 // - Add rotation (Hard)
-// - 1.- ***Get right part sizes (Missing both colored Tactile buttons and motorized pot correct size)
-// - 2.- Check all schematc_names..
-// - 3.- Check image and UI for raspberry PI.
-// - 4.- Maybe add users
-// - 6.- Try to remove jquery.min from injector (not necessary)
-// Tomorrow 2: 
-// - Add projects dashboard and save/load projects
-// - Integrate users to project (SQL)
+// - Try to remove jquery.min from injector (not necessary)
+// Learn: 
+// - Learn how to make a propoer form (See project name set example) (enter click)
+// - Learn how to send a verification email
+// - Learn how to send queries with bearers (token stuff)
+// Tomorrow: 
+// - Add temperature sensor
+// - Applincizer is deleating everything in gerber file, make it not delete
+// - Fix web hardware borwser
+//     - background color, username and app, rotate secreen, top to refresh, 
+//     - bottom to return
+// - Delete projects and Add jerom demo project files each time database is clean.   
+// - Check everything, make it work fully in localhost
+// - Host it to the cloud (END)
 -->
 
 <template>
@@ -27,20 +32,30 @@
         <v-toolbar-items>
           <v-tabs right slider-color="rgb(174, 213, 129)" color="grey darken-4">
             <v-tab @click="setEditMode()">
-              <v-btn class="vbtn" flat>
-                EDIT
-                <v-icon>edit</v-icon>
-              </v-btn>
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on }">
+                  <v-btn class="vbtn" v-on="on" flat>
+                    EDIT
+                    <v-icon>edit</v-icon>
+                  </v-btn>
+                </template>
+                <span>Edit Project</span>
+              </v-tooltip>
             </v-tab>
             <v-tab @click="setRunMode()">
-              <v-btn class="vbtn" flat>
-                RUN
-                <v-icon>play_arrow</v-icon>
-              </v-btn>
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on }">
+                  <v-btn class="vbtn" v-on="on" flat>
+                    RUN
+                    <v-icon>play_arrow</v-icon>
+                  </v-btn>
+                </template>
+                <span>Simulate Project</span>
+              </v-tooltip>
             </v-tab>
           </v-tabs>
-          <v-btn class="vbtn" flat @click="testClick()">TEST</v-btn>
           <!-- 
+          <v-btn class="vbtn" flat @click="testClick()">TEST</v-btn>
           <v-btn class="vbtn" flat @click="project_save()">PR-SAVE</v-btn>
           <v-btn class="vbtn" flat @click="project_load()">PR-LOAD</v-btn>
           <v-btn class="vbtn" flat @click="ProjectsScreen_open()"
@@ -215,27 +230,35 @@
                       <span>&nbsp;</span>
                       <v-icon>build</v-icon>
                     </v-btn>
-                    <v-btn
-                      :disabled="ProjectName ? false : true"
-                      class="vbtn"
-                      @click="ProjectNameScreen = true"
-                    >
-                      <v-icon>edit</v-icon>
-                    </v-btn>
+                    <v-tooltip bottom>
+                      <template v-slot:activator="{ on }">
+                        <v-btn
+                          :disabled="ProjectName ? false : true"
+                          class="vbtn"
+                          v-on="on"
+                          @click="ProjectNameScreen = true"
+                        >
+                          <v-icon>edit</v-icon>
+                        </v-btn>
+                      </template>
+                      <span>Edit Project Name</span>
+                    </v-tooltip>
                   </v-layout>
-                  <v-divider class="pb-1"></v-divider>
-                  <PcbBoard
-                    ref="PcbBoard"
-                    id="PCB"
-                    :w="pcbWidth"
-                    :h="pcbHeight"
-                    :brightness="pcbBrightness"
-                    :color="pcbColor"
-                    ondragover="event.preventDefault()"
-                    @pcbresize="BuildScreen_pcbresize($event)"
-                  >
-                    <!-- PCB components will be inserted here -->
-                  </PcbBoard>
+                  <v-divider></v-divider>
+                  <div class="pa-2">
+                    <PcbBoard
+                      ref="PcbBoard"
+                      id="PCB"
+                      :w="pcbWidth"
+                      :h="pcbHeight"
+                      :brightness="pcbBrightness"
+                      :color="pcbColor"
+                      ondragover="event.preventDefault()"
+                      @pcbresize="BuildScreen_pcbresize($event)"
+                    >
+                      <!-- PCB components will be inserted here -->
+                    </PcbBoard>
+                  </div>
                 </div>
                 <!-- #Component Title -->
                 <v-card
@@ -291,7 +314,7 @@
       <!-- Build Warnings Dialog -->
       <v-dialog v-model="BuildWarningsScreen" max-width="40%">
         <v-card>
-          <v-toolbar dark dense color="warning">
+          <v-toolbar dark dense color="grey darken-4">
             <v-toolbar-title>Warning</v-toolbar-title>
             <v-divider class="mx-3" inset vertical></v-divider>
             <v-spacer></v-spacer>
@@ -308,14 +331,16 @@
             </v-toolbar-items>
           </v-toolbar>
           <v-card-text>
+            <span style="color:red">Warning!</span>
             No elements found in PCB area. Add elements to the PCB area (Green
             Rectange) first !
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn
+              outline
               class="vbtn"
-              color="info"
+              color="rgb(174, 213, 129)"
               light
               @click="BuildWarningsScreen = false"
               >Close</v-btn
@@ -356,8 +381,9 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn
+              outline
               class="vbtn"
-              color="info"
+              color="rgb(174, 213, 129)"
               light
               @click="ProjectNameScreen = false"
               >SET</v-btn
@@ -763,7 +789,7 @@
                   xs4
                   class="pr-3 flexBoxHeight"
                 >
-                  <div id="canvasPCBimage" class="pr-3"></div>
+                  <div id="canvasPCBimage"></div>
                   <div id="buildScreen_pcbWidthText" class="text-sm-center">
                     {{ FinalPCB.width }} mm
                   </div>
@@ -1249,7 +1275,7 @@
                 </v-window-item>
                 <!-- STEP 2 (THANK YOU, VERIFICATION EMAIL SENT)-->
                 <v-window-item :value="2">
-                  <v-card height="100%">
+                  <v-card>
                     <v-card-title primary-title>
                       <div class="headline">Thank you!</div>
                     </v-card-title>
@@ -1263,6 +1289,9 @@
                       </strike>
                       <br />
                       Welcome! {{ auth.username }}
+                      <br />
+                      <br />
+                      <br />
                       <br />
                       <br />
                       <br />
@@ -1323,12 +1352,25 @@
           </v-toolbar>
           <v-container fluid>
             <v-data-table
-              :headers="projects_table_headers"
+              :headers="
+                auth.security_level === 'admin'
+                  ? projects_table_headers_admin
+                  : projects_table_headers
+              "
               :items="projects_table_items"
               :items-per-page="5"
+              :pagination.sync="projects_table_sync"
               class="elevation-1"
             >
+              <template v-slot:no-data>
+                <v-alert :value="true" color="error" icon="warning">
+                  Nothing to display. Build a project first.
+                </v-alert>
+              </template>
               <template slot="items" slot-scope="props">
+                <td v-if="auth.security_level === 'admin'">
+                  {{ props.item.username }}
+                </td>
                 <td>{{ props.item.projectname }}</td>
                 <td>
                   <v-img
@@ -1339,17 +1381,27 @@
                   >
                   </v-img>
                 </td>
-                <td>{{ props.item.created_date }}</td>
-                <td>{{ props.item.updated_date }}</td>
+                <td>
+                  {{ new Date(props.item.created_date).toLocaleString() }}
+                </td>
+                <td>
+                  {{ new Date(props.item.updated_date).toLocaleString() }}
+                </td>
                 <td>
                   <a
                     :href="
-                      ProjectsScreen_generateWebLink(props.item.projectname)
+                      ProjectsScreen_generateWebLink(
+                        props.item.projectname,
+                        props.item.username
+                      )
                     "
                     target="_blank"
                   >
                     {{
-                      ProjectsScreen_generateWebLink(props.item.projectname)
+                      ProjectsScreen_generateWebLink(
+                        props.item.projectname,
+                        props.item.username
+                      )
                     }}</a
                   >
                 </td>
@@ -1563,20 +1615,30 @@ export default {
     hdmiScreens_button_disabled: false,
     // Project Save/Load
     ProjectsScreen: false,
-    projects_table_headers: [
-      {
-        text: "Project Name",
-        align: "start",
-        value: "name"
-      },
-      { text: "Virtual PCB", sortable: false, value: "pcbImage" },
+    projects_table_headers_admin: [
+      { text: "User Name", align: "start", value: "username" },
+      { text: "Project Name", value: "name" },
+      { text: "Virtual PCB", sortable: false },
       { text: "Created on", value: "created_date" },
       { text: "Last update", value: "updated_date" },
       { text: "Generated Web Link", sortable: false },
       { text: "Load Project", sortable: false }
     ],
+    projects_table_headers: [
+      { text: "Project Name", align: "start", value: "name" },
+      { text: "Virtual PCB", sortable: false },
+      { text: "Created on", value: "created_date" },
+      { text: "Last update", value: "updated_date" },
+      { text: "Generated Web Link", sortable: false },
+      { text: "Load Project", sortable: false }
+    ],
+    projects_table_sync: {
+      sortBy: "created_date",
+      descending: true
+    },
     projects_table_items: [
       // {
+      //   username: "jerom"
       //   projectname: "Frozen Yogurt",
       //   projectimage: "iVBORw0KGgoAAAANSUhEUgAAA",
       //   created_date: "2020-05-18 00:21:28.641318-07",
@@ -2398,6 +2460,7 @@ export default {
       this.projects_table_items = []; // Clear array
       for (let key in userProjects.data.result) {
         this.projects_table_items.push({
+          username: userProjects.data.result[key].username,
           projectname: userProjects.data.result[key].projectname,
           projectimage: `data:image/png;base64,${Buffer.from(
             userProjects.data.result[key].projectimage,
@@ -2408,6 +2471,8 @@ export default {
         });
       }
 
+      console.log(this.projects_table_items);
+
       this.ProjectsScreen = true;
     },
     ProjectsScreen_new() {
@@ -2415,11 +2480,11 @@ export default {
       this.project_clear();
       this.ProjectNameScreen = true;
     },
-    ProjectsScreen_generateWebLink(projectName) {
+    ProjectsScreen_generateWebLink(projectName, username) {
       if (this.auth.username == undefined) {
         return "error: unathorized user";
       } else {
-        return `${WEBSITE_URL}apps/${this.auth.username}/${projectName}`;
+        return `${WEBSITE_URL}apps/${username}/${projectName}`;
       }
     },
     ProjectsScreen_loadProject(projectName) {
@@ -3826,8 +3891,10 @@ export default {
       // Take a picture of the PCB and add it to the left
       $("#canvasPCBimage").empty(); // Delete previous image
       let canvas = await html2canvas(document.querySelector("#PCB"), {
-        logging: false
-      });
+        logging: false,
+        scale: 1,
+        backgroundColor: null
+      }); // FIX image is moved to right, don't know why
       // Add canvas pcb image
       document.querySelector("#canvasPCBimage").appendChild(canvas);
 
@@ -4246,8 +4313,6 @@ app.on('ready', createWindow)`;
 }
 
 #PCB {
-  margin-left: 8px;
-  margin-top: 4px;
   position: relative !important; /* Makes the PCB inlined to parent */
 }
 

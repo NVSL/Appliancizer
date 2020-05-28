@@ -18,7 +18,7 @@ require("dotenv").config({
   path:
     process.env.NODE_ENV === "production"
       ? ".env.production"
-      : ".env.development",
+      : ".env.development"
 });
 
 //
@@ -44,7 +44,7 @@ if (process.env.NODE_ENV === "production") {
 // Connect to database
 //
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL
 });
 pool.on("connect", () => {
   console.log("## Connected to the database ##");
@@ -76,10 +76,10 @@ const userLoginRequest = async (request, response) => {
         const auth = {
           id: userResult.rows[0].id,
           username: userResult.rows[0].username,
-          security_level: userResult.rows[0].security_level,
+          security_level: userResult.rows[0].security_level
         };
         const accessToken = jwt.sign(auth, process.env.ACCESS_TOKEN_SECRET, {
-          expiresIn: "1d",
+          expiresIn: "1d"
         });
         // Send token back
         response.status(200).send({ token: accessToken });
@@ -153,10 +153,10 @@ const userRegisterRequest = async (request, response) => {
     const auth = {
       id: results.rows[0].id,
       username: results.rows[0].username,
-      security_level: results.rows[0].security_level,
+      security_level: results.rows[0].security_level
     };
     const accessToken = jwt.sign(auth, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: "1d",
+      expiresIn: "1d"
     });
     response.status(200).send({ token: accessToken });
     console.log("-- User Registered", username, email);
@@ -170,12 +170,33 @@ const userProjects = async (request, response) => {
   try {
     const user_id = parseInt(request.params.id);
     console.log("-- Trying to get projects of userID", user_id);
-    // Register user
-    const projects = await pool.query(
-      `SELECT projectname, projectimage, updated_date, created_date FROM projects WHERE user_id = $1;`,
+
+    // Check security level of user
+    const securityLevel = await pool.query(
+      `SELECT security_level FROM users WHERE id = $1;`,
       [user_id]
     );
-    response.status(200).send({ result: projects.rows });
+
+    if (securityLevel.rowCount == 0) {
+      response.status(500).send({ error: "User not found " });
+    } else {
+      let level = securityLevel.rows[0].security_level;
+      console.log("Securty Level", level);
+      if (level == "admin") {
+        // Send all projects
+        const projects = await pool.query(
+          `SELECT username, projectname, projectimage, updated_date, created_date FROM projects`
+        );
+        response.status(200).send({ result: projects.rows });
+      } else {
+        // Send user projects
+        const projects = await pool.query(
+          `SELECT username, projectname, projectimage, updated_date, created_date FROM projects WHERE user_id = $1;`,
+          [user_id]
+        );
+        response.status(200).send({ result: projects.rows });
+      }
+    }
   } catch (err) {
     console.log(err.stack);
     response.status(500).send({ error: "Database error" });
@@ -328,32 +349,32 @@ const amalgamFiles = (req, res) => {
       {
         filename: "physical-motorized-pot.js",
         data: physicalMotorizedPotJS,
-        folder: "",
+        folder: ""
       },
       { filename: "physical-pot.js", data: physicalPotJS, folder: "" },
       { filename: "physical-rgb-led.js", data: physicalRgbLedJS, folder: "" },
       {
         filename: "physical-servo-motor.js",
         data: physicalServoMotorJS,
-        folder: "",
+        folder: ""
       },
       { filename: "physical-output.js", data: physicalOutputJS, folder: "" },
       {
         filename: "test-physical-button.js",
         data: testPhysicalButtonJS,
-        folder: "",
+        folder: ""
       },
       {
         filename: "test-physical-submit.js",
         data: testPhysicalSubmitJS,
-        folder: "",
+        folder: ""
       },
       {
         filename: "raspberrypi_pinout.css",
         data: raspberryPinoutCSS,
-        folder: "boards_pinout",
-      },
-    ],
+        folder: "boards_pinout"
+      }
+    ]
   });
 };
 
@@ -399,7 +420,7 @@ const generateWebPage = async (req, res) => {
     const appDir = `../${PUBLIC_PATH}/apps/${userName}/${projectName}`;
     if (!fs.existsSync(appDir)) {
       console.log("Creating Path");
-      fs.mkdirSync(appDir, { recursive: true }, (err) => {
+      fs.mkdirSync(appDir, { recursive: true }, err => {
         if (err) throw err;
       });
     }
@@ -415,17 +436,17 @@ const generateWebPage = async (req, res) => {
     // If success send the user a link back
     if (process.env.NODE_ENV === "production") {
       res.send({
-        link: `${WEB_URL}/apps/${userName}/${projectName}`,
+        link: `${WEB_URL}/apps/${userName}/${projectName}`
       });
     } else {
       res.send({
-        link: `${WEB_URL}:${LOCALHOST_PORT}/apps/${userName}/${projectName}`,
+        link: `${WEB_URL}:${LOCALHOST_PORT}/apps/${userName}/${projectName}`
       });
     }
   } catch (err) {
     console.log(err);
     res.status(500).send({
-      error: "Server error: " + err,
+      error: "Server error: " + err
     });
   }
 };
@@ -440,10 +461,10 @@ const generatePCB = (req, res) => {
   let pyprog = spawn("python3", [
     "../../json_to_eagle_brd/builder.py",
     "-i",
-    JSON.stringify(req.body.pcbInput),
+    JSON.stringify(req.body.pcbInput)
   ]);
 
-  pyprog.stderr.on("data", (data) => {
+  pyprog.stderr.on("data", data => {
     // Data error
     console.log("\nDATA ERROR:\n", data.toString("utf8"));
   });
@@ -487,7 +508,7 @@ const autoroutePCB = (req, res) => {
   let spawn = require("child_process").spawn;
   let eagleAutoroute = spawn("../../eagle-9.4.2/eagle", [
     "../../json_to_eagle_brd/COMBINED.brd",
-    "-CAUTO;WRITE @ROUTED.brd;QUIT;",
+    "-CAUTO;WRITE @ROUTED.brd;QUIT;"
   ]);
   // Set timeout for eagle autoruter
   setTimeout(function() {
@@ -500,7 +521,7 @@ const autoroutePCB = (req, res) => {
     }
   }, 300000); // 5 mins max
 
-  eagleAutoroute.stderr.on("data", (data) => {
+  eagleAutoroute.stderr.on("data", data => {
     // Data error
     console.log("\nDATA ERROR:\n", data.toString("utf8"));
   });
@@ -549,7 +570,7 @@ const generateGerber = (req, res) => {
     "../../json_to_eagle_brd/artik_2layer.cam",
     "../../json_to_eagle_brd/ROUTED.brd",
     "-o",
-    "../../json_to_eagle_brd/GERBER/",
+    "../../json_to_eagle_brd/GERBER/"
   ]);
   // Set timeout for eagle autoruter
   setTimeout(function() {
@@ -562,7 +583,7 @@ const generateGerber = (req, res) => {
     }
   }, 10000); // 10 seconds
 
-  eagleGerber.stderr.on("data", (data) => {
+  eagleGerber.stderr.on("data", data => {
     // Data error
     console.log("\nDATA ERROR:\n", data.toString("utf8"));
   });
@@ -637,8 +658,8 @@ const generateGerber = (req, res) => {
             { filename: "routed.GTO", data: routedGTO, folder: "" },
             { filename: "routed.GTP", data: routedGTP, folder: "" },
             { filename: "routed.GTS", data: routedGTS, folder: "" },
-            { filename: "routed.TXT", data: routedTXT, folder: "" },
-          ],
+            { filename: "routed.TXT", data: routedTXT, folder: "" }
+          ]
         });
         // Eagle generated gerber files correctly
         console.log(
@@ -673,5 +694,5 @@ module.exports = {
   generateWebPage,
   generatePCB,
   autoroutePCB,
-  generateGerber,
+  generateGerber
 };
