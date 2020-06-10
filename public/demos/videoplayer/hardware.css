@@ -1,0 +1,32 @@
+#progressBar {
+  hardware: physical-motorized-pot (motora:"4",motorb:"17",touch:"27",i2c-addr:0x48,i2c-port:url("/dev/i2c-1"));
+}
+
+physical-motorized-pot {
+  display: none;
+}
+
+#playPause {
+  hardware: physical-button (gpio:"22");
+}
+
+physical-button {
+  display: none;
+}
+
+#prev {
+  hardware: physical-button (gpio:"5");
+}
+
+physical-button {
+  display: none;
+}
+
+#next {
+  hardware: physical-button (gpio:"6");
+}
+
+physical-button {
+  display: none;
+}
+

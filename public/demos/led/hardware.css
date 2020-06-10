@@ -1,0 +1,16 @@
+#myLED {
+  hardware: physical-output (gpio:"17");
+}
+
+physical-output {
+  display: none;
+}
+
+#turnON {
+  hardware: physical-button (gpio:"4");
+}
+
+physical-button {
+  display: none;
+}
+

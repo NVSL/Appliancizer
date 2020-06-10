@@ -5,16 +5,18 @@
 // - Add rotation (Hard)
 // - Try to remove jquery.min from injector (not necessary)
 // Learn: 
-// - Learn how to make a propoer form (See project name set example) (enter click)
+// - Learn how to make a prooer form (See project name set example) (enter click)
 // - Learn how to send a verification email
 // - Learn how to send queries with bearers (token stuff)
 // Tomorrow: 
-// - Add temperature sensor
+// - Change Digi-key motorized pot when arrive.  
+// - Integrate changes in local appliancizer to this and thest all boards online.
+// - Make a new user hardapps that should load all demos, also add them to the table. 
+// - Add to hardware browser apps username, projectname and injects. 
 // - Applincizer is deleating everything in gerber file, make it not delete
 // - Fix web hardware borwser
 //     - background color, username and app, rotate secreen, top to refresh, 
 //     - bottom to return
-// - Delete projects and Add jerom demo project files each time database is clean.   
 // - Check everything, make it work fully in localhost
 // - Host it to the cloud (END)
 -->
@@ -2484,7 +2486,7 @@ export default {
       if (this.auth.username == undefined) {
         return "error: unathorized user";
       } else {
-        return `${WEBSITE_URL}apps/${username}/${projectName}`;
+        return `${WEBSITE_URL}apps/${username}/${projectName}/index.html`;
       }
     },
     ProjectsScreen_loadProject(projectName) {

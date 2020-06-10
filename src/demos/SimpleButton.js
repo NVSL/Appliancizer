@@ -1,10 +1,7 @@
 export default {
   html: `<button id="myButton" onclick="test()">test</button>
 <div id="text">Counter: 0</div>`,
-  css: `button {
-  color: blue;
-}
-
+  css: `
 #text {
   display: inline-block;
 }
@@ -15,5 +12,5 @@ function test() {
   var text = document.getElementById("text");
   counter++;
   text.innerHTML = "Counter: " + counter;
-}`,
+}`
 };
