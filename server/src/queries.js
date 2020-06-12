@@ -436,11 +436,11 @@ const generateWebPage = async (req, res) => {
     // If success send the user a link back
     if (process.env.NODE_ENV === "production") {
       res.send({
-        link: `${WEB_URL}/apps/${userName}/${projectName}`
+        link: `${WEB_URL}/apps/${userName}/${projectName}/index.html`
       });
     } else {
       res.send({
-        link: `${WEB_URL}:${LOCALHOST_PORT}/apps/${userName}/${projectName}`
+        link: `${WEB_URL}:${LOCALHOST_PORT}/apps/${userName}/${projectName}/index.html`
       });
     }
   } catch (err) {
@@ -455,6 +455,12 @@ const generateWebPage = async (req, res) => {
 const generatePCB = (req, res) => {
   console.log("\n######\n###### Generating PCB \n######");
   console.log("PCB INPUT:\n", JSON.stringify(req.body.pcbInput, null, 2));
+
+  // Delete combined output if exists
+  let routedCombinedFilePath = "../../json_to_eagle_brd/COMBINED.brd";
+  if (fs.existsSync(routedCombinedFilePath)) {
+    fs.unlinkSync(routedCombinedFilePath);
+  }
 
   // Run Gadgetron modules combinator
   let spawn = require("child_process").spawn;
@@ -499,14 +505,20 @@ const autoroutePCB = (req, res) => {
   console.log("\n######\n###### Autorouting PCB \n######");
   // TODO kill any eagle process
 
-  // Delete output file if it exists
+  // Delete routed output file if it exists
   let routedFilePath = "../../json_to_eagle_brd/ROUTED.brd";
   if (fs.existsSync(routedFilePath)) {
     fs.unlinkSync(routedFilePath);
   }
 
+  // Delete routed pour output file if it exists
+  let routedPourFilePath = "../../json_to_eagle_brd/ROUTED_POUR.brd";
+  if (fs.existsSync(routedPourFilePath)) {
+    fs.unlinkSync(routedPourFilePath);
+  }
+
   let spawn = require("child_process").spawn;
-  let eagleAutoroute = spawn("../../eagle-9.4.2/eagle", [
+  let eagleAutoroute = spawn("../../eagle-9.2.2/eagle", [
     "../../json_to_eagle_brd/COMBINED.brd",
     "-CAUTO;WRITE @ROUTED.brd;QUIT;"
   ]);
@@ -533,22 +545,45 @@ const autoroutePCB = (req, res) => {
   eagleAutoroute.on("exit", function(code) {
     if (code == "0") {
       // Process finish correctly
-      try {
-        // Get board, if it doesn't exist then routed board failed.
-        fs.readFileSync("../../json_to_eagle_brd/ROUTED.brd", "utf8");
-      } catch (err) {
-        console.log(err.stack);
-        res.status(500).send({ error: "Server error" });
-        console.log("\n######\n###### END Autorouting PCB (Fail) \n######");
-        return;
-      }
-      // Eagle autorouted correctly
-      res.send({ message: "Success" });
-      console.log("\n######\n###### END Autorouting PCB (Success) \n######");
-    } else {
-      // Process error
-      res.status(500).send({ error: "Server error" });
-      console.log("\n######\n###### END Autorouting PCB (Fail) \n######");
+
+      // Add cooper pouring
+      let spawn = require("child_process").spawn;
+      let pyprog = spawn("python3", [
+        "../../json_to_eagle_brd/addCooperPour.py"
+      ]);
+
+      pyprog.stderr.on("data", data => {
+        // Data error
+        console.log("\nPOUR DATA ERROR:\n", data.toString("utf8"));
+      });
+
+      pyprog.stdout.on("data", function(data) {
+        console.log("\nPOUR DATA GOOD:\n", data.toString("utf8"));
+      });
+
+      pyprog.on("exit", function(code) {
+        if (code == "0") {
+          // Process finish correctly
+          try {
+            // Get board, if it doesn't exist then routed board failed.
+            fs.readFileSync("../../json_to_eagle_brd/ROUTED.brd", "utf8");
+          } catch (err) {
+            console.log(err.stack);
+            res.status(500).send({ error: "Server error" });
+            console.log("\n######\n###### END Autorouting PCB (Fail) \n######");
+            return;
+          }
+          // Eagle autorouted correctly
+          res.send({ message: "Success" });
+          console.log(
+            "\n######\n###### END Autorouting PCB (Success) \n######"
+          );
+        } else {
+          // Process error
+          res.status(500).send({ error: "Server error" });
+          console.log("\n######\n###### END Autorouting PCB (Fail) \n######");
+        }
+      });
     }
   });
 };
@@ -560,15 +595,21 @@ const generateGerber = (req, res) => {
   // Delete output files
   fs.emptyDirSync("../../json_to_eagle_brd/GERBER/");
 
+  // Add .gitignore file to ignore folder contents
+  fs.appendFileSync(
+    "../../json_to_eagle_brd/GERBER/.gitignore",
+    "* \n!.gitignore"
+  );
+
   let spawn = require("child_process").spawn;
-  let eagleGerber = spawn("../../eagle-9.4.2/eagle", [
+  let eagleGerber = spawn("../../eagle-9.2.2/eagle", [
     "-X",
     "-N",
     "-d",
     "CAMJOB",
     "-j",
     "../../json_to_eagle_brd/artik_2layer.cam",
-    "../../json_to_eagle_brd/ROUTED.brd",
+    "../../json_to_eagle_brd/ROUTED_POUR.brd",
     "-o",
     "../../json_to_eagle_brd/GERBER/"
   ]);
@@ -599,49 +640,49 @@ const generateGerber = (req, res) => {
 
         // Get board
         let board = fs.readFileSync(
-          "../../json_to_eagle_brd/ROUTED.brd",
+          "../../json_to_eagle_brd/ROUTED_POUR.brd",
           "utf8"
         );
 
         // Get Gerber Files
         let routedGBL = fs.readFileSync(
-          "../../json_to_eagle_brd/GERBER/ROUTED.GBL",
+          "../../json_to_eagle_brd/GERBER/ROUTED_POUR.GBL",
           "utf8"
         );
         let routedGBO = fs.readFileSync(
-          "../../json_to_eagle_brd/GERBER/ROUTED.GBO",
+          "../../json_to_eagle_brd/GERBER/ROUTED_POUR.GBO",
           "utf8"
         );
         let routedGBP = fs.readFileSync(
-          "../../json_to_eagle_brd/GERBER/ROUTED.GBP",
+          "../../json_to_eagle_brd/GERBER/ROUTED_POUR.GBP",
           "utf8"
         );
         let routedGBS = fs.readFileSync(
-          "../../json_to_eagle_brd/GERBER/ROUTED.GBS",
+          "../../json_to_eagle_brd/GERBER/ROUTED_POUR.GBS",
           "utf8"
         );
         let routedGML = fs.readFileSync(
-          "../../json_to_eagle_brd/GERBER/ROUTED.GML",
+          "../../json_to_eagle_brd/GERBER/ROUTED_POUR.GML",
           "utf8"
         );
         let routedGTL = fs.readFileSync(
-          "../../json_to_eagle_brd/GERBER/ROUTED.GTL",
+          "../../json_to_eagle_brd/GERBER/ROUTED_POUR.GTL",
           "utf8"
         );
         let routedGTO = fs.readFileSync(
-          "../../json_to_eagle_brd/GERBER/ROUTED.GTO",
+          "../../json_to_eagle_brd/GERBER/ROUTED_POUR.GTO",
           "utf8"
         );
         let routedGTP = fs.readFileSync(
-          "../../json_to_eagle_brd/GERBER/ROUTED.GTP",
+          "../../json_to_eagle_brd/GERBER/ROUTED_POUR.GTP",
           "utf8"
         );
         let routedGTS = fs.readFileSync(
-          "../../json_to_eagle_brd/GERBER/ROUTED.GTS",
+          "../../json_to_eagle_brd/GERBER/ROUTED_POUR.GTS",
           "utf8"
         );
         let routedTXT = fs.readFileSync(
-          "../../json_to_eagle_brd/GERBER/ROUTED.TXT",
+          "../../json_to_eagle_brd/GERBER/ROUTED_POUR.TXT",
           "utf8"
         );
 

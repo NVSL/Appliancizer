@@ -3,17 +3,13 @@
 // - Add RPI sound  header (Note that a device that needs one device more for the connectro is needed)
 // - How to add a notification if max number of I/Os for the connector is reached? (hard)
 // - Add rotation (Hard)
-// - Try to remove jquery.min from injector (not necessary)
 // Learn: 
 // - Learn how to make a prooer form (See project name set example) (enter click)
 // - Learn how to send a verification email
 // - Learn how to send queries with bearers (token stuff)
 // Tomorrow: 
-// - Change Digi-key motorized pot when arrive.  
-// - Integrate changes in local appliancizer to this and thest all boards online.
-// - Make a new user hardapps that should load all demos, also add them to the table. 
+// - Integrate changes in local appliancizer to this and thest all boards online. 
 // - Add to hardware browser apps username, projectname and injects. 
-// - Applincizer is deleating everything in gerber file, make it not delete
 // - Fix web hardware borwser
 //     - background color, username and app, rotate secreen, top to refresh, 
 //     - bottom to return
@@ -1901,7 +1897,7 @@ export default {
           description: "Motorized Potentiometer 10K",
           schematic: "motorized_potentiometer",
           buyLink:
-            "https://www.digikey.com/product-detail/en/bourns-inc/PSM60-082A-103B2/PSM60-082A-103B2-ND/5825442",
+            "https://www.digikey.com/product-detail/en/bourns-inc/PSM01-081A-103B2/PSM01-081A-103B2-ND/3694106",
           hardElement: "physical-motorized-pot",
           hardElementVars:
             "(motora:$gpio, motorb:$gpio, \
@@ -1918,7 +1914,7 @@ export default {
           schematic: "temperature_sensor",
           buyLink:
             "https://www.digikey.com/product-detail/en/adafruit-industries-llc/1782/1528-1032-ND/4990781",
-          hardElement: "physical-motorized-pot",
+          hardElement: "physical-temp-sensor",
           hardElementVars: "(i2c-addr:0x18, i2c-port:url($i2c))",
           partImage: "range/mcp9808.png",
           image: "range/mcp9808.svg",
@@ -1964,7 +1960,7 @@ export default {
           partImage: "connectors/rpi_connector_partimage.jpg",
           image: "connectors/rpi_connector.png",
           height: "7mm",
-          width: "51mm"
+          width: "49mm"
         }
       },
       misc: {
@@ -2393,7 +2389,9 @@ export default {
     project_clear() {
       // Clear all content
       this.ProjectName = "";
-      this.$refs.PcbBoard.setpcbsize(this.pcbHeight, this.pcbWidth);
+      this.$refs.PcbBoard.setpcbsize(this.pcbHeight, this.pcbWidth); // Initial Size
+      this.FinalPCB.height = this.pcbHeight; // Initial height state
+      this.FinalPCB.width = this.pcbWidth; // Initial width state
       this.HTMLEditor_clear = true; // Clear will be executed when Editor opens.
       this.eComponentSaved = {};
       this.eAvailableComponents = [];
@@ -2404,6 +2402,7 @@ export default {
         .not("#mm_rule")
         .not("#pcb-resizable-corners")
         .remove();
+      this.uniqueId = 0;
     },
     project_load(project) {
       console.log("Loading project name: ", project.projectname);
@@ -2419,7 +2418,9 @@ export default {
       this.$refs.PcbBoard.setpcbsize(
         project.FinalPCB_height,
         project.FinalPCB_width
-      );
+      ); // Force PCB resize
+      this.FinalPCB.height = project.FinalPCB_height; // Set PCB project height
+      this.FinalPCB.width = project.FinalPCB_width; // Set PCB project width
       this.HTMLEditor_projectLoad = true;
       this.eComponentSaved = project.eComponentSaved;
       this.eAvailableComponents = project.eAvailableComponents;
@@ -2441,6 +2442,8 @@ export default {
           let elementId = this.eComponentSaved[key].elementId;
           this.addComponentClickFunctions(elementId);
         }
+        // Increase uiniq element pointer
+        this.uniqueId++;
       }
       if (this.eComponentSaved["TouchScreen"]) {
         // Set HDMI screen
@@ -2580,6 +2583,7 @@ export default {
         componentBuyLink: this.eComponentList.screens[key].buyLink, // Set in the next function
         componentHardElement: null, // Set in the next function
         componentHardElementVars: null, // Set in the next function
+        componentTransformedHardElementVars: null, // Set at build
         componentPartImage: this.eComponentList.screens[key].partImage, // Set in the next function
         componentImage: null, // Set in the next function
         componentWidth: this.eComponentList.screens[key].width, // Set in the next function
@@ -2745,15 +2749,18 @@ export default {
         }
       }, 3000);
 
-      // Add connector to the PCB Screen
-      this.addNewHTMLComponent(
-        "connector", // thisId
-        "connector", // thisType
-        "", // thisInnerHtml
-        '<div id="connector"></div>', // thisHtml
-        5, // thisLeft
-        10 // thisTop
-      );
+      // Add connector to the PCB Screen if hasn't been added
+      let connElement = document.getElementById("connector");
+      if (connElement == undefined) {
+        this.addNewHTMLComponent(
+          "connector", // thisId
+          "connector", // thisType
+          "", // thisInnerHtml
+          '<div id="connector"></div>', // thisHtml
+          5, // thisLeft
+          10 // thisTop
+        );
+      }
     },
     launchSnackbar(text, color, timeout) {
       this.snackbarText = text;
@@ -3770,7 +3777,9 @@ export default {
         }
         // Save new hardware CSS variables
         console.log("AFTER:", hardVars);
-        this.eComponentSaved[key].componentHardElementVars = hardVars;
+        this.eComponentSaved[
+          key
+        ].componentTransformedHardElementVars = hardVars;
       }
       console.log("### PIN ASSIGNMENT END");
 
@@ -4150,7 +4159,7 @@ export default {
         }
         console.log("ADDING:" + key);
         var compHardElementVars = this.eComponentSaved[key]
-          .componentHardElementVars;
+          .componentTransformedHardElementVars;
 
         // prettier-ignore
         cssDoc = cssDoc +
