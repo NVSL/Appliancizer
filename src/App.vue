@@ -819,6 +819,7 @@
                             v-html="item.title"
                           ></v-list-tile-title>
                           <v-list-tile-sub-title
+                            style="overflow-y: auto"
                             v-html="item.subtitle"
                           ></v-list-tile-sub-title>
                         </v-list-tile-content>
@@ -3798,12 +3799,28 @@ export default {
           // Key exists, add Qunatity + 1.
           finalDisplayList[displayKey].qty =
             finalDisplayList[displayKey].qty + 1;
+          // Add interface
+          let iface = this.eComponentSaved[key].componentIfaces;
+          if (Object.keys(iface).length != 0) {
+            finalDisplayList[displayKey].ifaces.push(
+              this.eComponentSaved[key].componentIfaces
+            );
+          }
         } else {
           // Add key to final display List
           finalDisplayList[displayKey] = {
             component: this.eComponentSaved[key],
-            qty: 1
+            qty: 1,
+            ifaces: []
           };
+
+          // Add iface
+          let iface = this.eComponentSaved[key].componentIfaces;
+          if (Object.keys(iface).length != 0) {
+            finalDisplayList[displayKey].ifaces.push(
+              this.eComponentSaved[key].componentIfaces
+            );
+          }
         }
       }
 
@@ -3838,42 +3855,47 @@ export default {
             }" target="_blank">Buy Link</a> | Qty: ${componentQty}`;
           }
         } else {
-          // Get all interfaces in a summary
-          var interfaces = finalDisplayList[key].component.componentIfaces;
-          var ifacesSummary = "";
-          for (var ifacekey in interfaces) {
-            var type = interfaces[ifacekey].type;
-            if (type == "gpio") {
-              // Get gpio number from an unknown gpio net
-              let gpioNum = null;
-              for (let key in interfaces[ifacekey]) {
-                if (key != "type") {
-                  // If is not type then is the gpio net containing gpio num
-                  gpioNum = interfaces[ifacekey][key];
-                }
-              }
-              ifacesSummary =
-                ifacesSummary + type.toUpperCase() + ":" + gpioNum + ", ";
-            } else {
-              ifacesSummary = ifacesSummary + type.toUpperCase() + ", ";
-            }
-          }
-          // Remove two last characters
-          ifacesSummary = ifacesSummary.substring(0, ifacesSummary.length - 2);
-
-          // Generate subtitle Text for Hard element
+          // Sumarize interfaces (e.g. <physical-buttin> (GPIO:4))
+          let ifaces = finalDisplayList[key].ifaces;
           hardElement = " &lt" + hardElement + "&gt";
+          let htmlTags = "";
+          for (let iter in ifaces) {
+            let ifacesSummary = "";
+            for (let ifacekey in ifaces[iter]) {
+              var type = ifaces[iter][ifacekey].type;
+              console.log("TYPE:", type);
+              if (type == "gpio") {
+                // Get gpio number from an unknown gpio net
+                let gpioNet = Object.keys(ifaces[iter][ifacekey]).filter(
+                  key => !key.includes("type")
+                )[0];
+                let gpioNum = ifaces[iter][ifacekey][gpioNet];
+                ifacesSummary =
+                  ifacesSummary + type.toUpperCase() + ":" + gpioNum + ", ";
+              } else {
+                ifacesSummary = ifacesSummary + type.toUpperCase() + ", ";
+              }
+            }
+            // Remove two last characters (ending comma ,)
+            ifacesSummary = ifacesSummary.substring(
+              0,
+              ifacesSummary.length - 2
+            );
+            // Add html Tags
+            htmlTags = htmlTags + `<br>${hardElement} (${ifacesSummary})`;
+          }
+
           if (componentSaved.componentBuyLink.includes("digikey")) {
             // Add quantities for digikey
             subtitleText = `<a href="${
               componentSaved.componentBuyLink
             }?quantity=${componentQty}" target="_blank">Buy Link</a> 
-            | Qty: ${componentQty} | Hard HTML Tag: ${hardElement} (${ifacesSummary})`;
+            | Qty: ${componentQty} | Hard HTML Tags: ${htmlTags}`;
           } else {
             subtitleText = `<a href="${
               componentSaved.componentBuyLink
             }" target="_blank">Buy Link</a> 
-            | Qty: ${componentQty} | Hard HTML Tag: ${hardElement} (${ifacesSummary})`;
+            | Qty: ${componentQty} | Hard HTML Tag: ${htmlTags}`;
           }
         }
 

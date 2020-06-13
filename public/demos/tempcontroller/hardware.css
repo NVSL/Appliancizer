@@ -1,11 +1,3 @@
-#mySensor {
-  hardware: physical-temp-sensor (i2c-addr:0x18,i2c-port:url("/dev/i2c-1"));
-}
-
-physical-temp-sensor {
-  display: none;
-}
-
 #tempUP {
   hardware: physical-button (gpio:"4");
 }
@@ -14,19 +6,27 @@ physical-button {
   display: none;
 }
 
-#tempDOWN {
-  hardware: physical-button (gpio:"17");
-}
-
-physical-button {
-  display: none;
-}
-
 #myOutput {
-  hardware: physical-output (gpio:"27");
+  hardware: physical-output (gpio:"17");
 }
 
 physical-output {
+  display: none;
+}
+
+#mySensor {
+  hardware: physical-temp-sensor (i2c-addr:0x18,i2c-port:url("/dev/i2c-1"));
+}
+
+physical-temp-sensor {
+  display: none;
+}
+
+#tempDOWN {
+  hardware: physical-button (gpio:"27");
+}
+
+physical-button {
   display: none;
 }
 
