@@ -1,5 +1,5 @@
 export default {
-  html: `<button id="myButton" onclick="test()">test</button>
+  html: `<button id="myButton" onclick="test()">button</button>
 <div id="text">Counter: 0</div>`,
   css: `
 #text {
