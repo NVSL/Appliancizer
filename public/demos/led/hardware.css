@@ -1,5 +1,5 @@
 #myLED {
-  hardware: physical-output (gpio:"17");
+  hardware: physical-output (gpio:"4");
 }
 
 physical-output {
@@ -7,7 +7,7 @@ physical-output {
 }
 
 #turnON {
-  hardware: physical-button (gpio:"4");
+  hardware: physical-button (gpio:"17");
 }
 
 physical-button {

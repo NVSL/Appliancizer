@@ -517,7 +517,7 @@ var simpleLED = {
       componentIfaces: {
         iface_0: {
           type: "gpio",
-          GPIO: "4"
+          GPIO: "17"
         }
       },
       componentLeft: 2,
@@ -572,7 +572,7 @@ var simpleLED = {
       componentIfaces: {
         iface_0: {
           type: "gpio",
-          GPIO: "17"
+          GPIO: "4"
         }
       },
       componentLeft: 25,
