@@ -408,7 +408,24 @@
 
       <!-- #Footer -->
       <v-footer color="grey darken-4">
-        <span class="white--text">&copy; NVSL 2019</span>
+        <span class="white--text pl-4"
+          >&copy;
+          <a
+            href="http://nvsl.ucsd.edu/"
+            target="_blank"
+            style="text-decoration: none; color: white"
+          >
+            NVSL 2020
+          </a>
+          |
+          <a
+            href="https://github.com/NVSL/Applianzer"
+            target="_blank"
+            style="text-decoration: none; color: white"
+          >
+            Github
+          </a>
+        </span>
       </v-footer>
 
       <!-- #Right Click Menu -->
