@@ -214,93 +214,106 @@
                 </v-layout>
               </pane>
               <pane>
-                <div id="PCBPanel" :style="{ height: pcbPanelHeight }">
-                  <v-layout row>
-                    <v-toolbar-title class="pt-2 mx-3">PCB</v-toolbar-title>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                      id="buttonBuild"
-                      class="vbtn text-none"
-                      @click="openBuildScreen()"
-                    >
-                      BUILD
-                      {{ ProjectName ? ProjectName : "?" }}
-                      <span>&nbsp;</span>
-                      <v-icon>build</v-icon>
-                    </v-btn>
-                    <v-tooltip bottom>
-                      <template v-slot:activator="{ on }">
+                <v-layout column fill-height>
+                  <v-flex xs10>
+                    <div id="PCBPanel">
+                      <v-layout row>
+                        <v-toolbar-title class="pt-2 mx-3">PCB</v-toolbar-title>
+                        <v-spacer></v-spacer>
                         <v-btn
-                          :disabled="ProjectName ? false : true"
-                          class="vbtn"
-                          v-on="on"
-                          @click="ProjectNameScreen = true"
+                          id="buttonBuild"
+                          class="vbtn text-none"
+                          @click="openBuildScreen()"
                         >
-                          <v-icon>edit</v-icon>
+                          BUILD
+                          {{ ProjectName ? ProjectName : "?" }}
+                          <span>&nbsp;</span>
+                          <v-icon>build</v-icon>
                         </v-btn>
-                      </template>
-                      <span>Edit Project Name</span>
-                    </v-tooltip>
-                  </v-layout>
-                  <v-divider></v-divider>
-                  <div class="pa-2">
-                    <PcbBoard
-                      ref="PcbBoard"
-                      id="PCB"
-                      :w="pcbWidth"
-                      :h="pcbHeight"
-                      :brightness="pcbBrightness"
-                      :color="pcbColor"
-                      ondragover="event.preventDefault()"
-                      @pcbresize="BuildScreen_pcbresize($event)"
+                        <v-tooltip bottom>
+                          <template v-slot:activator="{ on }">
+                            <v-btn
+                              :disabled="ProjectName ? false : true"
+                              class="vbtn"
+                              v-on="on"
+                              @click="ProjectNameScreen = true"
+                            >
+                              <v-icon>edit</v-icon>
+                            </v-btn>
+                          </template>
+                          <span>Edit Project Name</span>
+                        </v-tooltip>
+                      </v-layout>
+                      <v-divider></v-divider>
+                      <div class="pa-2">
+                        <PcbBoard
+                          ref="PcbBoard"
+                          id="PCB"
+                          :w="pcbWidth"
+                          :h="pcbHeight"
+                          :brightness="pcbBrightness"
+                          :color="pcbColor"
+                          ondragover="event.preventDefault()"
+                          @pcbresize="BuildScreen_pcbresize($event)"
+                        >
+                          <!-- PCB components will be inserted here -->
+                        </PcbBoard>
+                      </div>
+                    </div>
+                  </v-flex>
+                  <v-flex xs2>
+                    <v-card
+                      :style="{ display: componentListDisplay, height: `100%` }"
+                      color="#f2f2f2"
                     >
-                      <!-- PCB components will be inserted here -->
-                    </PcbBoard>
-                  </div>
-                </div>
-                <!-- #Component Title -->
-                <v-card
-                  dark
-                  color="grey darken-3"
-                  :style="{ display: componentListDisplay }"
-                >
-                  <v-card-title class="subheading py-1">
-                    <strong>Part Description:&nbsp;</strong>
-                    <span>{{ currentComponentDescription.toUpperCase() }}</span>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                      class="vbtn"
-                      light
-                      :disabled="componentRemoveDisable"
-                      @click="removeParentComponent()"
-                    >
-                      REMOVE
-                    </v-btn>
-                  </v-card-title>
-                </v-card>
-                <!-- #List of Components -->
-                <v-layout
-                  row
-                  class="noGlobalTrigger"
-                  :style="{ display: componentListDisplay }"
-                  justify-start
-                >
-                  <v-flex
-                    class="noGlobalTrigger"
-                    xs2
-                    v-for="(item, index) in eComponentImages"
-                    :key="index"
-                  >
-                    <v-img
-                      :key="index"
-                      contain
-                      @click="componentClick(index)"
-                      :src="getComponentsImg(item)"
-                      class="componentImages noGlobalTrigger"
-                      v-bind:class="{
-                        componentSelect: componentSelected === index
-                      }"
-                    ></v-img>
+                      <v-toolbar
+                        class="subheading py-1"
+                        dark
+                        color="grey darken-3"
+                      >
+                        <!-- #Component Title -->
+                        <strong>Part Description:&nbsp;</strong>
+                        <span>{{
+                          currentComponentDescription.toUpperCase()
+                        }}</span>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          class="vbtn"
+                          light
+                          :disabled="componentRemoveDisable"
+                          @click="removeParentComponent()"
+                        >
+                          REMOVE
+                        </v-btn>
+                      </v-toolbar>
+                      <v-card-text>
+                        <!-- #List of Components -->
+                        <v-layout
+                          row
+                          class="noGlobalTrigger"
+                          :style="{ display: componentListDisplay }"
+                          justify-start
+                        >
+                          <v-flex
+                            class="noGlobalTrigger"
+                            xs2
+                            v-for="(item, index) in eComponentImages"
+                            :key="index"
+                          >
+                            <v-img
+                              :key="index"
+                              contain
+                              @click="componentClick(index)"
+                              :src="getComponentsImg(item)"
+                              class="componentImages noGlobalTrigger"
+                              v-bind:class="{
+                                componentSelect: componentSelected === index
+                              }"
+                            ></v-img>
+                          </v-flex>
+                        </v-layout>
+                      </v-card-text>
+                    </v-card>
                   </v-flex>
                 </v-layout>
               </pane>
@@ -1525,7 +1538,6 @@ export default {
     left: 0,
     panelHeight: 0,
     panelWidth: 0,
-    pcbPanelHeight: "100%",
     pcbWidth: 120,
     pcbHeight: 120,
     pcbBrightness: "brightness(1)",
@@ -3183,7 +3195,6 @@ export default {
 
           // Show Component Selection List
           this.componentListDisplay = "";
-          this.pcbPanelHeight = "74%";
 
           console.log("### END");
         }
@@ -3434,7 +3445,6 @@ export default {
 
       // Hide Component Selection List
       this.componentListDisplay = "none";
-      this.pcbPanelHeight = "100%";
 
       // Remove rest of comoponent from PCB
       $("#" + elementId).remove();
@@ -3492,7 +3502,6 @@ export default {
       }
       // Hide Component Selection List
       this.componentListDisplay = "none";
-      this.pcbPanelHeight = "100%";
     },
     //##########
     //########## HTML EDITOR
@@ -4367,7 +4376,7 @@ app.on('ready', createWindow)`;
 }
 
 #PCBPanel {
-  height: 74%;
+  /* height: 74%; */
   width: 100%;
   /* display: block; */
   overflow-x: auto;

@@ -28,7 +28,7 @@ function onYouTubeIframeAPIReady() {
   player = new YT.Player("video-placeholder", {
     width: 600,
     height: 485,
-    videoId: "DCLrDnZO_0E",
+    videoId: "VAmcwafByZ8",
     playerVars: {
       rel: 0,
       color: "white",
