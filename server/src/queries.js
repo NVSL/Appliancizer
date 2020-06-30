@@ -383,7 +383,7 @@ const generateWebPage = async (req, res) => {
   console.log("\n USER ID: ", req.body.userId);
   console.log("\n USER NAME: ", req.body.userName);
   console.log("\n PROJECT NAME: ", req.body.projectName);
-  console.log("\n PROJECT IMAGE: ", req.body.projectImage);
+  //console.log("\n PROJECT IMAGE: ", req.body.projectImage);
   console.log("\n PROJECT DATA: ", req.body.projectData);
   console.log("\n USER HTML: ", req.body.htmlDoc);
   console.log("\n USER CSS: ", req.body.cssDoc);
@@ -462,6 +462,20 @@ const generatePCB = (req, res) => {
     fs.unlinkSync(routedCombinedFilePath);
   }
 
+  // Delete any *.pro file
+  let regex = /[.]pro$/;
+  let path = "../../json_to_eagle_brd/";
+  fs.readdirSync(path)
+    .filter(f => regex.test(f))
+    .map(f => fs.unlinkSync(path + f));
+
+  // Delete any *.job file
+  regex = /[.]job$/;
+  path = "../../json_to_eagle_brd/";
+  fs.readdirSync(path)
+    .filter(f => regex.test(f))
+    .map(f => fs.unlinkSync(path + f));
+
   // Run Gadgetron modules combinator
   let spawn = require("child_process").spawn;
   let pyprog = spawn("python3", [
@@ -504,6 +518,8 @@ const generatePCB = (req, res) => {
 const autoroutePCB = (req, res) => {
   console.log("\n######\n###### Autorouting PCB \n######");
   // TODO kill any eagle process
+  var autorouteTimer = null;
+  let autorouteError = "Unknown";
 
   // Delete routed output file if it exists
   let routedFilePath = "../../json_to_eagle_brd/ROUTED.brd";
@@ -523,19 +539,31 @@ const autoroutePCB = (req, res) => {
     "-CAUTO;WRITE @ROUTED.brd;QUIT;"
   ]);
   // Set timeout for eagle autoruter
-  setTimeout(function() {
+  autorouteTimer = setTimeout(function() {
     // If process hasn't reported an exist status yet, kill it.
     if (eagleAutoroute.exitCode == null) {
+      autorouteError = "Timeout Error";
       eagleAutoroute.stdin.pause();
       eagleAutoroute.kill();
-      console.log("\n######\n###### Autorouting PCB (Timeout) \n######");
-      return;
     }
-  }, 300000); // 5 mins max
+  }, 240000); // 4 mins max
 
   eagleAutoroute.stderr.on("data", data => {
     // Data error
     console.log("\nDATA ERROR:\n", data.toString("utf8"));
+    // Detect connection error:
+    let XDisplayError = data.toString().includes("Could not connect");
+    if (XDisplayError == true) {
+      autorouteError = "X Display Error";
+      eagleAutoroute.stdin.pause();
+      eagleAutoroute.kill();
+    }
+    let SignUpError = data.toString().includes("No URLRequestContext");
+    if (SignUpError == true) {
+      autorouteError = "Eagle SignUp Error";
+      eagleAutoroute.stdin.pause();
+      eagleAutoroute.kill();
+    }
   });
 
   eagleAutoroute.stdout.on("data", function(data) {
@@ -543,6 +571,8 @@ const autoroutePCB = (req, res) => {
   });
 
   eagleAutoroute.on("exit", function(code) {
+    console.log("EAGLE AUTOROUTE PROCESS EXIT!!");
+    clearTimeout(autorouteTimer);
     if (code == "0") {
       // Process finish correctly
 
@@ -584,6 +614,11 @@ const autoroutePCB = (req, res) => {
           console.log("\n######\n###### END Autorouting PCB (Fail) \n######");
         }
       });
+    } else {
+      res.status(500).send({ error: autorouteError });
+      console.log(
+        "\n######\n###### END Autorouting PCB (X Display or Timeout Error) \n######"
+      );
     }
   });
 };

@@ -23,7 +23,8 @@ const fileUpload = require("express-fileupload");
 // build mini web app
 const app = express();
 app.use(morgan("combined")); // Prints all devices that have requested data.
-app.use(bodyParser.json()); // Allows getting req.body.{jsonparam} in POST
+app.use(bodyParser.json({ limit: "50mb" })); // Allows getting req.body.{jsonparam} in POST
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(cors());
 app.use(fileUpload()); // Allows getting req.files with the file data.
 

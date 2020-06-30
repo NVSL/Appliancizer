@@ -4125,12 +4125,31 @@ export default {
         console.log("-- PCB Generation:", genRes.data.message);
         this.pcbPercentage = 50;
         this.pcbGenerate = 2;
-        // Autoroutre PCB
+        // Launch Autoroute timer
         this.pcbAutoroute = 1;
-        let autoRes = await server.get("autoroutePCB");
+        let autoRes = null;
+        let autoSecondsElapsed = 0;
+        let autoMaxSeconds = 240; // 4 minutes
+        var autorouteTimer = setInterval(() => {
+          autoSecondsElapsed++;
+          if (autoSecondsElapsed >= autoMaxSeconds) {
+            clearInterval(autorouteTimer);
+            alert("Server timeout error, contact jgarzagu at ucsd.edu");
+            this.pcbPercentage = 0;
+            this.pcbGenerate = 3;
+            this.pcbLoading = false;
+            return;
+          }
+          // Update percentage from 50 to 75
+          let percOf25 = Math.floor(autoSecondsElapsed / (autoMaxSeconds / 25));
+          this.pcbPercentage = 50 + percOf25;
+        }, 1000);
+        // Autoroutre PCB
+        autoRes = await server.get("autoroutePCB");
         console.log("-- PCB Autorouting:", autoRes.data.message);
         this.pcbPercentage = 75;
         this.pcbAutoroute = 2;
+        clearInterval(autorouteTimer);
         // Generate PCB Gerber Files
         this.pcbGerberFiles = 1;
         let gerberRes = await server.get("generateGerber");
@@ -4159,7 +4178,8 @@ export default {
         });
         this.pcbLoading = false;
       } catch (error) {
-        alert(error.response.statusText);
+        clearInterval(autorouteTimer);
+        alert(error.response.statusText + ": " + error.response.data.error);
         this.pcbLoading = false;
         this.pcbPercentage = 0;
         if (this.pcbGenerate == 1) {
