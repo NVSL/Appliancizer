@@ -517,7 +517,10 @@ const generatePCB = (req, res) => {
 
 const autoroutePCB = (req, res) => {
   console.log("\n######\n###### Autorouting PCB \n######");
-  // TODO kill any eagle process
+  req.setTimeout(300000, () => {
+    // Bug, callback is not working in this version, do it manually
+  });
+
   var autorouteTimer = null;
   let autorouteError = "Unknown";
 
@@ -546,7 +549,7 @@ const autoroutePCB = (req, res) => {
       eagleAutoroute.stdin.pause();
       eagleAutoroute.kill();
     }
-  }, 240000); // 4 mins max
+  }, 220000); // ~4 mins max
 
   eagleAutoroute.stderr.on("data", data => {
     // Data error

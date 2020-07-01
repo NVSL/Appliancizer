@@ -4129,7 +4129,7 @@ export default {
         this.pcbAutoroute = 1;
         let autoRes = null;
         let autoSecondsElapsed = 0;
-        let autoMaxSeconds = 240; // 4 minutes
+        let autoMaxSeconds = 110; // 4 minutes
         var autorouteTimer = setInterval(() => {
           autoSecondsElapsed++;
           if (autoSecondsElapsed >= autoMaxSeconds) {
@@ -4179,7 +4179,11 @@ export default {
         this.pcbLoading = false;
       } catch (error) {
         clearInterval(autorouteTimer);
-        alert(error.response.statusText + ": " + error.response.data.error);
+        if (error.response) {
+          alert(error.response.statusText + ": " + error.response.data.error);
+        } else {
+          alert(error);
+        }
         this.pcbLoading = false;
         this.pcbPercentage = 0;
         if (this.pcbGenerate == 1) {
