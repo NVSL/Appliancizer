@@ -2655,7 +2655,10 @@ export default {
       let hardenNumber = 0;
 
       // Add Green Wrap to Buttons and Sliders if found, Red IF not
-      for (var element of $("#webpageContainer").find("*")) {
+      // Note: Instead of going through all html just for the first childrens
+      // Note: None Available components red-dotted is not actually necessary
+      //for (var element of $("#webpageContainer").find("*")) {
+      for (var element of $("#webpageContainer").children()) {
         var e_width = $(element).outerWidth() + 6;
         var e_height = $(element).outerHeight() + 6;
 
@@ -2687,7 +2690,7 @@ export default {
             hardenNumber++;
           } else {
             // Elements that cannot be dragged
-            var elementID = "";
+            let elementID = "";
             if (element.id == "") {
               // Add unique id
               elementID = uniqueId + "_uniq";
@@ -2706,14 +2709,31 @@ export default {
             this.nonAvailableComponents.push(elementID);
           }
         } else {
-          console.log("WARNING: OTHER ELEMENTS NOT AVAILABLE: " + element);
+          // Elements that cannot be dragged
+          let elementID = "";
+          if (element.id == "") {
+            // Add unique id
+            elementID = uniqueId + "_uniq";
+            uniqueId++;
+          } else {
+            elementID = element.id;
+          }
+
+          $(element).wrap(
+            `<div id="${elementID}_nondrag" class="none_draggable_element" 
+                style="width:${e_width}px;height:${e_height}px;display:inline-block;">
+                </div>`
+          );
+
+          // Add list of non available components (in red)
+          this.nonAvailableComponents.push(elementID);
         }
       }
 
-      // SPECIAL CASE FOR THE STUPID VIDEO PLAYER IFRAME
+      // SPECIAL CASE FOR THE VIDEO PLAYER IFRAME
       // Execute funtion after 4 seconds to find iframe change.
       setTimeout(() => {
-        for (var element of $("#webpageContainer").find("*")) {
+        for (var element of $("#webpageContainer").children()) {
           // If element has no children and has an id
 
           if ($(element).attr("id")) {
@@ -4129,7 +4149,7 @@ export default {
         this.pcbAutoroute = 1;
         let autoRes = null;
         let autoSecondsElapsed = 0;
-        let autoMaxSeconds = 110; // 4 minutes
+        let autoMaxSeconds = 240; // 4 minutes max
         var autorouteTimer = setInterval(() => {
           autoSecondsElapsed++;
           if (autoSecondsElapsed >= autoMaxSeconds) {
