@@ -197,7 +197,7 @@
                   </v-layout>
 
                   <v-divider class="pb-1"></v-divider>
-                  <v-flex fill-height style="background-color:rgb(35, 35, 35)">
+                  <v-flex style="background-color:rgb(35, 35, 35); height:90%">
                     <div
                       id="hdmiScreenBorder"
                       v-bind:class="{ phone: hdmiScreens_display }"
@@ -214,7 +214,7 @@
                 </v-layout>
               </pane>
               <pane>
-                <v-layout column fill-height>
+                <v-layout column fill-height style="overflow: scroll">
                   <v-flex xs10>
                     <div id="PCBPanel">
                       <v-layout row>
@@ -2455,7 +2455,9 @@ export default {
       this.eComponentSaved = project.eComponentSaved;
       this.eAvailableComponents = project.eAvailableComponents;
       this.nonAvailableComponents = project.nonAvailableComponents;
-      $("#webpageContainer").append(project.webpageContainer);
+      console.log("WEB PAGE APPEND:", project.webpageContainer)
+      document.getElementById("webpageContainer").innerHTML = project.webpageContainer;
+      //$("#webpageContainer").append(project.webpageContainer);
       this.EditorHTMLText = project.EditorHTMLText;
       this.EditorCSSText = project.EditorCSSText;
       this.EditorJSText = project.EditorJSText;
@@ -4367,8 +4369,9 @@ app.on('ready', createWindow)`;
       let projectName = this.ProjectName ? this.ProjectName : "noProjectName";
 
       // // Uncomment for saving a demo in database
+      console.log(this.project_save());
+
       // console.log(canvas.toDataURL().split(",")[1]);
-      // console.log(this.project_save());
       // console.log(
       //   JSON.stringify(
       //     {
@@ -4500,6 +4503,14 @@ app.on('ready', createWindow)`;
 
 #appInfo {
   width: 100%;
+}
+
+/*
+splitpanes fix height
+85% of viewport height
+*/
+.splitpanes {
+  height: 85vh !important;
 }
 
 /* 

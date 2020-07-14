@@ -114,7 +114,8 @@ const resetTablesWithData = async () => {
     await pool.query(
       `INSERT INTO projects (user_id, username, projectname, projectimage, project, updated_date)
         VALUES (1, '${demosUser}', 'videoplayerscreen', decode('${videoplayerscreenImage}','base64'),
-        '${JSON.stringify(simpleVideoPlayerScreen)}', NOW());`
+        $1, NOW());`,
+      [JSON.stringify(simpleVideoPlayerScreen)]
     );
     fs.copySync(
       `../${PUBLIC_PATH}/demos/videoplayerscreen`,
@@ -125,7 +126,8 @@ const resetTablesWithData = async () => {
     await pool.query(
       `INSERT INTO projects (user_id, username, projectname, projectimage, project, updated_date)
         VALUES (1, '${demosUser}', 'videoplayer', decode('${videoplayerImage}','base64'),
-        '${JSON.stringify(simpleVideoPlayer)}', NOW());`
+        $1, NOW());`,
+      [JSON.stringify(simpleVideoPlayer)]
     );
     fs.copySync(
       `../${PUBLIC_PATH}/demos/videoplayer`,
@@ -136,7 +138,8 @@ const resetTablesWithData = async () => {
     await pool.query(
       `INSERT INTO projects (user_id, username, projectname, projectimage, project, updated_date)
         VALUES (1, '${demosUser}', 'tempcontroller', decode('${tempControllerImage}','base64'),
-        '${JSON.stringify(simpleTempController)}', NOW());`
+        $1, NOW());`,
+      [JSON.stringify(simpleTempController)]
     );
     fs.copySync(
       `../${PUBLIC_PATH}/demos/tempcontroller`,
@@ -147,7 +150,8 @@ const resetTablesWithData = async () => {
     await pool.query(
       `INSERT INTO projects (user_id, username, projectname, projectimage, project, updated_date)
         VALUES (1, '${demosUser}', 'button', decode('${buttonImage}','base64'),
-        '${JSON.stringify(simpleButton)}', NOW());`
+        $1, NOW());`,
+      [JSON.stringify(simpleButton)]
     );
     fs.copySync(
       `../${PUBLIC_PATH}/demos/button`,
@@ -158,8 +162,9 @@ const resetTablesWithData = async () => {
     await pool.query(
       `INSERT INTO projects (user_id, username, projectname, projectimage, project, updated_date)
         VALUES (1, '${demosUser}', 'led', decode('${ledImage}','base64'),
-        '${JSON.stringify(simpleLED)}', NOW());
-      `
+        $1, NOW());
+      `,
+      [JSON.stringify(simpleLED)]
     );
     fs.copySync(
       `../${PUBLIC_PATH}/demos/led`,
@@ -1459,13 +1464,14 @@ var simpleVideoPlayerScreen = {
 var simpleTempController = {
   projectname: "tempcontroller",
   FinalPCB_height: 26,
-  FinalPCB_width: 55,
+  FinalPCB_width: 53,
   hdmiScreens_current: "MONITOR",
   EditorHTMLText:
-    '<div id="myTemp">25C</div>\n<button id="tempUP" onclick="tempUp_click()">UP</button>\n<button id="tempDOWN" onclick="tempDown_click()">DOWN</button>\n<input type="range" id="mySensor" min="-45" max="125" step="1" value="25" />\n<span id="myOutput"> OFF </span>',
-  EditorCSSText: "",
+    '<div id="container">\n  <div id="thermostat"></div>\n</div>\n<br  />\n<button id="tempUP" onclick="targetTempUp_click()">UP</button>\n<button id="tempDOWN" onclick="targetTempDown_click()">DOWN</button>\n<input type="range" id="mySensor" min="10" max="40" step="1" value="25" />\n<span id="myOutput"> OFF </span>',
+  EditorCSSText:
+    'body {\n    background-color: #cccccc;\n  }\n  #thermostat {\n    width: 55%;\n    height: 60%;\n    margin: 0 auto;\n    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);\n  }\n  .dial {\n    -webkit-user-select: none;\n    -moz-user-select: none;\n    -ms-user-select: none;\n    user-select: none;\n  }\n  .dial.away .dial__ico__leaf {\n    visibility: hidden;\n  }\n  .dial.away .dial__lbl--target {\n    visibility: hidden;\n  }\n  .dial.away .dial__lbl--target--half {\n    visibility: hidden;\n  }\n  .dial.away .dial__lbl--away {\n    opacity: 1;\n  }\n  .dial .dial__shape {\n    -webkit-transition: fill 0.5s;\n    transition: fill 0.5s;\n  }\n  .dial__ico__leaf {\n    fill: #13eb13;\n    opacity: 0;\n    -webkit-transition: opacity 0.5s;\n    transition: opacity 0.5s;\n    pointer-events: none;\n  }\n  .dial.has-leaf .dial__ico__leaf {\n    display: block;\n    opacity: 1;\n    pointer-events: initial;\n  }\n  .dial__editableIndicator {\n    fill: white;\n    fill-rule: evenodd;\n    opacity: 0;\n    -webkit-transition: opacity 0.5s;\n    transition: opacity 0.5s;\n  }\n  .dial--edit .dial__editableIndicator {\n    opacity: 1;\n  }\n  .dial--state--off .dial__shape {\n    fill: #222;\n  }\n  .dial--state--heating .dial__shape {\n    fill: #e36304;\n  }\n  .dial--state--cooling .dial__shape {\n    fill: #007af1;\n  }\n  .dial__ticks path {\n    fill: rgba(255, 255, 255, 0.3);\n  }\n  .dial__ticks path.active {\n    fill: rgba(255, 255, 255, 0.8);\n  }\n  .dial text {\n    fill: white;\n    text-anchor: middle;\n    font-family: Helvetica, sans-serif;\n    alignment-baseline: central;\n  }\n  .dial__lbl--target {\n    font-size: 120px;\n    font-weight: bold;\n  }\n  .dial__lbl--hvac {\n    font-size: 18px;\n  }\n  .dial__lbl--target--half {\n    font-size: 40px;\n    font-weight: bold;\n    opacity: 0;\n    -webkit-transition: opacity 0.1s;\n    transition: opacity 0.1s;\n  }\n  .dial__lbl--target--half.shown {\n    opacity: 1;\n    -webkit-transition: opacity 0s;\n    transition: opacity 0s;\n  }\n  .dial__lbl--ambient {\n    font-size: 22px;\n    font-weight: bold;\n  }\n  .dial__lbl--away {\n    font-size: 72px;\n    font-weight: bold;\n    opacity: 0;\n    pointer-events: none;\n  }\n  @font-face {\n    font-family: "Open Sans";\n    font-style: normal;\n    font-weight: 300;\n    src: local("Open Sans Light"), local("OpenSans-Light"),\n      url(https://fonts.gstatic.com/s/opensans/v17/mem5YaGs126MiZpBA-UN_r8OUuhs.ttf)\n        format("truetype");\n  }\n  #controls {\n    font-family: Open Sans;\n    background-color: rgba(255, 255, 255, 0.25);\n    padding: 20px;\n    border-radius: 5px;\n    position: absolute;\n    left: 50%;\n    -webkit-transform: translatex(-50%);\n    transform: translatex(-50%);\n    margin-top: 20px;\n  }\n  #controls label {\n    text-align: left;\n    display: block;\n  }\n  #controls label span {\n    display: inline-block;\n    width: 200px;\n    text-align: right;\n    font-size: 0.8em;\n    text-transform: uppercase;\n  }\n  #controls p {\n    margin: 0;\n    margin-bottom: 1em;\n    padding-bottom: 1em;\n    border-bottom: 2px solid #ccc;\n  }',
   EditorJSText:
-    'var SETPOINT = 25;\nvar NEW_SETPOINT = SETPOINT;\nvar CURRENT_TEMP = SETPOINT;\nfunction changeTemp(temp) {\n  let myTemp = document.getElementById("myTemp");\n  myTemp.innerText = temp + "°C";\n}\nfunction displayTemp() {\n  let myTemp = document.getElementById("myTemp");\n  myTemp.style.visibility = "visible";\n}\nfunction hideTemp() {\n  let myTemp = document.getElementById("myTemp");\n  myTemp.style.visibility = "hidden";\n}\nfunction toogleTempVisibility() {\n  let myTemp = document.getElementById("myTemp");\n  let tempVisibility = myTemp.style.visibility;\n  if (tempVisibility == "visible") {\n    hideTemp();\n  } else {\n    displayTemp();\n  }\n}\nfunction tempColor(color) {\n  document.getElementById("myTemp").style.color = color;\n}\n\nfunction checkSetPointTemp(SETPOINT) {\n  let myOutput = document.getElementById("myOutput");\n  if (CURRENT_TEMP > SETPOINT) {\n    myOutput.innerText = "ON";\n  } else {\n    myOutput.innerText = "OFF";\n  }\n}\n\nvar mySensor = document.getElementById("mySensor");\nmySensor.oninput = function() {\n  if (sixSecTimer != null) return;\n  CURRENT_TEMP = this.value;\n  console.log("Sensor Temp:", this.value)\n  changeTemp(CURRENT_TEMP);\n  checkSetPointTemp(SETPOINT);\n};\n\n// Init SETPOINT\nchangeTemp(SETPOINT);\n\n// Hide and display text (blink)\nvar oneSecTimer = null;\nfunction startOneSecTimer() {\n  oneSecTimer = setInterval(() => {\n    toogleTempVisibility();\n  }, 500);\n}\n\n// Set new set point after 6 seconds\nvar sixSecTimer = null;\nfunction startSixSecTimer() {\n  displayTemp();\n  if (sixSecTimer == null) startOneSecTimer();\n  if (sixSecTimer != null) clearTimeout(sixSecTimer);\n  tempColor("blue");\n  sixSecTimer = setTimeout(() => {\n    clearInterval(oneSecTimer);\n    if (NEW_SETPOINT != SETPOINT) {\n      SETPOINT = NEW_SETPOINT;\n      console.log("New Set point: ", SETPOINT);\n    }\n    changeTemp(CURRENT_TEMP);\n    checkSetPointTemp(SETPOINT);\n    displayTemp();\n    tempColor("black");\n    sixSecTimer = null;\n  }, 6000);\n}\n\nfunction tempUp_click() {\n  startSixSecTimer();\n  NEW_SETPOINT += 1;\n  changeTemp(NEW_SETPOINT);\n};\n\nfunction tempDown_click() {\n  startSixSecTimer();\n  NEW_SETPOINT -= 1;\n  changeTemp(NEW_SETPOINT);\n}',
+    '/*\n  Disclaimer - all credits to the original creator:\n  https://codepen.io/dalhundal/pen/KpabZB\n*/\nvar thermostatDial = (function () {\n  /*\n   * Utility functions\n   */\n\n  // Create an element with proper SVG namespace, optionally setting its attributes and appending it to another element\n  function createSVGElement(tag, attributes, appendTo) {\n    var element = document.createElementNS(\n      "http://www.w3.org/2000/svg",\n      tag\n    );\n    attr(element, attributes);\n    if (appendTo) {\n      appendTo.appendChild(element);\n    }\n    return element;\n  }\n\n  // Set attributes for an element\n  function attr(element, attrs) {\n    for (var i in attrs) {\n      element.setAttribute(i, attrs[i]);\n    }\n  }\n\n  // Rotate a cartesian point about given origin by X degrees\n  function rotatePoint(point, angle, origin) {\n    var radians = (angle * Math.PI) / 180;\n    var x = point[0] - origin[0];\n    var y = point[1] - origin[1];\n    var x1 = x * Math.cos(radians) - y * Math.sin(radians) + origin[0];\n    var y1 = x * Math.sin(radians) + y * Math.cos(radians) + origin[1];\n    return [x1, y1];\n  }\n\n  // Rotate an array of cartesian points about a given origin by X degrees\n  function rotatePoints(points, angle, origin) {\n    return points.map(function (point) {\n      return rotatePoint(point, angle, origin);\n    });\n  }\n\n  // Given an array of points, return an SVG path string representing the shape they define\n  function pointsToPath(points) {\n    return (\n      points\n        .map(function (point, iPoint) {\n          return (iPoint > 0 ? "L" : "M") + point[0] + " " + point[1];\n        })\n        .join(" ") + "Z"\n    );\n  }\n\n  function circleToPath(cx, cy, r) {\n    return [\n      "M",\n      cx,\n      ",",\n      cy,\n      "m",\n      0 - r,\n      ",",\n      0,\n      "a",\n      r,\n      ",",\n      r,\n      0,\n      1,\n      ",",\n      0,\n      r * 2,\n      ",",\n      0,\n      "a",\n      r,\n      ",",\n      r,\n      0,\n      1,\n      ",",\n      0,\n      0 - r * 2,\n      ",",\n      0,\n      "z"\n    ]\n      .join(" ")\n      .replace(/s,s/g, ",");\n  }\n\n  function donutPath(cx, cy, rOuter, rInner) {\n    return (\n      circleToPath(cx, cy, rOuter) + " " + circleToPath(cx, cy, rInner)\n    );\n  }\n\n  // Restrict a number to a min + max range\n  function restrictToRange(val, min, max) {\n    if (val < min) return min;\n    if (val > max) return max;\n    return val;\n  }\n\n  // Round a number to the nearest 0.5\n  function roundHalf(num) {\n    return Math.round(num * 2) / 2;\n  }\n\n  function setClass(el, className, state) {\n    el.classList[state ? "add" : "remove"](className);\n  }\n\n  /*\n   * The "MEAT"\n   */\n\n  return function (targetElement, options) {\n    var self = this;\n\n    /*\n     * Options\n     */\n    options = options || {};\n    options = {\n      diameter: options.diameter || 400,\n      minValue: options.minValue || 10, // Minimum value for target temperature\n      maxValue: options.maxValue || 40, // Maximum value for target temperature\n      numTicks: options.numTicks || 150 // Number of tick lines to display around the dial\n    };\n\n    /*\n     * Properties - calculated from options in many cases\n     */\n    var properties = {\n      tickDegrees: 300, //  Degrees of the dial that should be covered in tick lines\n      rangeValue: options.maxValue - options.minValue,\n      radius: options.diameter / 2,\n      ticksOuterRadius: options.diameter / 30,\n      ticksInnerRadius: options.diameter / 8,\n      hvac_states: ["off", "heating", "cooling"],\n      dragLockAxisDistance: 15\n    };\n    properties.lblAmbientPosition = [\n      properties.radius,\n      properties.ticksOuterRadius -\n        (properties.ticksOuterRadius - properties.ticksInnerRadius) / 2\n    ];\n    properties.offsetDegrees = 180 - (360 - properties.tickDegrees) / 2;\n\n    /*\n     * Object state\n     */\n    var state = {\n      target_temperature: options.minValue,\n      ambient_temperature: options.minValue,\n      hvac_state: properties.hvac_states[0],\n      has_leaf: false,\n      away: false\n    };\n\n    /*\n     * Property getter / setters\n     */\n    Object.defineProperty(this, "target_temperature", {\n      get: function () {\n        return state.target_temperature;\n      },\n      set: function (val) {\n        state.target_temperature = restrictTargetTemperature(+val);\n        render();\n      }\n    });\n    Object.defineProperty(this, "ambient_temperature", {\n      get: function () {\n        return state.ambient_temperature;\n      },\n      set: function (val) {\n        state.ambient_temperature = roundHalf(+val);\n        render();\n      }\n    });\n    Object.defineProperty(this, "hvac_state", {\n      get: function () {\n        return state.hvac_state;\n      },\n      set: function (val) {\n        if (properties.hvac_states.indexOf(val) >= 0) {\n          state.hvac_state = val;\n          render();\n        }\n      }\n    });\n    Object.defineProperty(this, "has_leaf", {\n      get: function () {\n        return state.has_leaf;\n      },\n      set: function (val) {\n        state.has_leaf = !!val;\n        render();\n      }\n    });\n    Object.defineProperty(this, "away", {\n      get: function () {\n        return state.away;\n      },\n      set: function (val) {\n        state.away = !!val;\n        render();\n      }\n    });\n\n    /*\n     * SVG\n     */\n    var svg = createSVGElement(\n      "svg",\n      {\n        width: "100%", //options.diameter+\'px\',\n        height: "100%", //options.diameter+\'px\',\n        viewBox: "0 0 " + options.diameter + " " + options.diameter,\n        class: "dial"\n      },\n      targetElement\n    );\n    // CIRCULAR DIAL\n    var circle = createSVGElement(\n      "circle",\n      {\n        cx: properties.radius,\n        cy: properties.radius,\n        r: properties.radius,\n        class: "dial__shape"\n      },\n      svg\n    );\n    // EDITABLE INDICATOR\n    var editCircle = createSVGElement(\n      "path",\n      {\n        d: donutPath(\n          properties.radius,\n          properties.radius,\n          properties.radius - 4,\n          properties.radius - 8\n        ),\n        class: "dial__editableIndicator"\n      },\n      svg\n    );\n\n    /*\n     * Ticks\n     */\n    var ticks = createSVGElement(\n      "g",\n      {\n        class: "dial__ticks"\n      },\n      svg\n    );\n    var tickPoints = [\n      [properties.radius - 1, properties.ticksOuterRadius],\n      [properties.radius + 1, properties.ticksOuterRadius],\n      [properties.radius + 1, properties.ticksInnerRadius],\n      [properties.radius - 1, properties.ticksInnerRadius]\n    ];\n    var tickPointsLarge = [\n      [properties.radius - 2, properties.ticksOuterRadius],\n      [properties.radius + 2, properties.ticksOuterRadius],\n      [properties.radius + 2, properties.ticksInnerRadius + 20],\n      [properties.radius - 2, properties.ticksInnerRadius + 20]\n    ];\n    var tickPointsMedium = [\n      [properties.radius - 2, properties.ticksOuterRadius],\n      [properties.radius + 2, properties.ticksOuterRadius],\n      [properties.radius + 2, properties.ticksInnerRadius],\n      [properties.radius - 2, properties.ticksInnerRadius]\n    ];\n    var theta = properties.tickDegrees / options.numTicks;\n    var tickArray = [];\n    for (var iTick = 0; iTick < options.numTicks; iTick++) {\n      tickArray.push(\n        createSVGElement("path", { d: pointsToPath(tickPoints) }, ticks)\n      );\n    }\n\n    /*\n     * Labels\n     */\n    var lblTarget = createSVGElement(\n      "text",\n      {\n        x: properties.radius,\n        y: properties.radius,\n        class: "dial__lbl dial__lbl--target"\n      },\n      svg\n    );\n    var lblTarget_text = document.createTextNode("");\n    lblTarget.appendChild(lblTarget_text);\n    //\n    var lblTargetHalf = createSVGElement(\n      "text",\n      {\n        x: properties.radius + properties.radius / 2.5,\n        y: properties.radius - properties.radius / 8,\n        class: "dial__lbl dial__lbl--target--half"\n      },\n      svg\n    );\n    var lblTargetHalf_text = document.createTextNode("5");\n    lblTargetHalf.appendChild(lblTargetHalf_text);\n    //\n    var lblAmbient = createSVGElement(\n      "text",\n      {\n        class: "dial__lbl dial__lbl--ambient"\n      },\n      svg\n    );\n    var lblAmbient_text = document.createTextNode("");\n    lblAmbient.appendChild(lblAmbient_text);\n    //\n    var lblAway = createSVGElement(\n      "text",\n      {\n        x: properties.radius,\n        y: properties.radius,\n        class: "dial__lbl dial__lbl--away"\n      },\n      svg\n    );\n    var lblAway_text = document.createTextNode("AWAY");\n    lblAway.appendChild(lblAway_text);\n    //\n    var lblHvac = createSVGElement(\n      "text",\n      {\n        x: properties.radius,\n        y: properties.radius - 65,\n        class: "dial__lbl dial__lbl--hvac"\n      },\n      svg\n    );\n    var lblHvac_text = document.createTextNode("COOLING");\n    lblHvac.appendChild(lblHvac_text);\n    //\n    var icoLeaf = createSVGElement(\n      "path",\n      {\n        class: "dial__ico__leaf"\n      },\n      svg\n    );\n\n    /*\n     * LEAF\n     */\n    var leafScale = properties.radius / 5 / 100;\n    var leafDef = [\n      "M",\n      3,\n      84,\n      "c",\n      24,\n      17,\n      51,\n      18,\n      73,\n      -6,\n      "C",\n      100,\n      52,\n      100,\n      22,\n      100,\n      4,\n      "c",\n      -13,\n      15,\n      -37,\n      9,\n      -70,\n      19,\n      "C",\n      4,\n      32,\n      0,\n      63,\n      0,\n      76,\n      "c",\n      6,\n      -7,\n      18,\n      -17,\n      33,\n      -23,\n      24,\n      -9,\n      34,\n      -9,\n      48,\n      -20,\n      -9,\n      10,\n      -20,\n      16,\n      -43,\n      24,\n      "C",\n      22,\n      63,\n      8,\n      78,\n      3,\n      84,\n      "z"\n    ]\n      .map(function (x) {\n        return isNaN(x) ? x : x * leafScale;\n      })\n      .join(" ");\n    var translate = [\n      properties.radius - leafScale * 100 * 0.5,\n      properties.radius * 1.5\n    ];\n    var icoLeaf = createSVGElement(\n      "path",\n      {\n        class: "dial__ico__leaf",\n        d: leafDef,\n        transform: "translate(" + translate[0] + "," + translate[1] + ")"\n      },\n      svg\n    );\n\n    /*\n     * RENDER\n     */\n    function render() {\n      renderAway();\n      renderHvacState();\n      renderTicks();\n      renderTargetTemperature();\n      renderAmbientTemperature();\n      renderLeaf();\n    }\n    render();\n\n    /*\n     * RENDER - ticks\n     */\n    function renderTicks() {\n      var vMin, vMax;\n      if (self.away) {\n        vMin = self.ambient_temperature;\n        vMax = vMin;\n      } else {\n        vMin = Math.min(\n          self.ambient_temperature,\n          self.target_temperature\n        );\n        vMax = Math.max(\n          self.ambient_temperature,\n          self.target_temperature\n        );\n      }\n      var min = restrictToRange(\n        Math.round(\n          ((vMin - options.minValue) / properties.rangeValue) *\n            options.numTicks\n        ),\n        0,\n        options.numTicks - 1\n      );\n      var max = restrictToRange(\n        Math.round(\n          ((vMax - options.minValue) / properties.rangeValue) *\n            options.numTicks\n        ),\n        0,\n        options.numTicks - 1\n      );\n      // Check where is ambient\n      var isMinAmbient = false;\n      if (self.ambient_temperature < self.target_temperature) {\n        isMinAmbient = true;\n      } else {\n        isMinAmbient = false;\n      }\n      // Fill ticks\n      tickArray.forEach(function (tick, iTick) {\n        var isActive = iTick >= min && iTick <= max;\n        var tickPointSize;\n        if (iTick == min && iTick == max) {\n          // Ambient and Target are equal\n          tickPointSize = tickPointsLarge;\n        } else if (iTick == min) {\n          // Ambient is on the left side?\n          tickPointSize = isMinAmbient\n            ? tickPointsMedium\n            : tickPointsLarge;\n        } else if (iTick == max) {\n          // Ambient is on the righ side?\n          tickPointSize = !isMinAmbient\n            ? tickPointsMedium\n            : tickPointsLarge;\n        } else {\n          tickPointSize = tickPoints;\n        }\n        attr(tick, {\n          d: pointsToPath(\n            rotatePoints(\n              tickPointSize,\n              iTick * theta - properties.offsetDegrees,\n              [properties.radius, properties.radius]\n            )\n          ),\n          class: isActive ? "active" : ""\n        });\n      });\n    }\n\n    /*\n     * RENDER - ambient temperature\n     */\n    function renderAmbientTemperature() {\n      lblAmbient_text.nodeValue = Math.floor(self.ambient_temperature);\n      if (self.ambient_temperature % 1 != 0) {\n        lblAmbient_text.nodeValue += "⁵";\n      }\n      var peggedValue = restrictToRange(\n        self.ambient_temperature,\n        options.minValue,\n        options.maxValue\n      );\n      degs =\n        (properties.tickDegrees * (peggedValue - options.minValue)) /\n          properties.rangeValue -\n        properties.offsetDegrees;\n      if (peggedValue > self.target_temperature) {\n        degs += 8;\n      } else {\n        degs -= 8;\n      }\n      var pos = rotatePoint(properties.lblAmbientPosition, degs, [\n        properties.radius,\n        properties.radius\n      ]);\n      attr(lblAmbient, {\n        x: pos[0],\n        y: pos[1]\n      });\n    }\n\n    /*\n     * RENDER - target temperature\n     */\n    function renderTargetTemperature() {\n      lblTarget_text.nodeValue = Math.floor(self.target_temperature);\n      setClass(lblTargetHalf, "shown", self.target_temperature % 1 != 0);\n    }\n\n    /*\n     * RENDER - leaf\n     */\n    function renderLeaf() {\n      setClass(svg, "has-leaf", self.has_leaf);\n    }\n\n    /*\n     * RENDER - HVAC state\n     */\n    function renderHvacState() {\n      Array.prototype.slice.call(svg.classList).forEach(function (c) {\n        if (c.match(/^dial--state--/)) {\n          svg.classList.remove(c);\n        }\n      });\n      svg.classList.add("dial--state--" + self.hvac_state);\n      // Change HVAC Text\n      let hvacText = document.querySelector(".dial__lbl--hvac");\n      switch (self.hvac_state) {\n        case "cooling":\n          hvacText.textContent = "COOLING";\n          break;\n        case "heating":\n          hvacText.textContent = "HEATING";\n          break;\n        default:\n          hvacText.textContent = "";\n          break;\n      }\n    }\n\n    /*\n     * RENDER - away\n     */\n    function renderAway() {\n      svg.classList[self.away ? "add" : "remove"]("away");\n    }\n\n    /*\n     * Helper functions\n     */\n    function restrictTargetTemperature(t) {\n      return restrictToRange(\n        roundHalf(t),\n        options.minValue,\n        options.maxValue\n      );\n    }\n\n    function angle(point) {\n      var dx = point[0] - properties.radius;\n      var dy = point[1] - properties.radius;\n      var theta = Math.atan(dx / dy) / (Math.PI / 180);\n      if (point[0] >= properties.radius && point[1] < properties.radius) {\n        theta = 90 - theta - 90;\n      } else if (\n        point[0] >= properties.radius &&\n        point[1] >= properties.radius\n      ) {\n        theta = 90 - theta + 90;\n      } else if (\n        point[0] < properties.radius &&\n        point[1] >= properties.radius\n      ) {\n        theta = 90 - theta + 90;\n      } else if (\n        point[0] < properties.radius &&\n        point[1] < properties.radius\n      ) {\n        theta = 90 - theta + 270;\n      }\n      return theta;\n    }\n\n    function getSizeRatio() {\n      return options.diameter / targetElement.clientWidth;\n    }\n  };\n})();\n\n/* ==== NEST CODE */\nvar SETPOINT = 25;\ndocument.getElementById("thermostat").innerHTML = "";\nvar nest = new thermostatDial(document.getElementById("thermostat"));\nnest.target_temperature = SETPOINT;\nnest.ambient_temperature = SETPOINT;\n\nfunction checkSetPointTemp() {\n  let myOutput = document.getElementById("myOutput");\n  if (nest.ambient_temperature > nest.target_temperature) {\n    myOutput.innerText = "ON";\n    nest.hvac_state = "cooling";\n  } else {\n    myOutput.innerText = "OFF";\n    nest.hvac_state = "off";\n  }\n}\n\nfunction targetTempUp_click() {\n  nest.target_temperature += 1;\n  checkSetPointTemp();\n}\n\nfunction targetTempDown_click() {\n  nest.target_temperature -= 1;\n  checkSetPointTemp();\n}\n\nvar mySensor = document.getElementById("mySensor");\nmySensor.oninput = function () {\n  nest.ambient_temperature = this.value;\n  checkSetPointTemp();\n};\n\n// Nest options\n// nest.target_temperature \t// Target Temp\n// nest.ambient_temperature\t// Ambient Temp\n// nest.hvac_state // Hvac State (cooling, heating, off)\n// nest.has_leaf // ECO mode (true, false)\n// next.away // Away (true, false)',
   eComponentSaved: {
     connector: {
       elementId: "element_0",
@@ -1559,50 +1565,127 @@ var simpleTempController = {
       componentChildIDs: [],
       componentIfaces: {},
       componentLeft: 1,
-      componentTop: 1,
-      componentCenterLeft: 27.5,
-      componentCenterTop: 4.5,
+      componentTop: 2,
+      componentCenterLeft: 25.5,
+      componentCenterTop: 5.5,
       html: '<div id="connector"></div>',
       width: 0,
       height: 0,
       innerHTML: ""
     },
-    mySensor: {
+    tempUP: {
       elementId: "element_1",
-      type: "range",
-      componentSelected: 1,
-      componentName: "U1",
-      componentDescription: "Temperature Sensor MCP9808",
-      componentSchematic: "temperature_sensor",
+      type: "submit",
+      componentSelected: 0,
+      componentName: "S1",
+      componentDescription: "Tactile Push Button smd",
+      componentSchematic: "tactile_push_button_smd",
       componentBuyLink:
-        "https://www.digikey.com/product-detail/en/adafruit-industries-llc/1782/1528-1032-ND/4990781",
-      componentHardElement: "physical-temp-sensor",
-      componentHardElementVars: "(i2c-addr:0x18,i2c-port:url($i2c))",
-      componentPartImage: "range/mcp9808.png",
-      componentImage: "range/mcp9808.svg",
-      componentWidth: "21mm",
-      componentHeight: "13mm",
-      componentRequires: [],
-      componentChildIDs: [],
+        "https://www.digikey.com/product-detail/en/c-k/PTS645SL50SMTR92-LFS/CKN9088CT-ND/1146811",
+      componentHardElement: "physical-button",
+      componentHardElementVars: "(gpio:$gpio)",
+      componentPartImage: "buttons/smd-button.png",
+      componentImage: "buttons/smd-button.svg",
+      componentWidth: "9.5mm",
+      componentHeight: "6mm",
+      componentRequires: ["resistor_1206_10k"],
+      componentChildIDs: ["resistor_1206_10k_2"],
       componentIfaces: {
         iface_0: {
-          device: "/dev/i2c-1",
-          type: "i2c",
-          SDA: "2",
-          SCL: "3"
+          type: "gpio",
+          GPIO: "4"
         }
       },
-      componentLeft: 1,
-      componentTop: 9,
-      componentCenterLeft: 11.5,
-      componentCenterTop: 15.5,
-      html:
-        '<input type="range" id="mySensor" min="-45" max="125" step="1" value="25">',
-      width: 129,
-      height: 16,
+      componentLeft: 30,
+      componentTop: 11,
+      componentCenterLeft: 34.75,
+      componentCenterTop: 14,
+      html: '<button id="tempUP" onclick="targetTempUp_click()">UP</button>',
+      width: 23.4531,
+      height: 25,
+      innerHTML: "UP",
+      componentTransformedHardElementVars: '(gpio:"4")'
+    },
+    resistor_1206_10k_2: {
+      elementId: "element_2",
+      type: "misc",
+      componentSelected: 0,
+      componentName: "R1",
+      componentDescription: "10k resistor smd 1206",
+      componentBuyLink:
+        "https://www.digikey.com/product-detail/en/yageo/RC1206JR-0710KL/311-10KERCT-ND/732156",
+      componentPartImage: "misc/0603-RES.jpg",
+      componentImage: "misc/0603-RES.svg",
+      componentWidth: "4.5mm",
+      componentHeight: "2mm",
+      componentChildIDs: [],
+      componentIfaces: {},
+      componentLeft: 33,
+      componentTop: 19,
+      componentCenterLeft: 35.25,
+      componentCenterTop: 20,
+      html: '<div id="resistor_1206_10k_2" class="misc"></div>',
+      width: 0,
+      height: 0,
       innerHTML: ""
     },
-    tempUP: {
+    myOutput: {
+      elementId: "element_3",
+      type: "span",
+      componentSelected: 0,
+      componentName: "LED1",
+      componentDescription: "LED Thruhole 5mm red",
+      componentSchematic: "led_thruhole",
+      componentBuyLink:
+        "https://www.digikey.com/product-detail/en/cree-inc/C503B-RAN-CZ0C0AA1/C503B-RAN-CZ0C0AA1-ND/6561758",
+      componentHardElement: "physical-output",
+      componentHardElementVars: "(gpio:$gpio)",
+      componentPartImage: "output/LED-RED.jpg",
+      componentImage: "output/red-5mm-LED.2D.svg",
+      componentWidth: "5mm",
+      componentHeight: "5mm",
+      componentRequires: ["resistor_1206_330ohm"],
+      componentChildIDs: ["resistor_1206_330ohm_4"],
+      componentIfaces: {
+        iface_0: {
+          type: "gpio",
+          GPIO: "17"
+        }
+      },
+      componentLeft: 23,
+      componentTop: 11,
+      componentCenterLeft: 25.5,
+      componentCenterTop: 13.5,
+      html: '<span id="myOutput"> OFF </span>',
+      width: 28,
+      height: 16,
+      innerHTML: " OFF ",
+      componentTransformedHardElementVars: '(gpio:"17")'
+    },
+    resistor_1206_330ohm_4: {
+      elementId: "element_4",
+      type: "misc",
+      componentSelected: 0,
+      componentName: "R1",
+      componentDescription: "330 Ohm resistor smd 1206",
+      componentBuyLink:
+        "https://www.digikey.com/product-detail/en/yageo/RC1206JR-07330RL/311-330ERCT-ND/732226",
+      componentPartImage: "misc/0603-RES.jpg",
+      componentImage: "misc/0603-RES.svg",
+      componentWidth: "4.5mm",
+      componentHeight: "2mm",
+      componentChildIDs: [],
+      componentIfaces: {},
+      componentLeft: 24,
+      componentTop: 19,
+      componentCenterLeft: 26.25,
+      componentCenterTop: 20,
+      html: '<div id="resistor_1206_330ohm_4" class="misc"></div>',
+      width: 0,
+      height: 0,
+      innerHTML: ""
+    },
+    tempDOWN: {
       elementId: "element_5",
       type: "submit",
       componentSelected: 0,
@@ -1622,17 +1705,19 @@ var simpleTempController = {
       componentIfaces: {
         iface_0: {
           type: "gpio",
-          GPIO: "4"
+          GPIO: "27"
         }
       },
-      componentLeft: 32,
-      componentTop: 10,
-      componentCenterLeft: 36.75,
-      componentCenterTop: 13,
-      html: '<button id="tempUP" onclick="tempUp_click()">UP</button>',
-      width: 23.4531,
+      componentLeft: 40,
+      componentTop: 11,
+      componentCenterLeft: 44.75,
+      componentCenterTop: 14,
+      html:
+        '<button id="tempDOWN" onclick="targetTempDown_click()">DOWN</button>',
+      width: 48.3281,
       height: 25,
-      innerHTML: "UP"
+      innerHTML: "DOWN",
+      componentTransformedHardElementVars: '(gpio:"27")'
     },
     resistor_1206_10k_6: {
       elementId: "element_6",
@@ -1648,130 +1733,57 @@ var simpleTempController = {
       componentHeight: "2mm",
       componentChildIDs: [],
       componentIfaces: {},
-      componentLeft: 35,
-      componentTop: 17,
-      componentCenterLeft: 37.25,
-      componentCenterTop: 18,
+      componentLeft: 44,
+      componentTop: 19,
+      componentCenterLeft: 46.25,
+      componentCenterTop: 20,
       html: '<div id="resistor_1206_10k_6" class="misc"></div>',
       width: 0,
       height: 0,
       innerHTML: ""
     },
-    tempDOWN: {
+    mySensor: {
       elementId: "element_7",
-      type: "submit",
-      componentSelected: 0,
-      componentName: "S1",
-      componentDescription: "Tactile Push Button smd",
-      componentSchematic: "tactile_push_button_smd",
+      type: "range",
+      componentSelected: 1,
+      componentName: "U1",
+      componentDescription: "Temperature Sensor MCP9808",
+      componentSchematic: "temperature_sensor",
       componentBuyLink:
-        "https://www.digikey.com/product-detail/en/c-k/PTS645SL50SMTR92-LFS/CKN9088CT-ND/1146811",
-      componentHardElement: "physical-button",
-      componentHardElementVars: "(gpio:$gpio)",
-      componentPartImage: "buttons/smd-button.png",
-      componentImage: "buttons/smd-button.svg",
-      componentWidth: "9.5mm",
-      componentHeight: "6mm",
-      componentRequires: ["resistor_1206_10k"],
-      componentChildIDs: ["resistor_1206_10k_8"],
-      componentIfaces: {
-        iface_0: {
-          type: "gpio",
-          GPIO: "17"
-        }
-      },
-      componentLeft: 42,
-      componentTop: 10,
-      componentCenterLeft: 46.75,
-      componentCenterTop: 13,
-      html: '<button id="tempDOWN" onclick="tempDown_click()">DOWN</button>',
-      width: 48.3281,
-      height: 25,
-      innerHTML: "DOWN"
-    },
-    resistor_1206_10k_8: {
-      elementId: "element_8",
-      type: "misc",
-      componentSelected: 0,
-      componentName: "R1",
-      componentDescription: "10k resistor smd 1206",
-      componentBuyLink:
-        "https://www.digikey.com/product-detail/en/yageo/RC1206JR-0710KL/311-10KERCT-ND/732156",
-      componentPartImage: "misc/0603-RES.jpg",
-      componentImage: "misc/0603-RES.svg",
-      componentWidth: "4.5mm",
-      componentHeight: "2mm",
+        "https://www.digikey.com/product-detail/en/adafruit-industries-llc/1782/1528-1032-ND/4990781",
+      componentHardElement: "physical-temp-sensor",
+      componentHardElementVars: "(i2c-addr:0x18, i2c-port:url($i2c))",
+      componentPartImage: "range/mcp9808.png",
+      componentImage: "range/mcp9808.svg",
+      componentWidth: "21mm",
+      componentHeight: "13mm",
+      componentRequires: [],
       componentChildIDs: [],
-      componentIfaces: {},
-      componentLeft: 45,
-      componentTop: 17,
-      componentCenterLeft: 47.25,
-      componentCenterTop: 18,
-      html: '<div id="resistor_1206_10k_8" class="misc"></div>',
-      width: 0,
-      height: 0,
-      innerHTML: ""
-    },
-    myOutput: {
-      elementId: "element_9",
-      type: "span",
-      componentSelected: 0,
-      componentName: "LED1",
-      componentDescription: "LED Thruhole 5mm red",
-      componentSchematic: "led_thruhole",
-      componentBuyLink:
-        "https://www.digikey.com/product-detail/en/cree-inc/C503B-RAN-CZ0C0AA1/C503B-RAN-CZ0C0AA1-ND/6561758",
-      componentHardElement: "physical-output",
-      componentHardElementVars: "(gpio:$gpio)",
-      componentPartImage: "output/LED-RED.jpg",
-      componentImage: "output/red-5mm-LED.2D.svg",
-      componentWidth: "5mm",
-      componentHeight: "5mm",
-      componentRequires: ["resistor_1206_330ohm"],
-      componentChildIDs: ["resistor_1206_330ohm_10"],
       componentIfaces: {
         iface_0: {
-          type: "gpio",
-          GPIO: "27"
+          device: "/dev/i2c-1",
+          type: "i2c",
+          SDA: "2",
+          SCL: "3"
         }
       },
-      componentLeft: 24,
-      componentTop: 10,
-      componentCenterLeft: 26.5,
-      componentCenterTop: 12.5,
-      html: '<span id="myOutput"> OFF </span>',
-      width: 28,
+      componentLeft: 0,
+      componentTop: 9,
+      componentCenterLeft: 10.5,
+      componentCenterTop: 15.5,
+      html:
+        '<input type="range" id="mySensor" min="10" max="40" step="1" value="25">',
+      width: 129,
       height: 16,
-      innerHTML: " OFF "
-    },
-    resistor_1206_330ohm_10: {
-      elementId: "element_10",
-      type: "misc",
-      componentSelected: 0,
-      componentName: "R1",
-      componentDescription: "330 Ohm resistor smd 1206",
-      componentBuyLink:
-        "https://www.digikey.com/product-detail/en/yageo/RC1206JR-07330RL/311-330ERCT-ND/732226",
-      componentPartImage: "misc/0603-RES.jpg",
-      componentImage: "misc/0603-RES.svg",
-      componentWidth: "4.5mm",
-      componentHeight: "2mm",
-      componentChildIDs: [],
-      componentIfaces: {},
-      componentLeft: 25,
-      componentTop: 17,
-      componentCenterLeft: 27.25,
-      componentCenterTop: 18,
-      html: '<div id="resistor_1206_330ohm_10" class="misc"></div>',
-      width: 0,
-      height: 0,
-      innerHTML: ""
+      innerHTML: "",
+      componentTransformedHardElementVars:
+        '(i2c-addr:0x18,i2c-port:url("/dev/i2c-1"))'
     }
   },
   eAvailableComponents: ["tempUP", "tempDOWN", "mySensor", "myOutput"],
-  nonAvailableComponents: ["myTemp"],
+  nonAvailableComponents: ["container"],
   webpageContainer:
-    '<div id="myTemp_nondrag" class="none_draggable_element" style="width:560.5px;height:27px;display:inline-block;">\n                <div id="myTemp">25°C</div></div>\n<div id="tempUP_drag" class="draggable_element" draggable="true" style="width:30.4531px;height:32px;display:inline-block;">\n                </div>\n<div id="tempDOWN_drag" class="draggable_element" draggable="true" style="width:55.3281px;height:32px;display:inline-block;">\n                </div>\n<div id="mySensor_drag" class="draggable_element" draggable="true" style="width:136px;height:23px;display:inline-block;">\n                </div>\n<div id="myOutput_drag" class="draggable_element" draggable="true" style="width:35px;height:23px;display:inline-block;">\n                </div>',
+    '<div id="container_nondrag" class="none_draggable_element" style="width:574px;height:324.391px;display:inline-block;">\n                <div id="container">\n  <div id="thermostat"><svg width="100%" height="100%" viewBox="0 0 400 400" class="dial dial--state--off"><circle cx="200" cy="200" r="200" class="dial__shape"></circle><path d="M 200 , 200 m -196 , 0 a 196 , 196 0 1 , 0 392 , 0 a 196 , 196 0 1 , 0 -392 , 0 z M 200 , 200 m -192 , 0 a 192 , 192 0 1 , 0 384 , 0 a 192 , 192 0 1 , 0 -384 , 0 z" class="dial__editableIndicator"></path><g class="dial__ticks"><path d="M107.53269207045112 362.15807537309524 L105.80064126288225 361.15807537309524 L124.13397459621558 329.4038105676658 L125.86602540378445 330.4038105676658Z" class=""></path><path d="M101.92978543929152 358.832230546766 L100.23368924697866 357.7723920182996 L119.66406226886284 326.6772951592307 L121.3601584611757 327.7371336876971Z" class=""></path><path d="M96.44636225801563 355.3128731137452 L94.78828711290555 354.1944873068037 L115.29202690683293 323.7964429797855 L116.950102051943 324.91482878672696Z" class=""></path><path d="M91.08910323311328 351.6042908689493 L89.47106924436339 350.4287203643644 L111.02319516175407 320.76476390394964 L112.64122915050396 321.94033440853457Z" class=""></path><path d="M85.86453535948382 347.7110021485804 L84.28851385227037 346.4796791979291 L106.86276794754451 317.58595156568265 L108.43878945475797 318.81727451633395Z" class=""></path><path d="M80.77902396829828 343.63775032522904 L79.24693508206033 342.35217510585596 L102.81581410390011 314.2638788581602 L104.34790299013805 315.54945407753326Z" class=""></path><path d="M75.83876497182385 339.38949802880575 L74.35247532086905 338.051236816088 L98.88726422069385 310.8025932152502 L100.37355387164865 312.14085442796795Z" class=""></path><path d="M71.0497773146592 334.97142110034054 L69.6110977139819 333.5821043594226 L95.08190463081178 307.2063116803387 L96.52058423148907 308.5956284212567Z" class=""></path><path d="M66.4178956405774 330.3889022860181 L65.02857889965941 328.9502226853408 L91.4043715787433 303.4794157685109 L92.79368831966129 304.9180953691882Z" class=""></path><path d="M61.94876318391195 325.6475246791309 L60.610501971194225 324.1612350281761 L87.859145572032 299.62644612835135 L89.19740678474973 301.11273577930615Z" class=""></path><path d="M57.64782489414398 320.75306491793964 L56.36224967477091 319.2209760317017 L84.45054592246676 295.6520970098619 L85.73612114183983 297.18418589609985Z" class=""></path><path d="M53.52032080207087 315.7114861477296 L52.288997851419566 314.13546464051615 L81.18272548366605 291.56121054524203 L82.41404843431735 293.1372320524555Z" class=""></path><path d="M49.57127963563562 310.52893075563657 L48.395709131050694 308.9108967668867 L78.0596655914654 287.358770849496 L79.23523609605036 288.9768048382459Z" class=""></path><path d="M45.805512693196306 305.2117128870944 L44.687126886254816 303.55363774198435 L75.085171213273 283.049897948057 L76.20355702021449 284.707973093167Z" class=""></path><path d="M42.227607981700345 299.76631075302134 L41.167769453233944 298.07021456070845 L72.26286631230289 278.63984153882427 L73.32270484076929 280.33593773113716Z" class=""></path><path d="M38.841924626904785 294.19935873711773 L37.841924626904785 292.46730792954884 L69.5961894323342 274.1339745962155 L70.5961894323342 275.8660254037844Z" class=""></path><path d="M35.65258756245282 288.5176393128918 L34.713644436881054 286.751744127174 L67.08838950837506 269.5377868250247 L68.02733263394683 271.3036820107425Z" class=""></path><path d="M32.66348250427794 282.7280747802603 L31.786740210699776 280.930486687662 L64.74252190833587 264.8568779720624 L65.61926420191404 266.6544660646608Z" class=""></path><path d="M29.87825121645696 276.83771883179196 L29.064777930305382 275.01062791650673 L62.56144471053406 260.09695100372744 L63.37491799668564 261.9240419190126Z" class=""></path><path d="M27.300287074282267 270.8537479588704 L26.551073887450457 268.99938024973676 L60.54781522156597 255.26380515782003 L61.29702840839778 257.1181728669536Z" class=""></path><path d="M24.932730929956108 264.78345270824406 L24.24869064330477 262.90406746667225 L58.70408673878808 250.3633288780644 L59.38812702543942 252.24271411963622Z" class=""></path><path d="M22.778467285946277 258.63422879961865 L22.160433297196363 256.73211576702835 L57.032505561352 245.40149263994695 L57.65053955010191 247.30360567253726Z" class=""></path><path d="M20.840120780664137 252.41356811511147 L20.288846069030143 250.49104472323484 L55.53510825343517 240.38434167661154 L56.08638296506916 242.30686506848818Z" class=""></path><path d="M19.120052990746984 246.1290495715473 L18.636209199547665 244.18845811899533 L54.21371916300086 235.31798861367417 L54.69756295420018 237.25858006622616Z" class=""></path><path d="M17.6203595538407 239.7883298867155 L17.204536172205195 237.8320346852479 L53.069948199111394 230.20860602193005 L53.4857715807469 232.1649012233977Z" class=""></path><path d="M16.342867615388116 233.3991342508392 L15.995571260054248 231.42951874481477 L52.10518887050188 225.06241889702733 L52.452485225835744 227.03203440305174Z" class=""></path><path d="M15.28913360253361 226.96924691462044 L15.010787400613452 224.9887107771373 L51.32061658780438 219.88569707526824 L51.59896278972454 221.86623321275138Z" class=""></path><path d="M14.460441327856643 220.50650170533024 L14.251384401321332 218.51745791459368 L50.71718723149132 214.68474759477974 L50.926244158026634 216.67379138551627Z" class=""></path><path d="M13.857800425243624 214.01877248249656 L13.718287477755382 212.0236443819769 L50.29563598728225 209.46590701135898 L50.435148934770496 211.46103511187863Z" class=""></path><path d="M13.481945119804635 207.51396354481923 L13.41214612639962 205.51518189078104 L50.05647645043314 204.235533678356 L50.12627544383815 206.2343153323942Z" class=""></path><path d="M13.333333333333343 201 L13.333333333333343 199 L50 199 L50 201Z" class=""></path><path d="M13.41214612639962 194.4848181092189 L13.481945119804635 192.4860364551807 L50.12627544383815 193.76568466760574 L50.05647645043314 195.76446632164394Z" class=""></path><path d="M13.718287477755382 187.97635561802306 L13.857800425243624 185.9812275175034 L50.435148934770496 188.53896488812137 L50.29563598728225 190.534092988641Z" class=""></path><path d="M14.251384401321332 181.4825420854063 L14.460441327856643 179.49349829466973 L50.92624415802666 183.3262086144837 L50.71718723149135 185.31525240522026Z" class=""></path><path d="M15.01078740061348 175.01128922286264 L15.289133602533639 173.0307530853795 L51.59896278972454 178.1337667872486 L51.32061658780438 180.1143029247317Z" class=""></path><path d="M15.995571260054248 168.5704812551852 L16.342867615388116 166.6008657491608 L52.452485225835744 172.96796559694823 L52.10518887050188 174.93758110297264Z" class=""></path><path d="M17.204536172205223 162.16796531475205 L17.62035955384073 160.21167011328444 L53.48577158074693 167.83509877660228 L53.06994819911142 169.7913939780699Z" class=""></path><path d="M18.636209199547665 155.81154188100464 L19.120052990746984 153.87095042845266 L54.69756295420018 162.7414199337738 L54.21371916300086 164.68201138632583Z" class=""></path><path d="M20.288846069030143 149.50895527676514 L20.840120780664137 147.5864318848885 L56.08638296506916 157.6931349315118 L55.53510825343517 159.61565832338846Z" class=""></path><path d="M22.16043329719639 143.26788423297162 L22.778467285946306 141.36577120038132 L57.65053955010194 152.6963943274627 L57.032505561352025 154.59850736005302Z" class=""></path><path d="M24.248690643304798 137.09593253332773 L24.932730929956136 135.21654729175592 L59.38812702543942 147.75728588036378 L58.70408673878808 149.6366711219356Z" class=""></path><path d="M26.551073887450457 131.00061975026324 L27.300287074282267 129.14625204112963 L61.29702840839778 142.88182713304641 L60.54781522156597 144.73619484218Z" class=""></path><path d="M29.064777930305382 124.98937208349324 L29.87825121645696 123.16228116820804 L63.37491799668567 138.07595808098736 L62.56144471053409 139.90304899627256Z" class=""></path><path d="M31.786740210699747 119.06951331233805 L32.66348250427791 117.2719252197397 L65.61926420191404 133.3455339353392 L64.74252190833587 135.14312202793755Z" class=""></path><path d="M34.71364443688111 113.24825587282596 L35.65258756245288 111.48236068710811 L68.02733263394686 128.69631798925747 L67.08838950837509 130.46221317497532Z" class=""></path><path d="M37.84192462690481 107.53269207045109 L38.84192462690481 105.80064126288222 L70.5961894323342 124.13397459621555 L69.5961894323342 125.86602540378442Z" class=""></path><path d="M41.167769453233944 101.92978543929152 L42.227607981700345 100.23368924697866 L73.32270484076929 119.66406226886284 L72.26286631230289 121.3601584611757Z" class=""></path><path d="M44.687126886254816 96.44636225801564 L45.805512693196306 94.78828711290556 L76.20355702021449 115.29202690683294 L75.085171213273 116.95010205194302Z" class=""></path><path d="M48.395709131050694 91.08910323311329 L49.57127963563562 89.4710692443634 L79.23523609605036 111.02319516175409 L78.0596655914654 112.64122915050397Z" class=""></path><path d="M52.288997851419566 85.86453535948385 L53.52032080207087 84.2885138522704 L82.41404843431735 106.86276794754453 L81.18272548366605 108.43878945475798Z" class=""></path><path d="M56.36224967477091 80.77902396829829 L57.64782489414398 79.24693508206035 L85.73612114183983 102.81581410390012 L84.45054592246676 104.34790299013807Z" class=""></path><path d="M60.610501971194225 75.83876497182386 L61.94876318391195 74.35247532086906 L89.19740678474973 98.88726422069387 L87.859145572032 100.37355387164867Z" class=""></path><path d="M65.02857889965946 71.04977731465914 L66.41789564057746 69.61109771398185 L92.79368831966133 95.08190463081175 L91.40437157874334 96.52058423148904Z" class=""></path><path d="M69.61109771398188 66.41789564057746 L71.04977731465917 65.02857889965946 L96.52058423148905 91.40437157874332 L95.08190463081176 92.79368831966131Z" class=""></path><path d="M74.35247532086906 61.94876318391195 L75.83876497182386 60.610501971194225 L100.37355387164867 87.859145572032 L98.88726422069387 89.19740678474973Z" class=""></path><path d="M79.24693508206038 57.64782489414398 L80.77902396829832 56.36224967477091 L104.34790299013808 84.45054592246676 L102.81581410390014 85.73612114183983Z" class=""></path><path d="M84.28851385227041 53.52032080207087 L85.86453535948387 52.288997851419566 L108.438789454758 81.18272548366605 L106.86276794754454 82.41404843431735Z" class=""></path><path d="M89.4710692443634 49.57127963563562 L91.08910323311329 48.395709131050694 L112.64122915050397 78.0596655914654 L111.02319516175409 79.23523609605036Z" class=""></path><path d="M94.78828711290555 45.805512693196306 L96.44636225801563 44.687126886254816 L116.950102051943 75.08517121327301 L115.29202690683293 76.2035570202145Z" class=""></path><path d="M100.23368924697866 42.22760798170037 L101.92978543929152 41.16776945323397 L121.3601584611757 72.2628663123029 L119.66406226886284 73.3227048407693Z" class=""></path><path d="M105.80064126288225 38.841924626904785 L107.53269207045112 37.841924626904785 L125.86602540378445 69.5961894323342 L124.13397459621558 70.5961894323342Z" class=""></path><path d="M111.48236068710813 35.65258756245285 L113.24825587282598 34.71364443688108 L130.46221317497532 67.08838950837506 L128.69631798925747 68.02733263394683Z" class=""></path><path d="M117.27192521973971 32.66348250427791 L119.06951331233806 31.786740210699747 L135.14312202793758 64.74252190833587 L133.34553393533923 65.61926420191404Z" class=""></path><path d="M123.16228116820804 29.87825121645696 L124.98937208349324 29.064777930305382 L139.90304899627256 62.56144471053409 L138.0759580809874 63.37491799668567Z" class=""></path><path d="M129.14625204112963 27.300287074282267 L131.00061975026324 26.551073887450457 L144.73619484218 60.54781522156597 L142.88182713304641 61.29702840839778Z" class=""></path><path d="M135.21654729175594 24.932730929956108 L137.09593253332775 24.24869064330477 L149.6366711219356 58.70408673878808 L147.75728588036378 59.38812702543942Z" class=""></path><path d="M141.36577120038135 22.778467285946306 L143.26788423297165 22.16043329719639 L154.59850736005305 57.032505561352025 L152.69639432746274 57.65053955010194Z" class=""></path><path d="M147.5864318848885 20.840120780664137 L149.50895527676514 20.288846069030143 L159.61565832338846 55.53510825343517 L157.6931349315118 56.08638296506916Z" class=""></path><path d="M153.8709504284527 19.120052990746984 L155.8115418810047 18.636209199547665 L164.68201138632583 54.21371916300086 L162.74141993377384 54.69756295420018Z" class=""></path><path d="M160.21167011328447 17.6203595538407 L162.16796531475205 17.204536172205195 L169.79139397806992 53.069948199111394 L167.8350987766023 53.4857715807469Z" class=""></path><path d="M166.6008657491608 16.342867615388116 L168.57048125518523 15.995571260054248 L174.93758110297267 52.10518887050188 L172.96796559694823 52.452485225835744Z" class=""></path><path d="M173.03075308537956 15.28913360253361 L175.0112892228627 15.010787400613452 L180.11430292473176 51.32061658780438 L178.13376678724862 51.59896278972454Z" class=""></path><path d="M179.49349829466973 14.460441327856643 L181.4825420854063 14.251384401321332 L185.31525240522026 50.71718723149135 L183.3262086144837 50.92624415802666Z" class=""></path><path d="M185.98122751750344 13.857800425243624 L187.9763556180231 13.718287477755382 L190.53409298864102 50.29563598728225 L188.53896488812137 50.435148934770496Z" class=""></path><path d="M192.48603645518074 13.481945119804635 L194.4848181092189 13.41214612639962 L195.76446632164394 50.05647645043314 L193.76568466760577 50.12627544383815Z" class=""></path><path d="M198 13.333333333333343 L202 13.333333333333343 L202 70 L198 70Z" class="active"></path><path d="M205.5151818907811 13.41214612639962 L207.51396354481926 13.481945119804635 L206.23431533239423 50.12627544383815 L204.23553367835606 50.05647645043314Z" class=""></path><path d="M212.0236443819769 13.718287477755382 L214.01877248249656 13.857800425243624 L211.46103511187863 50.435148934770496 L209.46590701135898 50.29563598728225Z" class=""></path><path d="M218.5174579145937 14.251384401321332 L220.50650170533027 14.460441327856643 L216.6737913855163 50.92624415802666 L214.68474759477974 50.71718723149135Z" class=""></path><path d="M224.9887107771373 15.010787400613452 L226.96924691462044 15.28913360253361 L221.86623321275138 51.59896278972454 L219.88569707526824 51.32061658780438Z" class=""></path><path d="M231.42951874481477 15.995571260054248 L233.3991342508392 16.342867615388116 L227.03203440305177 52.452485225835744 L225.06241889702733 52.10518887050188Z" class=""></path><path d="M237.83203468524795 17.204536172205195 L239.78832988671553 17.6203595538407 L232.1649012233977 53.4857715807469 L230.20860602193008 53.069948199111394Z" class=""></path><path d="M244.1884581189953 18.636209199547665 L246.1290495715473 19.120052990746984 L237.25858006622616 54.69756295420018 L235.31798861367417 54.21371916300086Z" class=""></path><path d="M250.49104472323486 20.288846069030143 L252.4135681151115 20.840120780664137 L242.3068650684882 56.08638296506916 L240.38434167661154 55.53510825343517Z" class=""></path><path d="M256.73211576702835 22.16043329719639 L258.63422879961865 22.778467285946306 L247.30360567253726 57.65053955010194 L245.40149263994695 57.032505561352025Z" class=""></path><path d="M262.90406746667225 24.24869064330477 L264.78345270824406 24.932730929956108 L252.24271411963622 59.38812702543942 L250.3633288780644 58.70408673878808Z" class=""></path><path d="M268.99938024973676 26.551073887450457 L270.8537479588704 27.300287074282267 L257.1181728669536 61.29702840839778 L255.26380515782 60.54781522156597Z" class=""></path><path d="M275.0106279165068 29.064777930305382 L276.83771883179196 29.87825121645696 L261.9240419190126 63.37491799668567 L260.09695100372744 62.56144471053409Z" class=""></path><path d="M280.9304866876619 31.786740210699747 L282.7280747802603 32.66348250427791 L266.65446606466077 65.61926420191404 L264.8568779720624 64.74252190833587Z" class=""></path><path d="M286.751744127174 34.71364443688108 L288.5176393128919 35.65258756245285 L271.30368201074253 68.02733263394683 L269.5377868250247 67.08838950837506Z" class=""></path><path d="M292.4673079295489 37.841924626904785 L294.19935873711773 38.841924626904785 L275.8660254037844 70.5961894323342 L274.1339745962156 69.5961894323342Z" class=""></path><path d="M298.07021456070845 41.16776945323397 L299.76631075302134 42.22760798170037 L280.33593773113716 73.3227048407693 L278.63984153882427 72.2628663123029Z" class=""></path><path d="M303.5536377419844 44.687126886254816 L305.21171288709445 45.805512693196306 L284.7079730931671 76.2035570202145 L283.049897948057 75.08517121327301Z" class=""></path><path d="M308.9108967668867 48.395709131050694 L310.52893075563657 49.57127963563562 L288.9768048382459 79.23523609605036 L287.358770849496 78.0596655914654Z" class=""></path><path d="M314.13546464051615 52.288997851419566 L315.7114861477296 53.52032080207087 L293.1372320524555 82.41404843431735 L291.56121054524203 81.18272548366605Z" class=""></path><path d="M319.2209760317017 56.36224967477091 L320.75306491793964 57.64782489414398 L297.18418589609985 85.73612114183983 L295.6520970098619 84.45054592246676Z" class=""></path><path d="M324.1612350281761 60.610501971194225 L325.6475246791309 61.94876318391195 L301.11273577930615 89.19740678474973 L299.62644612835135 87.859145572032Z" class=""></path><path d="M328.9502226853408 65.02857889965946 L330.38890228601815 66.41789564057746 L304.9180953691882 92.79368831966131 L303.47941576851093 91.40437157874332Z" class=""></path><path d="M333.58210435942254 69.61109771398185 L334.97142110034054 71.04977731465914 L308.59562842125666 96.52058423148904 L307.2063116803387 95.08190463081175Z" class=""></path><path d="M338.051236816088 74.35247532086906 L339.38949802880575 75.83876497182386 L312.140854427968 100.37355387164867 L310.8025932152503 98.88726422069387Z" class=""></path><path d="M342.352175105856 79.24693508206035 L343.6377503252291 80.77902396829829 L315.54945407753326 104.34790299013807 L314.2638788581602 102.81581410390012Z" class=""></path><path d="M346.47967919792916 84.2885138522704 L347.7110021485804 85.86453535948385 L318.81727451633395 108.43878945475798 L317.58595156568265 106.86276794754453Z" class=""></path><path d="M350.4287203643644 89.4710692443634 L351.6042908689493 91.08910323311329 L321.94033440853457 112.64122915050397 L320.76476390394964 111.02319516175409Z" class=""></path><path d="M354.1944873068037 94.78828711290556 L355.3128731137452 96.44636225801564 L324.914828786727 116.95010205194302 L323.7964429797855 115.29202690683294Z" class=""></path><path d="M357.7723920182997 100.23368924697866 L358.832230546766 101.92978543929152 L327.7371336876971 121.3601584611757 L326.6772951592307 119.66406226886284Z" class=""></path><path d="M361.1580753730952 105.80064126288222 L362.1580753730952 107.53269207045109 L330.4038105676658 125.86602540378442 L329.4038105676658 124.13397459621555Z" class=""></path><path d="M364.3474124375471 111.48236068710811 L365.2863555631189 113.24825587282596 L332.9116104916249 130.46221317497532 L331.97266736605314 128.69631798925747Z" class=""></path><path d="M367.3365174957221 117.2719252197397 L368.21325978930025 119.06951331233805 L335.2574780916641 135.14312202793755 L334.380735798086 133.3455339353392Z" class=""></path><path d="M370.121748783543 123.16228116820804 L370.93522206969465 124.98937208349324 L337.4385552894659 139.90304899627256 L336.62508200331433 138.07595808098736Z" class=""></path><path d="M372.69971292571773 129.14625204112963 L373.44892611254954 131.00061975026324 L339.452184778434 144.73619484218 L338.70297159160225 142.88182713304641Z" class=""></path><path d="M375.06726907004384 135.21654729175592 L375.7513093566952 137.09593253332773 L341.2959132612119 149.6366711219356 L340.6118729745606 147.75728588036378Z" class=""></path><path d="M377.2215327140537 141.36577120038132 L377.8395667028036 143.26788423297162 L342.967494438648 154.59850736005302 L342.34946044989806 152.6963943274627Z" class=""></path><path d="M379.15987921933583 147.5864318848885 L379.7111539309699 149.50895527676514 L344.46489174656483 159.61565832338846 L343.91361703493084 157.6931349315118Z" class=""></path><path d="M380.879947009253 153.87095042845266 L381.3637908004523 155.81154188100464 L345.78628083699914 164.68201138632583 L345.3024370457998 162.7414199337738Z" class=""></path><path d="M382.37964044615927 160.21167011328444 L382.7954638277948 162.16796531475205 L346.9300518008886 169.7913939780699 L346.5142284192531 167.83509877660228Z" class=""></path><path d="M383.6571323846119 166.6008657491608 L384.00442873994575 168.5704812551852 L347.8948111294981 174.93758110297264 L347.54751477416426 172.96796559694823Z" class=""></path><path d="M384.71086639746636 173.0307530853795 L384.9892125993865 175.01128922286264 L348.67938341219565 180.1143029247317 L348.4010372102755 178.1337667872486Z" class=""></path><path d="M385.53955867214336 179.49349829466973 L385.74861559867867 181.4825420854063 L349.2828127685086 185.31525240522026 L349.07375584197337 183.3262086144837Z" class=""></path><path d="M386.1421995747564 185.9812275175034 L386.2817125222446 187.97635561802306 L349.70436401271775 190.534092988641 L349.5648510652295 188.53896488812137Z" class=""></path><path d="M386.51805488019534 192.4860364551807 L386.58785387360035 194.4848181092189 L349.94352354956686 195.76446632164394 L349.87372455616185 193.76568466760574Z" class=""></path><path d="M386.66666666666663 199 L386.66666666666663 201 L350 201 L350 199Z" class=""></path><path d="M386.58785387360035 205.51518189078104 L386.51805488019534 207.51396354481923 L349.87372455616185 206.2343153323942 L349.94352354956686 204.235533678356Z" class=""></path><path d="M386.2817125222446 212.0236443819769 L386.1421995747564 214.01877248249656 L349.5648510652295 211.46103511187863 L349.70436401271775 209.46590701135898Z" class=""></path><path d="M385.74861559867867 218.51745791459368 L385.53955867214336 220.50650170533024 L349.07375584197337 216.67379138551627 L349.2828127685087 214.68474759477974Z" class=""></path><path d="M384.9892125993865 224.9887107771373 L384.71086639746636 226.96924691462044 L348.4010372102755 221.86623321275138 L348.67938341219565 219.88569707526824Z" class=""></path><path d="M384.00442873994575 231.42951874481477 L383.6571323846119 233.3991342508392 L347.54751477416426 227.03203440305174 L347.8948111294981 225.06241889702733Z" class=""></path><path d="M382.79546382779483 237.8320346852479 L382.3796404461593 239.7883298867155 L346.5142284192531 232.1649012233977 L346.9300518008886 230.20860602193005Z" class=""></path><path d="M381.3637908004523 244.18845811899533 L380.879947009253 246.1290495715473 L345.3024370457998 237.25858006622616 L345.78628083699914 235.31798861367417Z" class=""></path><path d="M379.7111539309699 250.49104472323484 L379.15987921933583 252.41356811511147 L343.91361703493084 242.30686506848818 L344.46489174656483 240.38434167661154Z" class=""></path><path d="M377.8395667028036 256.73211576702835 L377.22153271405375 258.63422879961865 L342.34946044989806 247.30360567253726 L342.96749443864803 245.40149263994695Z" class=""></path><path d="M375.75130935669523 262.90406746667225 L375.0672690700439 264.78345270824406 L340.6118729745606 252.24271411963622 L341.2959132612119 250.3633288780644Z" class=""></path><path d="M373.44892611254954 268.99938024973676 L372.69971292571773 270.8537479588704 L338.70297159160225 257.1181728669536 L339.452184778434 255.26380515782003Z" class=""></path><path d="M370.93522206969465 275.01062791650673 L370.121748783543 276.83771883179196 L336.62508200331433 261.9240419190126 L337.43855528946597 260.09695100372744Z" class=""></path><path d="M368.2132597893002 280.930486687662 L367.3365174957221 282.7280747802603 L334.380735798086 266.6544660646608 L335.2574780916641 264.8568779720624Z" class=""></path><path d="M365.28635556311895 286.751744127174 L364.3474124375472 288.5176393128918 L331.9726673660532 271.3036820107425 L332.91161049162497 269.5377868250247Z" class=""></path><path d="M362.15807537309524 292.46730792954884 L361.15807537309524 294.19935873711773 L329.4038105676658 275.8660254037844 L330.4038105676658 274.1339745962155Z" class=""></path><path d="M358.832230546766 298.07021456070845 L357.7723920182997 299.76631075302134 L326.6772951592307 280.33593773113716 L327.7371336876971 278.63984153882427Z" class=""></path><path d="M355.3128731137452 303.55363774198435 L354.1944873068037 305.2117128870944 L323.7964429797855 284.707973093167 L324.914828786727 283.049897948057Z" class=""></path><path d="M351.6042908689493 308.9108967668867 L350.4287203643644 310.52893075563657 L320.76476390394964 288.9768048382459 L321.94033440853457 287.358770849496Z" class=""></path><path d="M347.7110021485804 314.13546464051615 L346.47967919792916 315.7114861477296 L317.58595156568265 293.1372320524555 L318.81727451633395 291.56121054524203Z" class=""></path><path d="M343.6377503252291 319.2209760317017 L342.352175105856 320.75306491793964 L314.2638788581602 297.18418589609985 L315.54945407753326 295.6520970098619Z" class=""></path><path d="M339.38949802880575 324.1612350281761 L338.051236816088 325.6475246791309 L310.8025932152503 301.11273577930615 L312.140854427968 299.62644612835135Z" class=""></path><path d="M334.9714211003406 328.9502226853408 L333.5821043594226 330.3889022860181 L307.20631168033873 304.9180953691882 L308.5956284212567 303.4794157685109Z" class=""></path><path d="M330.3889022860181 333.5821043594226 L328.9502226853408 334.97142110034054 L303.47941576851093 308.5956284212567 L304.9180953691882 307.2063116803387Z" class=""></path><path d="M325.6475246791309 338.051236816088 L324.1612350281762 339.38949802880575 L299.62644612835135 312.14085442796795 L301.11273577930615 310.8025932152502Z" class=""></path><path d="M320.7530649179397 342.35217510585596 L319.22097603170175 343.63775032522904 L295.65209700986196 315.54945407753326 L297.1841858960999 314.2638788581602Z" class=""></path><path d="M315.7114861477296 346.4796791979291 L314.13546464051615 347.7110021485804 L291.56121054524203 318.81727451633395 L293.1372320524555 317.58595156568265Z" class=""></path><path d="M310.5289307556366 350.4287203643644 L308.9108967668867 351.6042908689493 L287.35877084949607 321.94033440853457 L288.9768048382459 320.76476390394964Z" class=""></path><path d="M305.21171288709445 354.1944873068037 L303.5536377419844 355.3128731137452 L283.049897948057 324.91482878672696 L284.7079730931671 323.7964429797855Z" class=""></path><path d="M299.76631075302134 357.7723920182996 L298.07021456070845 358.832230546766 L278.63984153882427 327.7371336876971 L280.33593773113716 326.6772951592307Z" class=""></path></g><text x="200" y="200" class="dial__lbl dial__lbl--target">25</text><text x="280" y="175" class="dial__lbl dial__lbl--target--half">5</text><text class="dial__lbl dial__lbl--ambient" x="176.57252800505566" y="33.30487509516897">25</text><text x="200" y="200" class="dial__lbl dial__lbl--away">AWAY</text><text x="200" y="135" class="dial__lbl dial__lbl--hvac"></text><path class="dial__ico__leaf"></path><path class="dial__ico__leaf" d="M 1.2000000000000002 33.6 c 9.600000000000001 6.800000000000001 20.400000000000002 7.2 29.200000000000003 -2.4000000000000004 C 40 20.8 40 8.8 40 1.6 c -5.2 6 -14.8 3.6 -28 7.6000000000000005 C 1.6 12.8 0 25.200000000000003 0 30.400000000000002 c 2.4000000000000004 -2.8000000000000003 7.2 -6.800000000000001 13.200000000000001 -9.200000000000001 9.600000000000001 -3.6 13.600000000000001 -3.6 19.200000000000003 -8 -3.6 4 -8 6.4 -17.2 9.600000000000001 C 8.8 25.200000000000003 3.2 31.200000000000003 1.2000000000000002 33.6 z" transform="translate(180,300)"></path></svg></div>\n</div></div>\n<br>\n<div id="tempUP_drag" class="draggable_element" draggable="true" style="width:30.4531px;height:32px;display:inline-block;">\n                </div>\n<div id="tempDOWN_drag" class="draggable_element" draggable="true" style="width:55.3281px;height:32px;display:inline-block;">\n                </div>\n<div id="mySensor_drag" class="draggable_element" draggable="true" style="width:136px;height:23px;display:inline-block;">\n                </div>\n<div id="myOutput_drag" class="draggable_element" draggable="true" style="width:35px;height:23px;display:inline-block;">\n                </div>',
   PCB:
-    '<div id="element_0" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 7.25px; top: 5px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="connector" style="background-image: url(&quot;/img/rpi_connector.aac5f0c0.png&quot;); height: 7mm; width: 51mm;"></div></div><div id="element_1" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 5px; top: 35px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><input type="range" id="mySensor" min="-45" max="125" step="1" value="25" class="range-physical-slider" style="background-image: url(&quot;/img/mcp9808.3da8c61b.svg&quot;); height: 13mm; width: 21mm;"></div><div id="element_5" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 122.047px; top: 37.6563px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><button id="tempUP" onclick="tempUp_click()" class="submit-physical-button" style="background-image: url(&quot;/img/smd-button.359a9e5f.svg&quot;); height: 6mm; width: 9.5mm;"></button></div><div id="element_6" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 133px; top: 65px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="resistor_1206_10k_6" class="misc" style="background-image: url(&quot;/img/0603-RES.6db73cae.svg&quot;); height: 2mm; width: 4.5mm;"></div></div><div id="element_7" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 160.047px; top: 37.6563px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><button id="tempDOWN" onclick="tempDown_click()" class="submit-physical-button" style="background-image: url(&quot;/img/smd-button.359a9e5f.svg&quot;); height: 6mm; width: 9.5mm;"></button></div><div id="element_8" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 171px; top: 65px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="resistor_1206_10k_8" class="misc" style="background-image: url(&quot;/img/0603-RES.6db73cae.svg&quot;); height: 2mm; width: 4.5mm;"></div></div><div id="element_9" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 93.5469px; top: 39.5469px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><span id="myOutput" class="submit-physical-button" style="background-image: url(&quot;/img/red-5mm-LED.2D.7c46147d.svg&quot;); height: 5mm; width: 5mm;"></span></div><div id="element_10" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 97px; top: 65px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="resistor_1206_330ohm_10" class="misc" style="background-image: url(&quot;/img/0603-RES.6db73cae.svg&quot;); height: 2mm; width: 4.5mm;"></div></div>'
+    '<div id="element_0" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 5px; top: 10px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="connector" style="background-image: url(&quot;/img/rpi_connector.aac5f0c0.png&quot;); height: 7mm; width: 49mm;"></div></div><div id="element_1" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 115.547px; top: 42.6563px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><button id="tempUP" onclick="targetTempUp_click()" class="submit-physical-button" style="background-image: url(&quot;/img/smd-button.359a9e5f.svg&quot;); height: 6mm; width: 9.5mm;"></button></div><div id="element_2" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 126px; top: 74px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="resistor_1206_10k_2" class="misc" style="background-image: url(&quot;/img/0603-RES.6db73cae.svg&quot;); height: 2mm; width: 4.5mm;"></div></div><div id="element_3" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 90.0469px; top: 43.5469px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><span id="myOutput" class="submit-physical-button" style="background-image: url(&quot;/img/red-5mm-LED.2D.7c46147d.svg&quot;); height: 5mm; width: 5mm;"></span></div><div id="element_4" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 91px; top: 75px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="resistor_1206_330ohm_4" class="misc" style="background-image: url(&quot;/img/0603-RES.6db73cae.svg&quot;); height: 2mm; width: 4.5mm;"></div></div><div id="element_5" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 154.547px; top: 42.6563px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><button id="tempDOWN" onclick="targetTempDown_click()" class="submit-physical-button" style="background-image: url(&quot;/img/smd-button.359a9e5f.svg&quot;); height: 6mm; width: 9.5mm;"></button></div><div id="element_6" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 167px; top: 75px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><div id="resistor_1206_10k_6" class="misc" style="background-image: url(&quot;/img/0603-RES.6db73cae.svg&quot;); height: 2mm; width: 4.5mm;"></div></div><div id="element_7" class="noGlobalTrigger ui-draggable ui-draggable-handle" style="position: absolute; display: inline-block; border-radius: 5px; border: 3px solid transparent; left: 3px; top: 37px;"><div class="protector" oncontextmenu="showContextMenu(event)" style="display: block"></div><input type="range" id="mySensor" min="10" max="40" step="1" value="25" class="range-physical-slider" style="background-image: url(&quot;/img/mcp9808.3da8c61b.svg&quot;); height: 13mm; width: 21mm;"></div>'
 };
