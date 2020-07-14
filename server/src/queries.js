@@ -392,21 +392,23 @@ const generateWebPage = async (req, res) => {
   const userName = req.body.userName;
   const projectName = req.body.projectName;
   const projectImage = req.body.projectImage;
-  const projectData = req.body.projectData;
+  const projectData = JSON.stringify(req.body.projectData);
 
   // Update project in database
   try {
     // Update user project if already exists
     const result = await pool.query(
-      `UPDATE projects SET project = '${projectData}', projectimage = decode('${projectImage}','base64'),
-        updated_date = NOW() WHERE username = '${userName}' AND projectname = '${projectName}';`
+      `UPDATE projects SET project = $1, projectimage = decode('${projectImage}','base64'),
+        updated_date = NOW() WHERE username = '${userName}' AND projectname = '${projectName}';`,
+      [projectData] // Note if JSON projectData is not added like this then it breaks.
     );
     if (result.rowCount != 1) {
       // If not found then create project
       await pool.query(
-        `INSERT INTO projects (user_id, username, projectname, projectimage, project, updated_date) 
+        `INSERT INTO projects (user_id, username, projectname, projectimage, project, updated_date)
         VALUES (${userId}, '${userName}', '${projectName}', decode('${projectImage}','base64'),
-        '${projectData}', NOW());`
+        $1, NOW());`,
+        [projectData] // Note if JSON projectData is not added like this then it breaks.
       );
     }
   } catch (err) {

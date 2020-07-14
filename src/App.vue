@@ -510,7 +510,7 @@
             </v-btn>
             <v-divider class="mx-3" inset vertical></v-divider>
             <v-toolbar-items>
-              <v-btn icon dark class="vbtn" @click="HTMLEditor = false">
+              <v-btn icon dark class="vbtn" @click="closeHTMLEditor()">
                 <v-icon>close</v-icon>
               </v-btn>
             </v-toolbar-items>
@@ -3608,7 +3608,7 @@ export default {
       );
     },
     HTMLEditor_injectWebPage() {
-      this.HTMLEditor = false;
+      this.closeHTMLEditor();
 
       // Inject HTML to webpageContainer
       $("#webpageContainer").empty();
@@ -3623,6 +3623,13 @@ export default {
       this.EditorMAIN_jsTag.text(this.EditorJS.getSession().getValue());
       // Initialize search of soft elements that can be harden.
       this.searchSoftElements();
+    },
+    closeHTMLEditor() {
+      this.HTMLEditor = false;
+      // Save HTML Text Content
+      this.EditorHTMLText = this.EditorHTML.getSession().getValue();
+      this.EditorCSSText = this.EditorCSS.getSession().getValue();
+      this.EditorJSText = this.EditorJS.getSession().getValue();
     },
     //##########
     //########## BUILD SCREEN
@@ -4362,6 +4369,21 @@ app.on('ready', createWindow)`;
       // // Uncomment for saving a demo in database
       // console.log(canvas.toDataURL().split(",")[1]);
       // console.log(this.project_save());
+      // console.log(
+      //   JSON.stringify(
+      //     {
+      //       userId: this.auth.id,
+      //       userName: userName,
+      //       projectName: projectName,
+      //       projectImage: canvas.toDataURL().split(",")[1],
+      //       projectData: this.project_save(),
+      //       htmlDoc: this.generateHTMLDoc(),
+      //       cssDoc: this.generateCSSDoc()
+      //     },
+      //     null,
+      //     2
+      //   )
+      // );
 
       server
         .post("generateWebPage", {
