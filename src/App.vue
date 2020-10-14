@@ -2455,9 +2455,7 @@ export default {
       this.eComponentSaved = project.eComponentSaved;
       this.eAvailableComponents = project.eAvailableComponents;
       this.nonAvailableComponents = project.nonAvailableComponents;
-      console.log("WEB PAGE APPEND:", project.webpageContainer)
       document.getElementById("webpageContainer").innerHTML = project.webpageContainer;
-      //$("#webpageContainer").append(project.webpageContainer);
       this.EditorHTMLText = project.EditorHTMLText;
       this.EditorCSSText = project.EditorCSSText;
       this.EditorJSText = project.EditorJSText;
@@ -2735,8 +2733,9 @@ export default {
       // SPECIAL CASE FOR THE VIDEO PLAYER IFRAME
       // Execute funtion after 4 seconds to find iframe change.
       setTimeout(() => {
-        for (var element of $("#webpageContainer").children()) {
+        for (var element of $("#webpageContainer").find("*")) {
           // If element has no children and has an id
+          console.log("LOOKING FOR IFRAME", element);
 
           if ($(element).attr("id")) {
             // If element is of type iframe, button or range then..
