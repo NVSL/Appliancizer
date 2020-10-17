@@ -2462,14 +2462,8 @@ export default {
       this.eComponentSaved = project.eComponentSaved;
       this.eAvailableComponents = project.eAvailableComponents;
       this.nonAvailableComponents = project.nonAvailableComponents;
-<<<<<<< HEAD
-      document.getElementById("webpageContainer").innerHTML = project.webpageContainer;
-=======
-      console.log("WEB PAGE APPEND:", project.webpageContainer);
       document.getElementById("webpageContainer").innerHTML =
         project.webpageContainer;
-      //$("#webpageContainer").append(project.webpageContainer);
->>>>>>> d53658cb63482519c9837746107898f8106ceaa5
       this.EditorHTMLText = project.EditorHTMLText;
       this.EditorCSSText = project.EditorCSSText;
       this.EditorJSText = project.EditorJSText;
