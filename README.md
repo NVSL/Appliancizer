@@ -1,4 +1,10 @@
-# Appliancizer Client
+# Appliancizer
+
+TODO: Explain
+
+# Running Appliancizer
+
+## Client
 
 ## Project setup
 ```
@@ -10,107 +16,69 @@ npm install
 npm run serve
 ```
 
-# Appliancizer Server
+## Server
 
-### Project setup
+### Install Swoop and json_to_eagle_brd
+
+1. Install python3 and pip
+```
+supd apt-get update
+sudo apt-get install python3 
+sudo apt-get install python3-pip
+```
+
+2. Install Swoop
+```
+git clone https://github.com/NVSL/Swoop.git
+pip3 install -r Swoop/requirements.txt
+nano Swoop/Swoop/DRU.py // Fix bug https://github.com/NVSL/Swoop/issues/15
+pip3 install ./Swoop
+```
+
+3. Install json_to_eagle_brd
+```
+git clone https://github.com/djmerrill/json_to_eagle_brd.git
+pip3 install docopt==0.6.2
+// Change any xml to version 9.2.2
+```
+
+### Install EAGLE (third-pary application) Linux verision
+
+
+
+### Run Database Service
+```bash
+# If not installed run
+sudo apt-get install postgresql
+# Start postgresql and create role
+sudo service postgresql start
+create role jgarzagudb with login createdb encrypted password 'password';
+alter user jgarzagudb with superuser;
+exit
+psql -d postgres -U jgarzagudb
+CREATE DATABASE api;
+\list
+```
+
+### Server setup
 ```
 cd server
 npm install
 ```
 
 ### Run server (runs on port 8081)
+
+Developmet
 ```
-npm run start
+cd server
+npm run dev
 ```
 
-# Gadgetron related
-
-### File pcb input example for gadgetron
-Generated automatically in: ```server/gadgetron/pcbInput.json``` after clicking (BUILD->DOWNLOAD PCB FILES)
-```json
-{
-  "pcbHeight": 120,
-  "pcbWidth": 120,
-  "availableGpio": [
-    "4",
-    "17",
-    "27",
-    "22",
-    "5",
-    "6",
-    "13",
-    "26",
-    "18",
-    "23",
-    "24",
-    "25",
-    "12"
-  ],
-  "availableI2c": [
-    "/dev/i2c-1"
-  ],
-  "availableSpi": [
-    "/dev/spidev0.0"
-  ],
-  "availableSerial": [
-    "/dev/spidev0.0"
-  ],
-  "part0": {
-    "componentName": "LED-5mm-red",
-    "componentWidth": "5mm",
-    "componentHeight": "5mm",
-    "componentX": 14.5,
-    "componentY": 12.5,
-    "gpio": [
-      "4"
-    ],
-    "i2c": [],
-    "spi": [],
-    "serial": []
-  },
-  "part1": {
-    "componentName": "physical-button-red",
-    "componentWidth": "10mm",
-    "componentHeight": "10mm",
-    "componentX": 15,
-    "componentY": 24,
-    "gpio": [
-      "17"
-    ],
-    "i2c": [],
-    "spi": [],
-    "serial": []
-  },
-  "part2": {
-    "componentName": "physical-button-red",
-    "componentWidth": "10mm",
-    "componentHeight": "10mm",
-    "componentX": 5,
-    "componentY": 5,
-    "gpio": [
-      "27"
-    ],
-    "i2c": [],
-    "spi": [],
-    "serial": []
-  }
-}
-```    
-
-### Where pcbInput.json is generated and where Gadgetron things should be executed?  
-Here: ```server/src/app.js```  
-Where exactly? Here:  
-app.js  
-```js
-....
-// Generate PCB
-app.post("/generatePCB", function(req, res) {
-...
-//pcbInput.json is generated
-...
-  // #####
-  // DO SOMETHING WITH GADGETRON HERE!!!
-  // #####
-...
-}
+Production (will run with pm2)
 ```
+npm install -g pm2
+cd server
+npm run prod
+```
+
+

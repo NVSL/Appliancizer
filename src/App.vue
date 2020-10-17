@@ -137,7 +137,7 @@
       <!-- #Main Content -->
       <v-content>
         <v-container fluid fill-height>
-          <v-layout row wrap>
+          <v-layout row>
             <splitpanes class="default-theme" watch-slots>
               <!-- <span :splitpanes-size="webpageContainerPaneSize"> -->
               <pane>
@@ -149,7 +149,7 @@
                   ></v-progress-circular>
                 </div>
                 <v-layout column fill-height>
-                  <v-layout row>
+                  <v-layout row style="height: 4vh">
                     <v-toolbar-title class="pt-2 mx-3"
                       >Device Screen</v-toolbar-title
                     >
@@ -217,7 +217,7 @@
                 <v-layout column fill-height style="overflow: scroll">
                   <v-flex xs10>
                     <div id="PCBPanel">
-                      <v-layout row>
+                      <v-layout row style="height: 6vh">
                         <v-toolbar-title class="pt-2 mx-3">PCB</v-toolbar-title>
                         <v-spacer></v-spacer>
                         <v-btn
@@ -361,7 +361,7 @@
       </v-dialog>
 
       <!-- Project Name Dialog -->
-      <v-dialog v-model="ProjectNameScreen" max-width="40%">
+      <v-dialog v-model="ProjectNameScreen" persistent max-width="40%">
         <v-card>
           <v-toolbar dark dense color="grey darken-4">
             <v-toolbar-title>Project Build Name</v-toolbar-title>
@@ -383,6 +383,8 @@
             </h4>
             <br />
             <v-text-field
+              ondragstart="return false;"
+              draggable="false"
               classs="inputField"
               v-model="ProjectName"
               :counter="30"
@@ -649,17 +651,13 @@
               1-bit Input Components
             </h2>
             <!-- eslint-disable -->
-            <div> Code Snippets: </div>
+            <div>Code Snippets:</div>
             <code style="vertical-align:top; margin-right: 20px; height: 120px">
-  HTML: 
-  &lt;button id="myInput"&gt; TEXT &lt;/button&gt;
+              HTML: &lt;button id="myInput"&gt; TEXT &lt;/button&gt;
             </code>
             <code style="height: 120px">
-  JavaScript: 
-  let myInput = document.getElementById("myInput");
-  myInput.addEventListener("click", () => {
-    // Input code
-  }); 
+              JavaScript: let myInput = document.getElementById("myInput");
+              myInput.addEventListener("click", () => { // Input code });
             </code>
             <!-- eslint-enable -->
             <br />
@@ -690,15 +688,13 @@
               N-bit Output Components
             </h2>
             <!-- eslint-disable -->
-            <div> Code Snippets: </div>
+            <div>Code Snippets:</div>
             <code style="vertical-align:top; margin-right: 20px; height: 120px">
-  HTML: 
- &lt;span id="myOutput"&gt; TEXT &lt;/span&gt; 
+              HTML: &lt;span id="myOutput"&gt; TEXT &lt;/span&gt;
             </code>
             <code style="height: 120px">
-  JavaScript: 
-  let myOutput = document.getElementById("myOutput");
-  myOutput.innerText = "ON";
+              JavaScript: let myOutput = document.getElementById("myOutput");
+              myOutput.innerText = "ON";
             </code>
             <!-- eslint-enable -->
             <br />
@@ -729,17 +725,14 @@
               Sensors (N-bit Range Input) Components
             </h2>
             <!-- eslint-disable -->
-            <div> Code Snippets: </div>
+            <div>Code Snippets:</div>
             <code style="vertical-align:top; margin-right: 20px; height: 120px">
-  HTML: 
-  &lt;input type="range" id="mySensor" min="0" max="10" step="1" value="0"&gt; 
+              HTML: &lt;input type="range" id="mySensor" min="0" max="10"
+              step="1" value="0"&gt;
             </code>
             <code style="height: 120px">
-  JavaScript: 
-  let mySensor = document.getElementById("mySensor");
-  mySensor.oninput = () => {
-    console.log(mySensor.value);
-  };
+              JavaScript: let mySensor = document.getElementById("mySensor");
+              mySensor.oninput = () => { console.log(mySensor.value); };
             </code>
             <!-- eslint-enable -->
             <br />
@@ -1087,7 +1080,7 @@
                           <span> $ cd MyHardwareApp</span>
                           <br /> -->
                 <!-- eslint-disable-next-line -->
-                          <!-- <span> $ scp -r ./* pi@10.42.0.100:/home/pi/MyHardwareApp</span>
+                <!-- <span> $ scp -r ./* pi@10.42.0.100:/home/pi/MyHardwareApp</span>
                           <br />
                         </kbd>
                         <br />
@@ -1439,7 +1432,12 @@
                     dark
                     class="vbtn"
                     color="primary"
-                    @click="ProjectsScreen_loadProject(props.item.projectname)"
+                    @click="
+                      ProjectsScreen_loadProject(
+                        props.item.username,
+                        props.item.projectname
+                      )
+                    "
                   >
                     Load
                   </v-btn>
@@ -2168,6 +2166,11 @@ export default {
       if (event.keyCode == 13) {
         // Enter key press
         this.signIn_enterKeyPress();
+
+        // Close Edit project name
+        if (this.ProjectNameScreen == true) {
+          this.ProjectNameScreen = false;
+        }
       }
     });
 
@@ -2423,6 +2426,9 @@ export default {
       this.FinalPCB.height = this.pcbHeight; // Initial height state
       this.FinalPCB.width = this.pcbWidth; // Initial width state
       this.HTMLEditor_clear = true; // Clear will be executed when Editor opens.
+      this.EditorHTMLText = "";
+      this.EditorCSSText = "";
+      this.EditorJSText = "";
       this.eComponentSaved = {};
       this.eAvailableComponents = [];
       this.nonAvailableComponents = [];
@@ -2445,6 +2451,7 @@ export default {
 
       // Set project
       this.ProjectName = project.projectname;
+      console.log("projectName: ", this.ProjectName);
       this.$refs.PcbBoard.setpcbsize(
         project.FinalPCB_height,
         project.FinalPCB_width
@@ -2455,8 +2462,9 @@ export default {
       this.eComponentSaved = project.eComponentSaved;
       this.eAvailableComponents = project.eAvailableComponents;
       this.nonAvailableComponents = project.nonAvailableComponents;
-      console.log("WEB PAGE APPEND:", project.webpageContainer)
-      document.getElementById("webpageContainer").innerHTML = project.webpageContainer;
+      console.log("WEB PAGE APPEND:", project.webpageContainer);
+      document.getElementById("webpageContainer").innerHTML =
+        project.webpageContainer;
       //$("#webpageContainer").append(project.webpageContainer);
       this.EditorHTMLText = project.EditorHTMLText;
       this.EditorCSSText = project.EditorCSSText;
@@ -2524,12 +2532,13 @@ export default {
         return `${WEBSITE_URL}apps/${username}/${projectName}/index.html`;
       }
     },
-    ProjectsScreen_loadProject(projectName) {
+    ProjectsScreen_loadProject(projectUsername, projectName) {
       console.log("### START LOADING PROJECT: ", projectName);
 
       server
         .post("getProject", {
-          username: this.auth.username,
+          userid: this.auth.id,
+          projectusername: projectUsername,
           projectname: projectName
         })
         .then(response => {
@@ -2539,7 +2548,15 @@ export default {
             alert("Sever error: project has no data");
           } else {
             // Load project
-            let project = response.data.result[0].project;
+            // Check if JSON is parsed or is Stringify
+            let project;
+            if (response.data.result[0].project.projectname == undefined) {
+              // JSON neds a parse
+              project = JSON.parse(response.data.result[0].project);
+            } else {
+              // JSON is parsed
+              project = response.data.result[0].project;
+            }
             this.project_load(project);
           }
         })
@@ -2735,7 +2752,7 @@ export default {
       // SPECIAL CASE FOR THE VIDEO PLAYER IFRAME
       // Execute funtion after 4 seconds to find iframe change.
       setTimeout(() => {
-        for (var element of $("#webpageContainer").children()) {
+        for (var element of $("#webpageContainer").find("*")) {
           // If element has no children and has an id
 
           if ($(element).attr("id")) {
@@ -3296,10 +3313,10 @@ export default {
       this.eComponentSaved[thisId].componentLeft = leftmm;
       this.eComponentSaved[thisId].componentTop = topmm;
 
-      // Set component center left and top in mm
+      // Set component center left and top in mm (Add 1mm to X to correct error)
       var centerLeft = leftmm + componentWidth / 2;
       var centerTop = topmm + componentHeight / 2;
-      this.eComponentSaved[thisId].componentCenterLeft = centerLeft;
+      this.eComponentSaved[thisId].componentCenterLeft = centerLeft + 1;
       this.eComponentSaved[thisId].componentCenterTop = centerTop;
     },
     // When a component is clicked from the list.
@@ -3591,6 +3608,8 @@ export default {
       if (this.EditorJS_extSoruceTwo != undefined) {
         console.log("Ext Soruce Two has:" + this.EditorJS_extSoruceTwo);
       }
+
+      if (this.EditorCSS == undefined) return;
 
       // Set CSS
       this.EditorIFRAME_head.append(

@@ -247,15 +247,38 @@ const createProject = async (request, response) => {
 
 const getProject = async (request, response) => {
   try {
-    const username = request.body.username;
+    const user_id = request.body.userid;
+    const user_projectusername = request.body.projectusername;
     const user_projectname = request.body.projectname;
-    console.log("-- Trying to get single project of username", username);
-    // Register user
-    const project = await pool.query(
-      `SELECT project FROM projects WHERE username = $1 AND projectname = $2;`,
-      [username, user_projectname]
+    console.log("-- Trying to get single project of userid", user_id);
+
+    // Check security level of user
+    const securityLevel = await pool.query(
+      `SELECT security_level FROM users WHERE id = $1;`,
+      [user_id]
     );
-    response.status(200).send({ result: project.rows });
+
+    if (securityLevel.rowCount == 0) {
+      response.status(500).send({ error: "User not found " });
+    } else {
+      let level = securityLevel.rows[0].security_level;
+      console.log("Securty Level", level);
+      if (level == "admin") {
+        // Search project by project username
+        const project = await pool.query(
+          `SELECT project FROM projects WHERE username = $1 AND projectname = $2;`,
+          [user_projectusername, user_projectname]
+        );
+        response.status(200).send({ result: project.rows });
+      } else {
+        // Search project by user_id
+        const project = await pool.query(
+          `SELECT project FROM projects WHERE user_id = $1 AND projectname = $2;`,
+          [user_id, user_projectname]
+        );
+        response.status(200).send({ result: project.rows });
+      }
+    }
   } catch (err) {
     console.log(err.stack);
     response.status(500).send({ error: "Database error" });
