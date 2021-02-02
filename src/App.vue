@@ -26,6 +26,9 @@
           >Appliancizer</v-toolbar-title
         >
         <v-divider class="mx-3" inset vertical></v-divider>
+        <v-btn class="vbtn" flat>
+          LEARN MORE
+        </v-btn>
         <v-spacer></v-spacer>
         <v-toolbar-items>
           <v-tabs right slider-color="rgb(174, 213, 129)" color="grey darken-4">
@@ -476,7 +479,7 @@
               outline
               @click="AvailableComponentsScreen = true"
             >
-              List of Components
+              List of Tangible Controls
             </v-btn>
             <v-menu offset-y>
               <template v-slot:activator="{ on }">
@@ -631,7 +634,9 @@
       <v-dialog v-model="AvailableComponentsScreen" max-width="70%">
         <v-card>
           <v-toolbar dark dense color="grey darken-4">
-            <v-toolbar-title>List of Available Components</v-toolbar-title>
+            <v-toolbar-title
+              >List of Available Tangible Controls</v-toolbar-title
+            >
             <v-divider class="mx-3" inset vertical></v-divider>
             <v-spacer></v-spacer>
             <v-divider class="mx-3" inset vertical></v-divider>
@@ -648,21 +653,8 @@
           </v-toolbar>
           <v-card-text>
             <h2>
-              1-bit Input Components
+              1-bit Input (Buttons, Interrupts)
             </h2>
-            <!-- eslint-disable -->
-            <div>Code Snippets:</div>
-            <code style="vertical-align:top; margin-right: 20px; height: 120px">
-              HTML: &lt;button id="myInput"&gt; TEXT &lt;/button&gt;
-            </code>
-            <code style="height: 120px">
-              JavaScript: let myInput = document.getElementById("myInput");
-              myInput.addEventListener("click", () => { // Input code });
-            </code>
-            <!-- eslint-enable -->
-            <br />
-            <br />
-            <v-divider></v-divider>
             <br />
             <v-layout v-if="eComponentList !== null" row wrap>
               <v-flex
@@ -684,22 +676,23 @@
             </v-layout>
             <br />
             <br />
-            <h2>
-              N-bit Output Components
-            </h2>
             <!-- eslint-disable -->
-            <div>Code Snippets:</div>
-            <code style="vertical-align:top; margin-right: 20px; height: 120px">
-              HTML: &lt;span id="myOutput"&gt; TEXT &lt;/span&gt;
-            </code>
-            <code style="height: 120px">
-              JavaScript: let myOutput = document.getElementById("myOutput");
-              myOutput.innerText = "ON";
-            </code>
+            <highlightjs language='javascript' code="
+              // ### Code Snippet - 1-bit Input ###
+              //
+              // HTML
+              <button id='myInput'> TEXT </button>
+              // Javascript
+              let myInput = document.getElementById('myInput');
+              myInput.addEventListener('click', () => { // Input code });
+            " />
             <!-- eslint-enable -->
             <br />
             <br />
             <v-divider></v-divider>
+            <h2>
+              Multi-byte Output (Actuators)
+            </h2>
             <br />
             <v-layout v-if="eComponentList !== null" row wrap>
               <v-flex
@@ -721,23 +714,24 @@
             </v-layout>
             <br />
             <br />
-            <h2>
-              Sensors (N-bit Range Input) Components
-            </h2>
             <!-- eslint-disable -->
-            <div>Code Snippets:</div>
-            <code style="vertical-align:top; margin-right: 20px; height: 120px">
-              HTML: &lt;input type="range" id="mySensor" min="0" max="10"
-              step="1" value="0"&gt;
-            </code>
-            <code style="height: 120px">
-              JavaScript: let mySensor = document.getElementById("mySensor");
-              mySensor.oninput = () => { console.log(mySensor.value); };
-            </code>
+            <highlightjs language='javascript' code="
+              // ### Code Snippet - Multi-byte Output ###
+              //
+              // HTML
+              <span id='myOutput'> TEXT </span>
+              // Javascript
+              let myOutput = document.getElementById('myOutput');
+              myOutput.innerText = 'ON';
+            " />
+            <br />
+            <br />
             <!-- eslint-enable -->
-            <br />
-            <br />
             <v-divider></v-divider>
+            <br />
+            <h2>
+              Numeric Input & Output (Sensors)
+            </h2>
             <br />
             <v-layout v-if="eComponentList !== null" row wrap>
               <v-flex
@@ -757,6 +751,22 @@
                 </v-card>
               </v-flex>
             </v-layout>
+            <br />
+            <br />
+            <!-- eslint-disable -->
+            <highlightjs language='javascript' code="
+              // ### Code Snippet - Numeric Input & Output ###
+              //
+              // HTML
+              <input type='range' id='mySensor' min='0' max='10' step='1' value='0'>
+              // Javascript
+              let myOutput = document.getElementById('myOutput');
+              myOutput.innerText = 'ON';
+            " />
+            <!-- eslint-enable -->
+            <br />
+            <br />
+            <v-divider></v-divider>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -1466,6 +1476,8 @@ import html2canvas from "html2canvas";
 import JSZip from "jszip";
 import FileSaver from "file-saver";
 import axios from "axios";
+//import hljs from 'highlight.js/lib/core';
+import "highlight.js/styles/github.css";
 // import pcbStackup from 'pcb-stackup';
 // Demos
 import VideoPlayer from "./demos/VideoPlayer";

@@ -11,7 +11,7 @@ TODO: Explain
 npm install
 ```
 
-### Run client (prefered port: 8080)
+### Run client (Project will run in port 8088)
 ```
 npm run serve
 ```
