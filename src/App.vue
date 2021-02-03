@@ -479,7 +479,7 @@
               outline
               @click="AvailableComponentsScreen = true"
             >
-              List of Tangible Controls
+              HTML Controls
             </v-btn>
             <v-menu offset-y>
               <template v-slot:activator="{ on }">
@@ -634,9 +634,7 @@
       <v-dialog v-model="AvailableComponentsScreen" max-width="70%">
         <v-card>
           <v-toolbar dark dense color="grey darken-4">
-            <v-toolbar-title
-              >List of Available Tangible Controls</v-toolbar-title
-            >
+            <v-toolbar-title>HTML Controls</v-toolbar-title>
             <v-divider class="mx-3" inset vertical></v-divider>
             <v-spacer></v-spacer>
             <v-divider class="mx-3" inset vertical></v-divider>
@@ -653,9 +651,12 @@
           </v-toolbar>
           <v-card-text>
             <h2>
-              1-bit Input (Buttons, Interrupts)
+              &lt;button&gt; HTML Control : 1-bit Input (Buttons, Interrupts)
             </h2>
             <br />
+            <strong
+              >Available tangible controls for the &lt;button&gt; HTML Control
+            </strong>
             <v-layout v-if="eComponentList !== null" row wrap>
               <v-flex
                 v-for="comp in eComponentList.submit"
@@ -677,9 +678,8 @@
             <br />
             <br />
             <!-- eslint-disable -->
+            <strong>HTML Control code snippet </strong>
             <highlightjs language='javascript' code="
-              // ### Code Snippet - 1-bit Input ###
-              //
               // HTML
               <button id='myInput'> TEXT </button>
               // Javascript
@@ -691,9 +691,12 @@
             <br />
             <v-divider></v-divider>
             <h2>
-              Multi-byte Output (Actuators)
+              &lt;span&gt; HTML Control : Multi-byte Output (Actuators)
             </h2>
             <br />
+            <strong
+              >Available tangible controls for the &lt;span&gt; HTML Control
+            </strong>
             <v-layout v-if="eComponentList !== null" row wrap>
               <v-flex
                 v-for="comp in eComponentList.span"
@@ -715,9 +718,8 @@
             <br />
             <br />
             <!-- eslint-disable -->
+            <strong>HTML Control code snippet </strong>
             <highlightjs language='javascript' code="
-              // ### Code Snippet - Multi-byte Output ###
-              //
               // HTML
               <span id='myOutput'> TEXT </span>
               // Javascript
@@ -730,9 +732,14 @@
             <v-divider></v-divider>
             <br />
             <h2>
-              Numeric Input & Output (Sensors)
+              &lt;input type='range'&gt; HTML Control : Numeric Input & Output
+              (Sensors)
             </h2>
             <br />
+            <strong
+              >Available tangible controls for the &lt;input type='range'&gt;
+              HTML Control
+            </strong>
             <v-layout v-if="eComponentList !== null" row wrap>
               <v-flex
                 v-for="comp in eComponentList.range"
@@ -754,9 +761,8 @@
             <br />
             <br />
             <!-- eslint-disable -->
+            <strong>HTML Control code snippet </strong>
             <highlightjs language='javascript' code="
-              // ### Code Snippet - Numeric Input & Output ###
-              //
               // HTML
               <input type='range' id='mySensor' min='0' max='10' step='1' value='0'>
               // Javascript
