@@ -26,7 +26,7 @@
           >Appliancizer</v-toolbar-title
         >
         <v-divider class="mx-3" inset vertical></v-divider>
-        <v-btn class="vbtn" flat>
+        <v-btn class="vbtn" flat @click="LearnMoreScreen = true">
           LEARN MORE
         </v-btn>
         <v-spacer></v-spacer>
@@ -349,6 +349,7 @@
             No elements found in PCB area. Add elements to the PCB area (Green
             Rectange) first !
           </v-card-text>
+          <v-divider></v-divider>
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn
@@ -358,6 +359,71 @@
               light
               @click="BuildWarningsScreen = false"
               >Close</v-btn
+            >
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- Project Name Dialog -->
+      <v-dialog
+        v-model="LearnMoreScreen"
+        persistent
+        :max-width="$vuetify.breakpoint.lgAndUp ? '60%' : '90%'"
+      >
+        <v-card>
+          <v-toolbar dark dense color="grey darken-4">
+            <v-toolbar-title>Learn More</v-toolbar-title>
+            <v-divider class="mx-3" inset vertical></v-divider>
+            <v-spacer></v-spacer>
+            <v-divider class="mx-3" inset vertical></v-divider>
+            <v-toolbar-items>
+              <v-btn icon dark class="vbtn" @click="LearnMoreScreen_close()">
+                <v-icon>close</v-icon>
+              </v-btn>
+            </v-toolbar-items>
+          </v-toolbar>
+          <v-card-text>
+            <p class="font-weight-thin">
+              Appliancizer is an experimental tool that allows users to
+              transform web pages into electronic devices, accelerating
+              prototyping of device designs that require graphical-tangible
+              interactions. Learn more about our tool by reading our papers
+              presented at
+              <a
+                href="https://dl.acm.org/doi/10.1145/3379350.3416158"
+                target="_blank"
+                >UIST 2020</a
+              >
+              and
+              <a href="https://chi2021.acm.org/" target="_blank">CHI 2021</a>.
+            </p>
+            <div
+              :style="{
+                widht: '100%',
+                height: $vuetify.breakpoint.lgAndUp ? '650px' : '300px'
+              }"
+            >
+              <iframe
+                id="learnMoreScreen_iframe"
+                width="100%"
+                height="100%"
+                src="https://www.youtube.com/embed/qyTYIzZnrGs"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+              ></iframe>
+            </div>
+          </v-card-text>
+          <v-divider></v-divider>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              outline
+              class="vbtn"
+              color="rgb(174, 213, 129)"
+              light
+              @click="LearnMoreScreen_close()"
+              >CLOSE</v-btn
             >
           </v-card-actions>
         </v-card>
@@ -394,7 +460,15 @@
               color="rgb(174, 213, 129)"
             />
           </v-card-text>
+          <v-divider></v-divider>
           <v-card-actions>
+            <v-btn
+              outline
+              class="vbtn"
+              @click="ProjectNameScreen = false"
+              color="rgb(174, 213, 129)"
+              >Close</v-btn
+            >
             <v-spacer></v-spacer>
             <v-btn
               outline
@@ -684,7 +758,9 @@
               <button id='myInput'> TEXT </button>
               // Javascript
               let myInput = document.getElementById('myInput');
-              myInput.addEventListener('click', () => { // Input code });
+              myInput.addEventListener('click', () => { 
+                // Physical click event 
+              });
             " />
             <!-- eslint-enable -->
             <br />
@@ -724,7 +800,7 @@
               <span id='myOutput'> TEXT </span>
               // Javascript
               let myOutput = document.getElementById('myOutput');
-              myOutput.innerText = 'ON';
+              myOutput.innerText = 'ON'; // Turns LED ON, Write 'OFF' for turning LED OFF.
             " />
             <br />
             <br />
@@ -766,8 +842,9 @@
               // HTML
               <input type='range' id='mySensor' min='0' max='10' step='1' value='0'>
               // Javascript
-              let myOutput = document.getElementById('myOutput');
-              myOutput.innerText = 'ON';
+              mySensor.oninput = () => {
+                console.log(mySensor.value); // Print sensor data
+              };
             " />
             <!-- eslint-enable -->
             <br />
@@ -1136,6 +1213,7 @@
         v-model="signIn_Dialog"
         max-width="600px"
         retain-focus
+        persistent
       >
         <v-card>
           <v-tabs
@@ -1201,6 +1279,13 @@
                 </v-card-text>
                 <v-divider></v-divider>
                 <v-card-actions>
+                  <v-btn
+                    outline
+                    class="vbtn"
+                    @click="signIn_Dialog = false"
+                    color="rgb(174, 213, 129)"
+                    >Close</v-btn
+                  >
                   <v-spacer></v-spacer>
                   <v-btn
                     outline
@@ -1297,9 +1382,21 @@
                         :value="signIn_RegisterErrorTextDisplay"
                         >{{ signIn_RegisterErrorText }}</v-alert
                       >
+                      <v-alert :value="true" type="warning">
+                        Appliancizer is an experimental tool, any created
+                        account and saved projects can be deleted without user
+                        consent.
+                      </v-alert>
                     </v-card-text>
                     <v-divider></v-divider>
                     <v-card-actions>
+                      <v-btn
+                        outline
+                        class="vbtn"
+                        @click="signIn_Dialog = false"
+                        color="rgb(174, 213, 129)"
+                        >Close</v-btn
+                      >
                       <v-spacer></v-spacer>
                       <v-btn
                         outline
@@ -1364,6 +1461,17 @@
                   <br />
                   ... just kidding I havn't implmented this yet.
                 </v-card-text>
+                <v-divider></v-divider>
+                <v-card-actions>
+                  <v-btn
+                    outline
+                    class="vbtn"
+                    @click="signIn_Dialog = false"
+                    color="rgb(174, 213, 129)"
+                    >Close</v-btn
+                  >
+                  <v-spacer></v-spacer>
+                </v-card-actions>
               </v-card>
             </v-tab-item>
           </v-tabs>
@@ -1691,7 +1799,8 @@ export default {
     ],
     // Project Name Screen
     ProjectName: "",
-    ProjectNameScreen: false
+    ProjectNameScreen: false,
+    LearnMoreScreen: false
   }),
   watch: {
     signIn_Tab: function(val) {
@@ -2508,6 +2617,15 @@ export default {
       }
 
       console.log("### END PROJECT LOADING");
+    },
+    //##########
+    //########## LEARN MORE SCREEN
+    //##########
+    LearnMoreScreen_close() {
+      this.LearnMoreScreen = false;
+      document.querySelector(
+        "#learnMoreScreen_iframe"
+      ).src = document.querySelector("#learnMoreScreen_iframe").src;
     },
     //##########
     //########## PROJECTS SCREEN
@@ -4742,6 +4860,10 @@ Vuetify edited styles
   background-color: #212121 !important;
 }
 
+.v-window__container.v-window__container--is-active {
+  /* Fix expansion height in register & login after an error message */
+  height: 100% !important;
+}
 /*
 Component Styles
 */
