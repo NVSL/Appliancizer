@@ -372,7 +372,7 @@
       >
         <v-card>
           <v-toolbar dark dense color="grey darken-4">
-            <v-toolbar-title>GET STARTED ⮞</v-toolbar-title>
+            <v-toolbar-title>GET STARTED</v-toolbar-title>
             <v-divider class="mx-3" inset vertical></v-divider>
             <v-spacer></v-spacer>
             <v-divider class="mx-3" inset vertical></v-divider>
