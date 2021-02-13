@@ -27,7 +27,7 @@
         >
         <v-divider class="mx-3" inset vertical></v-divider>
         <v-btn class="vbtn" flat @click="LearnMoreScreen = true">
-          LEARN MORE
+          GET STARTED ⮞
         </v-btn>
         <v-spacer></v-spacer>
         <v-toolbar-items>
@@ -372,7 +372,7 @@
       >
         <v-card>
           <v-toolbar dark dense color="grey darken-4">
-            <v-toolbar-title>Learn More</v-toolbar-title>
+            <v-toolbar-title>GET STARTED ⮞</v-toolbar-title>
             <v-divider class="mx-3" inset vertical></v-divider>
             <v-spacer></v-spacer>
             <v-divider class="mx-3" inset vertical></v-divider>
@@ -384,11 +384,10 @@
           </v-toolbar>
           <v-card-text>
             <p class="font-weight-thin">
-              Appliancizer is an experimental tool that allows users to
-              transform web pages into electronic devices, accelerating
-              prototyping of device designs that require graphical-tangible
-              interactions. Learn more about our tool by reading our papers
-              presented at
+              Appliancizer allows users to transform web pages into electronic
+              devices, accelerating prototyping of device designs that require
+              graphical-tangible interactions. Learn more about our tool by
+              reading our papers presented at
               <a
                 href="https://dl.acm.org/doi/10.1145/3379350.3416158"
                 target="_blank"
@@ -400,7 +399,7 @@
             <div
               :style="{
                 widht: '100%',
-                height: $vuetify.breakpoint.lgAndUp ? '650px' : '300px'
+                height: $vuetify.breakpoint.lgAndUp ? '550px' : '300px'
               }"
             >
               <iframe
@@ -416,7 +415,6 @@
           </v-card-text>
           <v-divider></v-divider>
           <v-card-actions>
-            <v-spacer></v-spacer>
             <v-btn
               outline
               class="vbtn"
@@ -424,6 +422,22 @@
               light
               @click="LearnMoreScreen_close()"
               >CLOSE</v-btn
+            >
+            <v-container class="pl-6 py-0" fluid>
+              <v-checkbox
+                v-model="LearnMoreDontShowAgain"
+                label="Don't show this message again"
+                color="rgb(174, 213, 129)"
+              ></v-checkbox>
+            </v-container>
+            <v-spacer></v-spacer>
+            <v-btn
+              outline
+              class="vbtn glowButton"
+              color="rgb(174, 213, 129)"
+              light
+              @click="LearnMoreScreen_loadSmartThermostat()"
+              >LOAD SMART THERMOSTAT EXAMPLE</v-btn
             >
           </v-card-actions>
         </v-card>
@@ -1800,7 +1814,8 @@ export default {
     // Project Name Screen
     ProjectName: "",
     ProjectNameScreen: false,
-    LearnMoreScreen: false
+    LearnMoreScreen: false,
+    LearnMoreDontShowAgain: false
   }),
   watch: {
     signIn_Tab: function(val) {
@@ -2337,6 +2352,20 @@ export default {
     // #### Authentication
     // Authenticate user if local store token is available.
     this.authenticateUser();
+
+    // ### Show initial Message
+    let dontShowInitialMessage = localStorage.getItem("dontShowInitialMessage");
+    if (
+      dontShowInitialMessage == undefined ||
+      dontShowInitialMessage == "false"
+    ) {
+      // Cookie doesn't exist or it's false, show message
+      this.LearnMoreScreen = true;
+      this.LearnMoreDontShowAgain = false;
+    } else {
+      // Cookie exists
+      this.LearnMoreDontShowAgain = true;
+    }
   },
   methods: {
     //##########
@@ -2626,6 +2655,22 @@ export default {
       document.querySelector(
         "#learnMoreScreen_iframe"
       ).src = document.querySelector("#learnMoreScreen_iframe").src;
+      if (this.LearnMoreDontShowAgain) {
+        localStorage.setItem("dontShowInitialMessage", true);
+      } else {
+        localStorage.setItem("dontShowInitialMessage", false);
+      }
+    },
+    LearnMoreScreen_loadSmartThermostat() {
+      this.LearnMoreScreen_close();
+      // Load web-based prototype
+      this.HTMLEditor_loadWebBasedPrototype(
+        TemperatureController.html,
+        TemperatureController.css,
+        TemperatureController.js
+      );
+      // Initialize search of soft elements that can be harden.
+      this.searchSoftElements();
     },
     //##########
     //########## PROJECTS SCREEN
@@ -3765,20 +3810,29 @@ export default {
     },
     HTMLEditor_injectWebPage() {
       this.closeHTMLEditor();
-
+      // Load web-based prototype
+      this.HTMLEditor_loadWebBasedPrototype(
+        this.EditorHTML.getSession().getValue(),
+        this.EditorCSS.getSession().getValue(),
+        this.EditorJS.getSession().getValue()
+      );
+      // Initialize search of soft elements that can be harden.
+      this.searchSoftElements();
+    },
+    HTMLEditor_loadWebBasedPrototype(html, css, js) {
       // Inject HTML to webpageContainer
       $("#webpageContainer").empty();
-      $("#webpageContainer").append(this.EditorHTML.getSession().getValue());
+      $("#webpageContainer").append(html);
       // Inject CSS to whole document
       this.EditorMAIN_cssTag.remove();
       this.EditorMAIN_cssTag = $("<style></style>").appendTo($("head"));
-      this.EditorMAIN_cssTag.text(this.EditorCSS.getSession().getValue());
+      this.EditorMAIN_cssTag.text(css);
       // Inject JS to whole document
       this.EditorMAIN_jsTag.remove();
       this.EditorMAIN_jsTag = $("<script/>").appendTo($("body"));
-      this.EditorMAIN_jsTag.text(this.EditorJS.getSession().getValue());
-      // Initialize search of soft elements that can be harden.
-      this.searchSoftElements();
+      this.EditorMAIN_jsTag.text(js);
+      // // Initialize search of soft elements that can be harden.
+      // this.searchSoftElements();
     },
     closeHTMLEditor() {
       this.HTMLEditor = false;
@@ -4843,6 +4897,25 @@ HTML Editor css
 }
 .output iframe::-webkit-scrollbar {
   display: none;
+}
+
+/*
+learn more panel
+*/
+
+@keyframes glowing {
+  0% {
+    box-shadow: 0 0 5px #2ba805;
+  }
+  50% {
+    box-shadow: 0 0 20px #49e819;
+  }
+  100% {
+    box-shadow: 0 0 5px #2ba805;
+  }
+}
+.glowButton {
+  animation: glowing 1300ms infinite;
 }
 
 /*
