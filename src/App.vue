@@ -436,6 +436,14 @@
               class="vbtn glowButton"
               color="rgb(174, 213, 129)"
               light
+              @click="LearnMoreScreen_loadVideoPlayer()"
+              >LOAD VIDEO PLAYER EXAMPLE</v-btn
+            >
+            <v-btn
+              outline
+              class="vbtn glowButton"
+              color="rgb(174, 213, 129)"
+              light
               @click="LearnMoreScreen_loadSmartThermostat()"
               >LOAD SMART THERMOSTAT EXAMPLE</v-btn
             >
@@ -2668,6 +2676,17 @@ export default {
         TemperatureController.html,
         TemperatureController.css,
         TemperatureController.js
+      );
+      // Initialize search of soft elements that can be harden.
+      this.searchSoftElements();
+    },
+    LearnMoreScreen_loadVideoPlayer() {
+      this.LearnMoreScreen_close();
+      // Load web-based prototype
+      this.HTMLEditor_loadWebBasedPrototype(
+        VideoPlayer.html,
+        VideoPlayer.css,
+        VideoPlayer.js
       );
       // Initialize search of soft elements that can be harden.
       this.searchSoftElements();
